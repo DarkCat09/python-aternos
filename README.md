@@ -10,7 +10,7 @@ pip install python-aternos
 
 To use Aternos API in your Python script, import it and  
 login with your username and password (or MD5 hash of password).  
-> Note: Logging in by Google or Facebook account is not supported yet.
+> Note: Logging in with Google or Facebook account is not supported yet.
 
 Then get the servers list using get_servers method.  
 You can start/stop your Aternos server now, calling `start()` or `stop()`.
