@@ -14,17 +14,22 @@ login with your username and password (or MD5 hash of password).
 
 Then get the servers list using get_servers method.  
 You can start/stop your Aternos server now, calling `start()` or `stop()`.
+
+There is an example how to use the Aternos API:
 ```python
 # Import
 from python_aternos import Client
 
 # Log in
-aternos = Client('USERNAME', password='PASSWORD')
-# or
-aternos = Client('USERNAME', md5='HASHED_PASSWORD')
+#aternos = Client('USERNAME', password='PASSWORD')
+aternos = Client('example', password='test123')
+# ----OR----
+#aternos = Client('USERNAME', md5='HASHED_PASSWORD')
+aternos = Client('example', md5='cc03e747a6afbbcbf8be7668acfebee5')
 
 # get_servers returns AternosServer list
 atservers = aternos.get_servers()
+
 # If you have only one server, get it by 0 index
 myserv = atservers[0]
 
@@ -32,6 +37,18 @@ myserv = atservers[0]
 myserv.start()
 # Stop
 myserv.stop()
+
+# Find server by IP
+testserv = None
+for serv in atservers:
+    if serv.address == 'test.aternos.org':
+        testserv = serv
+if testserv != None:
+    # Prints a server softaware and its version
+    # (for example, "Vanilla 1.12.2")
+    print(testserv.software, testserv.version)
+    # Starts server
+    testserv.start()
 ```
 You can find full documentation on the [Project Wiki](https://github.com/DarkCat09/python-aternos/wiki).
 
@@ -52,3 +69,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+You **don't** need to attributing me, if you are just using this module installed from PIP.
