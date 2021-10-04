@@ -69,4 +69,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-You **don't** need to attributing me, if you are just using this module installed from PIP.
+You **don't** need to attribute me, if you are just using this module installed from PIP.
