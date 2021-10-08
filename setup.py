@@ -5,7 +5,7 @@ with open('README.md', 'rt') as readme:
 
 setuptools.setup(
     name='python-aternos',
-    version='0.1',
+    version='0.2',
     author='Chechkenev Andrey (@DarkCat09)',
     author_email='aacd0709@mail.ru',
     description='An unofficial Aternos API',
@@ -14,6 +14,7 @@ setuptools.setup(
     url='https://github.com/DarkCat09/python-aternos',
     project_urls={
         'Bug Tracker': 'https://github.com/DarkCat09/python-aternos/issues',
+        'Documentation': 'https://github.com/DarkCat09/python-aternos/wiki/Client-(entry-point)',
     },
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -25,5 +26,6 @@ setuptools.setup(
         'requests==2.25.1',
         'cloudscraper==1.2.58'
     ],
+    packages=['python_aternos'],
     python_requires=">=3.6",
 )

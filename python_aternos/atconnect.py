@@ -3,7 +3,8 @@ import time
 import random
 import lxml.html
 from cloudscraper import CloudScraper
-from aterrors import AternosCredentialsError
+
+from . import aterrors
 
 class AternosConnect:
 
@@ -33,7 +34,7 @@ class AternosConnect:
 				pagehead.text_content()
 			)[1]
 		except (IndexError, TypeError):
-			raise AternosCredentialsError(
+			raise aterrors.AternosCredentialsError(
 				'Unable to parse TOKEN from the page'
 			)
 

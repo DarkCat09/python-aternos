@@ -1,5 +1,7 @@
 import lxml.html
-import aterrors
+
+from . import aterrors
+from . import atfiles
 
 class AternosServer:
 
@@ -8,7 +10,7 @@ class AternosServer:
 		self.servid = servid
 		self.atconn = atconn
 
-		servreq = self._atserver_request(
+		servreq = self.atserver_request(
 			'https://aternos.org/server',
 			self.atconn.REQGET
 		)
@@ -21,7 +23,12 @@ class AternosServer:
 			'/div[@class="server-info-box-body"]' + \
 			'/div[@class="server-info-box-value"]/span'
 		)
-		self._address = servinfo[0].text
+
+		fullip = servinfo[0].text
+		self._address = fullip
+		self._domain = fullip[:fullip.rfind(':')]
+		self._port = fullip[fullip.rfind(':')+1:]
+
 		self._software = servinfo[1].text
 		self._version = servinfo[2].text
 
@@ -30,7 +37,7 @@ class AternosServer:
 
 	def start(self, accepteula=True):
 
-		startreq = self._atserver_request(
+		startreq = self.atserver_request(
 			'https://aternos.org/panel/ajax/start.php',
 			self.atconn.REQGET, sendtoken=True
 		)
@@ -55,35 +62,46 @@ class AternosServer:
 				f'Unable to start server. Code: {error}'
 			)
 
+	def confirm(self):
+
+		self.atserver_request(
+			'https://aternos.org/panel/ajax/confirm.php',
+			self.atconn.REQGET, sendtoken=True
+		)
+
 	def stop(self):
 
-		self._atserver_request(
+		self.atserver_request(
 			'https://aternos.org/panel/ajax/stop.php',
 			self.atconn.REQGET, sendtoken=True
 		)
 
 	def cancel(self):
 
-		self._atserver_request(
+		self.atserver_request(
 			'https://aternos.org/panel/ajax/cancel.php',
 			self.atconn.REQGET, sendtoken=True
 		)
 
 	def restart(self):
 
-		self._atserver_request(
+		self.atserver_request(
 			'https://aternos.org/panel/ajax/restart.php',
 			self.atconn.REQGET, sendtoken=True
 		)
 
 	def eula(self):
 
-		self._atserver_request(
+		self.atserver_request(
 			'https://aternos.org/panel/ajax/eula.php',
 			self.atconn.REQGET, sendtoken=True
 		)
 
-	def _atserver_request(
+	def files(self):
+
+		return AternosFileManager(self)
+
+	def atserver_request(
 		self, url, method, params=None,
 		data=None, headers=None, sendtoken=False):
 
@@ -100,6 +118,14 @@ class AternosServer:
 	@property
 	def address(self):
 		return self._address
+	
+	@property
+	def domain(self):
+		return self._domain
+
+	@property
+	def port(self):
+		return self._port
 
 	@property
 	def software(self):
