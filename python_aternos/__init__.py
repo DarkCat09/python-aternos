@@ -22,7 +22,7 @@ class Client:
 
 		self.atconn = atconnect.AternosConnect()
 
-		self.token = self.atconn.get_token()
+		self.token = self.atconn.parse_token()
 		self.sec = self.atconn.generate_sec()
 
 		self.credentials = {
@@ -33,7 +33,7 @@ class Client:
 		loginreq = self.atconn.request_cloudflare(
 			f'https://aternos.org/panel/ajax/account/login.php?' + \
 			f'SEC={self.sec}&TOKEN={self.token}',
-			self.atconn.REQPOST, data=self.credentials
+			atconnect.REQPOST, data=self.credentials
 		)
 
 		if loginreq.cookies.get('ATERNOS_SESSION', None) == None:
@@ -41,11 +41,11 @@ class Client:
 				'Check your username and password'
 			)
 
-	def get_servers(self):
-
+	@property
+	def servers(self):
 		serverspage = self.atconn.request_cloudflare(
 			'https://aternos.org/servers/',
-			self.atconn.REQGET
+			atconnect.REQGET
 		)
 		serverstree = lxml.html.fromstring(serverspage.content)
 		serverslist = serverstree.xpath('//div[@class="servers"]/div')

@@ -1,45 +1,41 @@
+import re
+import json
 import lxml.html
+from requests import Response
+from typing import Optional, Dict
 
+from . import atconnect
 from . import aterrors
-from . import atfiles
+from . import atfm
 
 class AternosServer:
 
-	def __init__(self, servid, atconn):
+	def __init__(self, servid:str, atconn:atconnect.AternosConnect) -> None:
 
 		self.servid = servid
 		self.atconn = atconn
 
 		servreq = self.atserver_request(
 			'https://aternos.org/server',
-			self.atconn.REQGET
+			atconnect.REQGET
 		)
 		servtree = lxml.html.fromstring(servreq.content)
 
-		servinfo = servtree.xpath(
-			'//div[@class="server-bottom-info server-info"]' + \
-			'/div[@class="server-info-container"]' + \
-			'/div[@class="server-info-box"]' + \
-			'/div[@class="server-info-box-body"]' + \
-			'/div[@class="server-info-box-value"]/span'
+		self._info = json.loads(
+			re.search(
+				r'var\s*lastStatus\s*=\s*({.*})',
+				servtree.head.text
+			)[1]
 		)
 
-		fullip = servinfo[0].text
-		self._address = fullip
-		self._domain = fullip[:fullip.rfind(':')]
-		self._port = fullip[fullip.rfind(':')+1:]
-
-		self._software = servinfo[1].text
-		self._version = servinfo[2].text
-
-		self.atconn.get_token(servreq.content)
+		self.atconn.parse_token(servreq.content)
 		self.atconn.generate_sec()
 
-	def start(self, accepteula=True):
+	def start(self, accepteula:bool=True) -> None:
 
 		startreq = self.atserver_request(
 			'https://aternos.org/panel/ajax/start.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 		startresult = startreq.json()
 
@@ -49,6 +45,7 @@ class AternosServer:
 		error = startresult['error']
 		if error == 'eula' and accepteula:
 			self.eula()
+			self.start(accepteula=False)
 		elif error == 'eula':
 			raise aterrors.AternosServerStartError(
 				'EULA was not accepted. Use start(accepteula=True)'
@@ -62,48 +59,51 @@ class AternosServer:
 				f'Unable to start server. Code: {error}'
 			)
 
-	def confirm(self):
+	def confirm(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/confirm.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 
-	def stop(self):
+	def stop(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/stop.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 
-	def cancel(self):
+	def cancel(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/cancel.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 
-	def restart(self):
+	def restart(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/restart.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 
-	def eula(self):
+	def eula(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/eula.php',
-			self.atconn.REQGET, sendtoken=True
+			atconnect.REQGET, sendtoken=True
 		)
 
-	def files(self):
+	def files(self) -> atfm.AternosFileManager:
 
-		return AternosFileManager(self)
+		return atfm.AternosFileManager(self)
 
 	def atserver_request(
-		self, url, method, params=None,
-		data=None, headers=None, sendtoken=False):
+		self, url:str, method:int,
+		params:Optional[dict]=None,
+		data:Optional[dict]=None,
+		headers:Optional[dict]=None,
+		sendtoken:bool=False) -> Response:
 
 		return self.atconn.request_cloudflare(
 			url=url, method=method,
@@ -116,21 +116,25 @@ class AternosServer:
 		)
 
 	@property
-	def address(self):
-		return self._address
-	
-	@property
-	def domain(self):
-		return self._domain
+	def info(self) -> dict:
+		return self._info
 
 	@property
-	def port(self):
-		return self._port
-
-	@property
-	def software(self):
-		return self._software
+	def address(self) -> str:
+		return f'{self.domain}:{self.port}'
 	
 	@property
-	def version(self):
-		return self._version
+	def domain(self) -> str:
+		return self._info['displayAddress']
+
+	@property
+	def port(self) -> int:
+		return self._info['port']
+
+	@property
+	def software(self) -> str:
+		return self._info['software']
+	
+	@property
+	def version(self) -> str:
+		return self._info['version']

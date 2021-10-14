@@ -2,26 +2,27 @@ import re
 import time
 import random
 import lxml.html
+from requests import Response
 from cloudscraper import CloudScraper
+from typing import Optional, Union
 
 from . import aterrors
 
+REQGET = 0
+REQPOST = 1
+REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
+
 class AternosConnect:
 
-	REQGET = 0
-	REQPOST = 1
-	REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
-
-	def __init__(self):
+	def __init__(self) -> None:
 
 		pass
 
-	def get_token(self, response=None):
+	def parse_token(self, response:Optional[Union[str,bytes]]=None) -> str:
 
 		if response == None:
 			loginpage = self.request_cloudflare(
-				f'https://aternos.org/go/',
-				self.REQGET
+				f'https://aternos.org/go/', REQGET
 			).content
 			pagetree = lxml.html.fromstring(loginpage)
 		else:
@@ -40,7 +41,7 @@ class AternosConnect:
 
 		return self.token
 
-	def generate_sec(self):
+	def generate_sec(self) -> str:
 
 		randkey = self.generate_aternos_rand()
 		randval = self.generate_aternos_rand()
@@ -52,7 +53,7 @@ class AternosConnect:
 
 		return self.sec
 
-	def generate_aternos_rand(self, randlen=16):
+	def generate_aternos_rand(self, randlen:int=16) -> str:
 
 		rand_arr = []
 		for i in range(randlen+1):
@@ -63,7 +64,7 @@ class AternosConnect:
 			'00000000000000000'
 		return (rand_alphanum[2:18].join(rand_arr)[:randlen])
 
-	def convert_num(self, num, base):
+	def convert_num(self, num:Union[int,float], base:int) -> str:
 
 		result = ''
 		while num > 0:
@@ -72,9 +73,13 @@ class AternosConnect:
 		return result
 
 	def request_cloudflare(
-		self, url, method, retries=10,
-		params=None, data=None, headers=None,
-		reqcookies=None, sendtoken=False):
+		self, url:str, method:int,
+		retries:int=10,
+		params:Optional[dict]=None,
+		data:Optional[dict]=None,
+		headers:Optional[dict]=None,
+		reqcookies:Optional[dict]=None,
+		sendtoken:bool=False) -> Response:
 
 		cftitle = '<title>Please Wait... | Cloudflare</title>'
 
@@ -86,7 +91,7 @@ class AternosConnect:
 
 		if headers == None:
 			headers = {}
-		headers['User-Agent'] = self.REQUA
+		headers['User-Agent'] = REQUA
 
 		try:
 			cookies = self.session.cookies
@@ -97,7 +102,7 @@ class AternosConnect:
 		if cookies != None:
 			self.session.cookies = cookies
 
-		if method == self.REQPOST:
+		if method == REQPOST:
 			req = self.session.post(
 				url,
 				data=data,
@@ -124,7 +129,7 @@ class AternosConnect:
 					self.session.cookies.set(cookiekey, reqcookies[cookiekey])
 
 			time.sleep(1)
-			if method == self.REQPOST:
+			if method == REQPOST:
 				req = self.session.post(
 					url,
 					data=data,
@@ -141,7 +146,3 @@ class AternosConnect:
 			countdown -= 1
 
 		return req
-
-	def get_session(self):
-
-		return self.session
