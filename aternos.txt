@@ -1,0 +1,74 @@
+aternos.org/software/v/**TYPE**/**MCVER**-latest|recommended|**SOFTVER**
+(AternosSoftware) //div[@class="version-title"]
+(software_name) /h1[@class="version-title-name"]
+(software_id) /div[@id="install-software"]/@data-software
+
+GET software/install.php
+software: rLyATopqZP79WHHR
+reinstall: 0 OR 1
+
+GET confirm.php
+
+GET config.php
+file: /server.properties OR /world/level.dat
+option: max-players OR resource-pack OR Data:hardcore OR Data:GameRules:commandBlockOutput
+value: 20
+
+GET timezone.php
+timezone: Europe/Ulyanovsk
+
+GET image.php
+image: openjdk:8
+
+GET mclogs.php
+(save log to mclo.gs)
+response.json().id
+https://api.mclo.gs/1/raw/**ID**
+
+POST create.php
+file: /config/hello
+type: directory OR file
+
+POST delete.php
+file: /config/123.txt
+
+POST save.php
+file: /config/123.txt
+content: ... (x-www-form-urlencoded; charset=UTF-8)
+
+GET files/download.php?file=**FILENAME_ABSOLUTE**
+(ex. file=/world will download in ZIP all directory)
+
+GET worlds/download.php?world=**WORLD_NAME**
+
+GET players/add.php,remove.php
+list: whitelist,ops,banned-players,banned-ips
+name: CodePicker13 *OR* 1.2.3.4(in case of IP)
+(list players) //div[@class="page-content page-players"]/div[@class="player-list"]/div[@class="list-item-container"]
+(players[...]) ./div[@class="list-item"]/div[@class="list-name"] (and class="list-avatar")
+
+POST friends/create.php
+username: t3test
+(LISTUSERIDs) //div[@class="friends-share-list list-players"]/div[@class="list-item-container"]/@data-id
+
+POST friends/delete.php
+id: **LISTUSERID**
+
+POST friends/update.php
+id: **LISTUSERID**
+permissions: json(permissions)
+
+GET driveBackup/autoBackups.php?enabled=**0or1**&amount=**AUTOBACKUPS_COUNT_LIMIT**
+(list backups) //div[@class="backups"]/div[@class="file"]
+(backups[...]) ./@id, re.search(r'backup-(\w+)', _)[1]
+(backups[...]) ./div[@class="filename"] (/span[@class="backup-time js-date-time"], then /@data-date or content)
+(backups[...]) ./div[@class="backup-user,filesize"]
+
+POST driveBackup/create.php
+name: MyBackup2
+
+POST driveBackup/restore.php,delete.php
+backupID: 5
+
+GET /panel/img/skin.php?name=**NICKNAME**
+(get player's head in png)
