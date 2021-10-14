@@ -28,7 +28,7 @@ aternos = Client('example', password='test123')
 aternos = Client('example', md5='cc03e747a6afbbcbf8be7668acfebee5')
 
 # get_servers returns AternosServer list
-atservers = aternos.get_servers()
+atservers = aternos.servers
 
 # If you have only one server, get it by 0 index
 myserv = atservers[0]
@@ -38,7 +38,7 @@ myserv.start()
 # Stop
 myserv.stop()
 
-# Find server by IP
+# You can also find server by IP
 testserv = None
 for serv in atservers:
     if serv.address == 'test.aternos.org':
