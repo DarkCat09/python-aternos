@@ -39,7 +39,10 @@ class AternosFileManager:
 				fsize_num = fsize_text[:fsize_text.rfind(' ')]
 				fsize_msr = fsize_text[fsize_text.rfind(' ')+1:]
 
-				fsize = convert_size(fsize_num, fsize_msr)
+				try:
+					fsize = convert_size(float(fsize_num), fsize_msr)
+				except ValueError:
+					fsize = -1
 
 			fullpath = f.xpath('/@data-path')[0]
 			filepath = fullpath[:fullpath.rfind('/')]

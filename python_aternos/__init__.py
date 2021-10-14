@@ -1,5 +1,6 @@
 import hashlib
 import lxml.html
+from typing import Optional, List
 
 from . import atserver
 from . import atconnect
@@ -7,7 +8,10 @@ from . import aterrors
 
 class Client:
 
-	def __init__(self, username, md5=None, password=None):
+	def __init__(
+		self, username:str,
+		md5:Optional[str]=None,
+		password:Optional[str]=None) -> None:
 
 		if (password == None) and (md5 == None):
 			raise AttributeError('Password was not specified')
@@ -42,7 +46,7 @@ class Client:
 			)
 
 	@property
-	def servers(self):
+	def servers(self) -> List[atserver.AternosServer]:
 		serverspage = self.atconn.request_cloudflare(
 			'https://aternos.org/servers/',
 			atconnect.REQGET

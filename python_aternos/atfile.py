@@ -9,14 +9,17 @@ FTYPE_DIR = 1
 
 class AternosFile:
 
-	def __init__(atserv:atserver.AternosServer, path:str, name:str, ftype:int=FTYPE_FILE, size:Union[]=0):
+	def __init__(
+		atserv:atserver.AternosServer,
+		path:str, name:str, ftype:int=FTYPE_FILE,
+		size:Union[]=0) -> None:
 
 		self.atserv = atserv
 		self._name = name
 		self._ftype = ftype
-		self._size = size
+		self._size = float(size)
 
-	def delete(self):
+	def delete(self) -> None:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/delete.php',
@@ -25,7 +28,7 @@ class AternosFile:
 		)
 
 	@property
-	def text(self):
+	def text(self) -> str:
 		editor = self.atserv.atserver_request(
 			f'https://aternos.org/files/{self._name}',
 			atconnect.REQGET
@@ -41,7 +44,7 @@ class AternosFile:
 		return rawlines
 
 	@text.setter
-	def text(self, value):
+	def text(self, value:Union[str,bytes]) -> None:
 		self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/save.php',
 			atconnect.REQPOST, data={'content': value},
@@ -49,13 +52,13 @@ class AternosFile:
 		)
 
 	@property
-	def name(self):
+	def name(self) -> str:
 		return self._name
 
 	@property
-	def ftype(self):
+	def ftype(self) -> int:
 		return self._ftype
 	
 	@property
-	def size(self):
+	def size(self) -> float:
 		return self._size
