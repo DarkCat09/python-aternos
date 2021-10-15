@@ -40,7 +40,7 @@ class AternosServer:
 		self._info = json.loads(
 			re.search(
 				r'var\s*lastStatus\s*=\s*({.*})',
-				servtree.head.text
+				servtree.head.text_content()
 			)[1]
 		)
 

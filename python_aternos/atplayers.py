@@ -1,12 +1,15 @@
 import lxml.html
 from typing import List
+from typing import TYPE_CHECKING
 
-from . import atserver
 from . import atconnect
+
+if TYPE_CHECKING:
+	from atserver import AternosServer
 
 class AternosPlayersList:
 
-	def __init__(self, lst:str, atserv:atserver.AternosServer) -> None:
+	def __init__(self, lst:str, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 		self.lst = lst

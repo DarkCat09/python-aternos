@@ -1,8 +1,11 @@
 import lxml.html
 from typing import Union
+from typing import TYPE_CHECKING
 
-from . import atserver
 from . import atconnect
+
+if TYPE_CHECKING:
+	from atserver import AternosServer
 
 FTYPE_FILE = 0
 FTYPE_DIR = 1
@@ -10,7 +13,7 @@ FTYPE_DIR = 1
 class AternosFile:
 
 	def __init__(
-		atserv:atserver.AternosServer,
+		self, atserv:'AternosServer',
 		path:str, name:str, ftype:int=FTYPE_FILE,
 		size:Union[int,float]=0, dlallowed:bool=False) -> None:
 
@@ -96,5 +99,5 @@ class AternosFile:
 		return self._size
 
 	@property
-	def dlallowed(self):
+	def dlallowed(self) -> bool:
 		return self._dlallowed

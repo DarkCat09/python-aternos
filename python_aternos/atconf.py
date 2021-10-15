@@ -1,9 +1,12 @@
 import re
 import lxml.html
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING
 
-from . import atserver
 from . import atconnect
+
+if TYPE_CHECKING:
+	from atserver import AternosServer
 
 OPT_PLAYERS = 'max-players'
 OPT_GAMEMODE = 'gamemode'
@@ -72,7 +75,7 @@ FLAG_PROP_TYPE = 1
 
 class AternosConfig:
 
-	def __init__(self, atserv:atserver.AternosServer) -> None:
+	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 

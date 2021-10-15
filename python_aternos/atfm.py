@@ -1,13 +1,16 @@
 import lxml.html
 from typing import Optional, Union, List
+from typing import TYPE_CHECKING
 
-from . import atserver
 from . import atconnect
 from . import atfile
 
+if TYPE_CHECKING:
+	from atserver import AternosServer
+
 class AternosFileManager:
 
-	def __init__(atserv:atserver.AternosServer) -> None:
+	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 
@@ -49,7 +52,7 @@ class AternosFileManager:
 			if len(dlbutton) > 0:
 				dlallowed = True
 
-			fullpath = f.xpath('/@data-path')[0]
+			fullpath = f.xpath('/@data-path')
 			filepath = fullpath[:fullpath.rfind('/')]
 			filename = fullpath[fullpath.rfind('/'):]
 			files.append(
