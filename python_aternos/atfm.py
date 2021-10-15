@@ -44,6 +44,11 @@ class AternosFileManager:
 				except ValueError:
 					fsize = -1
 
+			dlbutton = f.xpath('/div[@class="js-download-file btn btn-main btn-small btn-notext btn-no-margin"]')
+			dlallowed = False
+			if len(dlbutton) > 0:
+				dlallowed = True
+
 			fullpath = f.xpath('/@data-path')[0]
 			filepath = fullpath[:fullpath.rfind('/')]
 			filename = fullpath[fullpath.rfind('/'):]
@@ -51,7 +56,7 @@ class AternosFileManager:
 				atfile.AternosFile(
 					self.atserv,
 					filepath, filename,
-					ftype, fsize
+					ftype, fsize, dlallowed
 				)
 			)
 
@@ -87,7 +92,7 @@ class AternosFileManager:
 
 		file = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/files/download.php?' + \
-			f'file={path.replace('/','%2F')}',
+			f'file={path.replace("/","%2F")}',
 			atconnect.REQGET
 		)
 
@@ -97,7 +102,7 @@ class AternosFileManager:
 
 		world = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/worlds/download.php?' + \
-			f'world={world.replace('/','%2F')}',
+			f'world={world.replace("/","%2F")}',
 			atconnect.REQGET
 		)
 

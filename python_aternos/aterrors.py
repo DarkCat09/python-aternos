@@ -9,3 +9,7 @@ class AternosCredentialsError(AternosError):
 class AternosServerStartError(AternosError):
 
 	pass
+
+class AternosIOError(AternosError):
+
+	pass

@@ -7,6 +7,22 @@ from typing import Optional, Dict
 from . import atconnect
 from . import aterrors
 from . import atfm
+from . import atconf
+from . import atplayers
+
+SOFTWARE_JAVA = 0
+SOFTWARE_BEDROCK = 1
+
+PLAYERS_ALLOWED = 'whitelist'
+PLAYERS_OPS = 'ops'
+PLAYERS_BANNED = 'banned-players'
+PLAYERS_IPS = 'banned-ips'
+
+STATUS_OFFLINE = 0
+STATUS_ONLINE = 1
+STATUS_LOADING = 2
+STATUS_SHUTDOWN = 3
+STATUS_ERROR = 7
 
 class AternosServer:
 
@@ -98,6 +114,14 @@ class AternosServer:
 
 		return atfm.AternosFileManager(self)
 
+	def config(self) -> atconf.AternosConfig:
+
+		return atconf.AternosConfig(self)
+
+	def players(self, lst:str) -> atplayers.AternosPlayersList:
+
+		return atplayers.AternosPlayersList(lst, self)
+
 	def atserver_request(
 		self, url:str, method:int,
 		params:Optional[dict]=None,
@@ -116,8 +140,27 @@ class AternosServer:
 		)
 
 	@property
-	def info(self) -> dict:
-		return self._info
+	def subdomain(self) -> str:
+		atdomain = self.domain
+		return atdomain[:atdomain.find('.')]
+
+	@subdomain.setter
+	def subdomain(self, value:str) -> None:
+		self.atserver_request(
+			'https://aternos.org/panel/ajax/options/subdomain.php',
+			atconnect.REQGET, params={'subdomain': value}
+		)
+
+	@property
+	def motd(self) -> str:
+		return self._info['motd']
+
+	@motd.setter
+	def motd(self, value:str) -> None:
+		self.atserver_request(
+			'https://aternos.org/panel/ajax/options/motd.php',
+			atconnect.REQPOST, data={'motd': value}
+		)
 
 	@property
 	def address(self) -> str:
@@ -125,11 +168,19 @@ class AternosServer:
 	
 	@property
 	def domain(self) -> str:
-		return self._info['displayAddress']
+		return self._info['ip']
 
 	@property
 	def port(self) -> int:
 		return self._info['port']
+
+	@property
+	def edition(self) -> int:
+		soft_type = self._info['bedrock']
+		if soft_type == True:
+			return SOFTWARE_BEDROCK
+		else:
+			return SOFTWARE_JAVA
 
 	@property
 	def software(self) -> str:
@@ -138,3 +189,11 @@ class AternosServer:
 	@property
 	def version(self) -> str:
 		return self._info['version']
+
+	@property
+	def status(self) -> int:
+		return int(self._info['status'])
+
+	@property
+	def ram(self) -> int:
+		return int(self._info['ram'])
