@@ -1,6 +1,7 @@
 # Python Aternos API
 An unofficial Aternos API written in Python.  
 It uses requests, cloudscraper and lxml to parse data from [aternos.org](https://aternos.org/).
+> Note vim for devs: if u have problem like this `IndentationError: unindent does not match any outer indentation level`, try out `retab`.
 
 ## Using
 First you need to install the module:
