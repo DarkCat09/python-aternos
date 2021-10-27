@@ -8,18 +8,22 @@ from typing import Optional, Union
 
 from . import aterrors
 
-#TEST
-from py_mini_racer import MiniRacer
+# TEST
+import js2py
 import base64
 
-presettings = """ 
-let window = {1: null, 2: null, AJAX_TOKEN: null}; 
-let i = 1; 
-function __log() { return {win_var: window["AJAX_TOKEN"], 1: window[1], 2: window[2]} }; 
-function atob(arg) {window[i++] = arg;}; 
-""" 
-postsettings = """__log();"""
+# Set obj for js
+presettings = """
+let window = {};
+"""
 
+# Convert array function to CMAScript 5 function
+def toECMAScript5Function(f):
+    return "(function() { " + f[f.index("{")+1 : f.index("}")] + "})();"
+
+# Emulation of atob - https://developer.mozilla.org/en-US/docs/Web/API/atob
+def atob(s):
+    return base64.standard_b64decode(str(s)).decode("utf-8")
 
 REQGET = 0
 REQPOST = 1
@@ -45,41 +49,17 @@ class AternosConnect:
             # fetch text
             pagehead = pagetree.head
             text = pagehead.text_content()
-            #print(text)
 
             #search
-            token_js_func = text[
-                text.index("const COOKIE_PREFIX = \"ATERNOS\";") +
-                len("const COOKIE_PREFIX = \"ATERNOS\";")       :
-                text.index("(function(i,s,o,g,r,a,m)")
-            ].strip()
-            print(token_js_func)
-
+            js_funcs = re.findall(r"\(\(\)(.*?)\)\(\);", text)
+            token_js_func = js_funcs[1] if len(js_funcs) > 1 else js_funcs[0]
 
             # run js
-            ctx = MiniRacer()
-            result = ctx.eval(presettings + token_js_func) 
-            result = ctx.call('__log')
-            
-            print(result)
-    
-            if 'win_var' in result and result['win_var']:
-                result = result['win_var']
-            elif '1' in result and ('2' in result and not result['2']):
-                result = base64.standard_b64decode(result['1'])
-            else:
-                result = base64.standard_b64decode(result['2'])  
-
-
-            print(result)
-            self.token = result 
-        
-            """
-            self.token = re.search(
-                r'const\s+AJAX_TOKEN\s*=\s*["\'](\w+)["\']',
-                text
-            )[1]
-            """
+            ctx = js2py.EvalJs({ 'atob': atob })
+            jsf = toECMAScript5Function(token_js_func)
+            ctx.execute(presettings + jsf)
+          
+            self.token = ctx.window['AJAX_TOKEN']
         except (IndexError, TypeError):
             raise aterrors.AternosCredentialsError(
                 'Unable to parse TOKEN from the page'

@@ -1,4 +1,4 @@
 lxml==4.6.2
 requests==2.25.1
 cloudscraper==1.2.58
-py-mini-racer==0.6.0
+Js2Py==0.71
