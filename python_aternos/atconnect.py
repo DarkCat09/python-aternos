@@ -8,141 +8,167 @@ from typing import Optional, Union
 
 from . import aterrors
 
+# TEST
+import js2py
+import base64
+
+# Set obj for js
+presettings = """
+let window = {};
+"""
+
+# Convert array function to CMAScript 5 function
+def toECMAScript5Function(f):
+    return "(function() { " + f[f.index("{")+1 : f.index("}")] + "})();"
+
+# Emulation of atob - https://developer.mozilla.org/en-US/docs/Web/API/atob
+def atob(s):
+    return base64.standard_b64decode(str(s)).decode("utf-8")
+
 REQGET = 0
 REQPOST = 1
 REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
 
 class AternosConnect:
 
-	def __init__(self) -> None:
+    def __init__(self) -> None:
 
-		pass
+        pass
 
-	def parse_token(self, response:Optional[Union[str,bytes]]=None) -> str:
+    def parse_token(self, response:Optional[Union[str,bytes]]=None) -> str:
 
-		if response == None:
-			loginpage = self.request_cloudflare(
-				f'https://aternos.org/go/', REQGET
-			).content
-			pagetree = lxml.html.fromstring(loginpage)
-		else:
-			pagetree = lxml.html.fromstring(response)
+        if response == None:
+            loginpage = self.request_cloudflare(
+                f'https://aternos.org/go/', REQGET
+            ).content
+            pagetree = lxml.html.fromstring(loginpage)
+        else:
+            pagetree = lxml.html.fromstring(response)
 
-		try:
-			pagehead = pagetree.head
-			self.token = re.search(
-				r'const\s+AJAX_TOKEN\s*=\s*["\'](\w+)["\']',
-				pagehead.text_content()
-			)[1]
-		except (IndexError, TypeError):
-			raise aterrors.AternosCredentialsError(
-				'Unable to parse TOKEN from the page'
-			)
+        try:
+            # fetch text
+            pagehead = pagetree.head
+            text = pagehead.text_content()
 
-		return self.token
+            #search
+            js_funcs = re.findall(r"\(\(\)(.*?)\)\(\);", text)
+            token_js_func = js_funcs[1] if len(js_funcs) > 1 else js_funcs[0]
 
-	def generate_sec(self) -> str:
+            # run js
+            ctx = js2py.EvalJs({ 'atob': atob })
+            jsf = toECMAScript5Function(token_js_func)
+            ctx.execute(presettings + jsf)
+          
+            self.token = ctx.window['AJAX_TOKEN']
+        except (IndexError, TypeError):
+            raise aterrors.AternosCredentialsError(
+                'Unable to parse TOKEN from the page'
+            )
 
-		randkey = self.generate_aternos_rand()
-		randval = self.generate_aternos_rand()
-		self.sec = f'{randkey}:{randval}'
-		self.session.cookies.set(
-			f'ATERNOS_SEC_{randkey}', randval,
-			domain='aternos.org'
-		)
+        return self.token
 
-		return self.sec
+    def generate_sec(self) -> str:
 
-	def generate_aternos_rand(self, randlen:int=16) -> str:
+        randkey = self.generate_aternos_rand()
+        randval = self.generate_aternos_rand()
+        self.sec = f'{randkey}:{randval}'
+        self.session.cookies.set(
+            f'ATERNOS_SEC_{randkey}', randval,
+            domain='aternos.org'
+        )
 
-		rand_arr = []
-		for i in range(randlen+1):
-			rand_arr.append('')
+        return self.sec
 
-		rand_alphanum = \
-			self.convert_num(random.random(),36) + \
-			'00000000000000000'
-		return (rand_alphanum[2:18].join(rand_arr)[:randlen])
+    def generate_aternos_rand(self, randlen:int=16) -> str:
 
-	def convert_num(self, num:Union[int,float], base:int) -> str:
+        rand_arr = []
+        for i in range(randlen+1):
+            rand_arr.append('')
 
-		result = ''
-		while num > 0:
-			result = str(num % base) + result
-			num //= base
-		return result
+        rand_alphanum = \
+            self.convert_num(random.random(),36) + \
+            '00000000000000000'
+        return (rand_alphanum[2:18].join(rand_arr)[:randlen])
 
-	def request_cloudflare(
-		self, url:str, method:int,
-		retries:int=10,
-		params:Optional[dict]=None,
-		data:Optional[dict]=None,
-		headers:Optional[dict]=None,
-		reqcookies:Optional[dict]=None,
-		sendtoken:bool=False) -> Response:
+    def convert_num(self, num:Union[int,float], base:int) -> str:
 
-		cftitle = '<title>Please Wait... | Cloudflare</title>'
+        result = ''
+        while num > 0:
+            result = str(num % base) + result
+            num //= base
+        return result
 
-		if sendtoken:
-			if params == None:
-				params = {}
-			params['SEC'] = self.sec
-			params['TOKEN'] = self.token
+    def request_cloudflare(
+        self, url:str, method:int,
+        retries:int=10,
+        params:Optional[dict]=None,
+        data:Optional[dict]=None,
+        headers:Optional[dict]=None,
+        reqcookies:Optional[dict]=None,
+        sendtoken:bool=False) -> Response:
 
-		if headers == None:
-			headers = {}
-		headers['User-Agent'] = REQUA
+        cftitle = '<title>Please Wait... | Cloudflare</title>'
 
-		try:
-			cookies = self.session.cookies
-		except AttributeError:
-			cookies = None
+        if sendtoken:
+            if params == None:
+                params = {}
+            params['SEC'] = self.sec
+            params['TOKEN'] = self.token
 
-		self.session = CloudScraper()
-		if cookies != None:
-			self.session.cookies = cookies
+        if headers == None:
+            headers = {}
+        headers['User-Agent'] = REQUA
 
-		if method == REQPOST:
-			req = self.session.post(
-				url,
-				data=data,
-				headers=headers,
-				cookies=reqcookies
-			)
-		else:
-			req = self.session.get(
-				url,
-				params=params,
-				headers=headers,
-				cookies=reqcookies
-			)
+        try:
+            cookies = self.session.cookies
+        except AttributeError:
+            cookies = None
 
-		countdown = retries
-		while cftitle in req.text \
-		and (countdown > 0):
+        self.session = CloudScraper()
+        if cookies != None:
+            self.session.cookies = cookies
 
-			self.session = CloudScraper()
-			if cookies != None:
-				self.session.cookies = cookies
-			if reqcookies != None:
-				for cookiekey in reqcookies:
-					self.session.cookies.set(cookiekey, reqcookies[cookiekey])
+        if method == REQPOST:
+            req = self.session.post(
+                url,
+                data=data,
+                headers=headers,
+                cookies=reqcookies
+            )
+        else:
+            req = self.session.get(
+                url,
+                params=params,
+                headers=headers,
+                cookies=reqcookies
+            )
 
-			time.sleep(1)
-			if method == REQPOST:
-				req = self.session.post(
-					url,
-					data=data,
-					headers=headers,
-					cookies=reqcookies
-				)
-			else:
-				req = self.session.get(
-					url,
-					params=params,
-					headers=headers,
-					cookies=reqcookies
-				)
-			countdown -= 1
+        countdown = retries
+        while cftitle in req.text \
+        and (countdown > 0):
 
-		return req
+            self.session = CloudScraper()
+            if cookies != None:
+                self.session.cookies = cookies
+            if reqcookies != None:
+                for cookiekey in reqcookies:
+                    self.session.cookies.set(cookiekey, reqcookies[cookiekey])
+
+            time.sleep(1)
+            if method == REQPOST:
+                req = self.session.post(
+                    url,
+                    data=data,
+                    headers=headers,
+                    cookies=reqcookies
+                )
+            else:
+                req = self.session.get(
+                    url,
+                    params=params,
+                    headers=headers,
+                    cookies=reqcookies
+                )
+            countdown -= 1
+
+        return req
