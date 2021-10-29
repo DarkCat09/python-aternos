@@ -56,7 +56,7 @@ You can find full documentation on the [Project Wiki](https://github.com/DarkCat
 ## License
 [License Notice](NOTICE):
 ```
-Copyright 2021 Chechkenev Andrey
+Copyright 2021 Chechkenev Andrey, lusm554
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
