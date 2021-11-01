@@ -10,8 +10,8 @@ class Client:
 
 	def __init__(
 		self, username:str,
-		md5:Optional[str]=None,
-		password:Optional[str]=None) -> None:
+		password:Optional[str]=None,
+		md5:Optional[str]=None) -> None:
 
 		if (password == None) and (md5 == None):
 			raise AttributeError('Password was not specified')
@@ -52,7 +52,7 @@ class Client:
 			atconnect.REQGET
 		)
 		serverstree = lxml.html.fromstring(serverspage.content)
-		serverslist = serverstree.xpath('//div[@class="servers"]/div')
+		serverslist = serverstree.xpath('//div[contains(@class,"servers ")]/div')
 
 		servers = []
 		for server in serverslist:

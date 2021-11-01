@@ -1,7 +1,7 @@
 # Python Aternos API
 An unofficial Aternos API written in Python.  
 It uses requests, cloudscraper and lxml to parse data from [aternos.org](https://aternos.org/).
-> Note for vim: if u have problem like this `IndentationError: unindent does not match any outer indentation level`, try out `retab`.
+> Note for vim: if you have a problem like `IndentationError: unindent does not match any outer indentation level`, try out `retab`.
 
 ## Using
 First you need to install the module:
@@ -13,7 +13,7 @@ To use Aternos API in your Python script, import it and
 login with your username and password (or MD5 hash of password).  
 > Note: Logging in with Google or Facebook account is not supported yet.
 
-Then get the servers list using get_servers method.  
+Then get the servers list using the `servers` field.  
 You can start/stop your Aternos server now, calling `start()` or `stop()`.
 
 There is an example how to use the Aternos API:
@@ -52,6 +52,31 @@ if testserv != None:
     testserv.start()
 ```
 You can find full documentation on the [Project Wiki](https://github.com/DarkCat09/python-aternos/wiki).
+
+## Changelog
+<!--
+ * v0.1 - the first release.
+ * v0.2 - fixed import problem.
+ * v0.3 - implemented files API, added typization.
+ * v0.4 - implemented configuration API, some bugfixes.
+ * v0.5 - the API was updated corresponding to new Aternos security methods.  
+ Huge thanks to [lusm554](https://github.com/lusm554).
+ * v0.6 - implementation of Google Drive backups API is planned.
+ * v0.7 - full implementation of config API is planned.
+ * v0.8 - shared access API and permission management is planned.
+ * v0.9.x - a long debugging before stable release, SemVer version code.
+-->
+|Version|Description|
+|:-----:|-----------|
+|v0.1|The first release.|
+|v0.2|Fixed import problem.|
+|v0.3|Implemented files API, added typization.|
+|v0.4|Implemented configuration API, some bugfixes.|
+|v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
+|v0.6|Preventing detecting automated access is planned.|
+|v0.7|Full implementation of config API and Google Drive backups is planned.|
+|v0.8|Shared access API and permission management is planned.|
+|v0.9.x|A long debugging before stable release, SemVer version code.|
 
 ## License
 [License Notice](NOTICE):

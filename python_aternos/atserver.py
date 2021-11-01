@@ -159,7 +159,8 @@ class AternosServer:
 	def motd(self, value:str) -> None:
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/options/motd.php',
-			atconnect.REQPOST, data={'motd': value}
+			atconnect.REQPOST, data={'motd': value},
+			sendtoken=True
 		)
 
 	@property
