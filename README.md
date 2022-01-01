@@ -16,7 +16,7 @@ login with your username and password (or MD5 hash of password).
 Then get the servers list using the `servers` field.  
 You can start/stop your Aternos server now, calling `start()` or `stop()`.
 
-There is an example how to use the Aternos API:
+Here is an example how to use the Aternos API:
 ```python
 # Import
 from python_aternos import Client
@@ -25,13 +25,17 @@ from python_aternos import Client
 #aternos = Client('USERNAME', password='PASSWORD')
 aternos = Client('example', password='test123')
 # ----OR----
+# password is the 1st parameter,
+# so you don't have to specify its name
+aternos = Client('example', 'test123')
+# ----OR----
 #aternos = Client('USERNAME', md5='HASHED_PASSWORD')
 aternos = Client('example', md5='cc03e747a6afbbcbf8be7668acfebee5')
 
-# get_servers returns AternosServer list
+# Returns AternosServer list
 atservers = aternos.servers
 
-# If you have only one server, get it by 0 index
+# If you have only one server, get it by the 0 index
 myserv = atservers[0]
 
 # Start
@@ -67,7 +71,7 @@ You can find full documentation on the [Project Wiki](https://github.com/DarkCat
  * v0.9.x - a long debugging before stable release, SemVer version code.
 -->
 |Version|Description|
-|:-----:|-----------|
+|:-----:|:-----------|
 |v0.1|The first release.|
 |v0.2|Fixed import problem.|
 |v0.3|Implemented files API, added typization.|
