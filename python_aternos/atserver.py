@@ -129,6 +129,7 @@ class AternosServer:
 		headers:Optional[dict]=None,
 		sendtoken:bool=False) -> Response:
 
+		print(sendtoken)
 		return self.atconn.request_cloudflare(
 			url=url, method=method,
 			params=params, data=data,

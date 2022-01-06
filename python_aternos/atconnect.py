@@ -89,10 +89,7 @@ class AternosConnect:
 		cftitle = '<title>Please Wait... | Cloudflare</title>'
 
 		if sendtoken:
-			if params == None:
-				params = {}
-			params['SEC'] = self.sec
-			params['TOKEN'] = self.token
+			url += f'?TOKEN={self.token}&SEC={self.sec}'
 
 		if headers == None:
 			headers = {}
@@ -150,4 +147,12 @@ class AternosConnect:
 				)
 			countdown -= 1
 			
+		print(sendtoken)
+		try:
+			print(self.sec, self.token)
+		except AttributeError:
+			pass
+		print(req.status_code)
+		print(req.cookies)
+		print(req.url, '', sep='\n---')
 		return req
