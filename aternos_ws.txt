@@ -1,4 +1,6 @@
 Client - C, Server - S.
+Note: "stream"/"type" means the type of received data:
+      a new console line, an updated RAM or TPS value...
 
 C>
 GET wss://aternos.org/hermes/
@@ -29,11 +31,10 @@ C> {"stream":"console","type":"command","data":"list"}
 S> {"stream":"console","type":"line","data":"list\r"}
 S> {"stream":"console","type":"line","data":"[23:28:28] [Server thread/INFO] [minecraft/DedicatedServer]: There are §r0§r/§r8§r players online:§r\r"}
 S> {"stream":"console","type":"line","data":"[23:28:28] [Server thread/INFO] [minecraft/DedicatedServer]: \r"}
-   # AdBlock detected
+   # ???
 C> {"type":"❤"}
 
 *** Page was refreshed
-(What's the difference between stream:heap and stream:console?)
 
 C>
 GET wss://aternos.org/hermes/
@@ -69,5 +70,32 @@ S> {"type":"status","message":"{\"brand\":\"aternos\",\"status\":5,\"change\":16
 S> {"type":"status","message":"{\"brand\":\"aternos\",\"status\":0,\"change\":1640978991,\"slots\":8,\"problems\":0,\"players\":0,\"playerlist\":[],\"message\":{\"text\":\"\",\"class\":\"blue\"},\"dynip\":null,\"bedrock\":false,\"host\":\"\",\"port\":61370,\"headstarts\":null,\"ram\":0,\"lang\":\"offline\",\"label\":\"\\u041e\\u0444\\u0444\\u043b\\u0430\\u0439\\u043d\",\"class\":\"offline\",\"countdown\":null,\"queue\":null,\"id\":\"cDRCfaQjQDaABPKL\",\"name\":\"inc09\",\"software\":\"Forge\",\"softwareId\":\"p71sAEKNbhea4UEm\",\"type\":\"forge\",\"version\":\"1.12.2 (14.23.5.2860)\",\"deprecated\":false,\"ip\":\"inc09.aternos.me\",\"displayAddress\":\"inc09.aternos.me:61370\",\"motd\":\"IndustrialCraft 2\",\"icon\":\"fa-stop-circle\",\"dns\":{\"type\":\"DEFAULT\",\"domains\":[\"inc09.aternos.me\"],\"host\":null,\"port\":null}}"}
    # Backup (why is this info here?)
 S> {"type":"backup_progress","message":"{\"id\":\"\",\"progress\":0,\"action\":\"reset\",\"auto\":false,\"done\":false}"}
-   # AdBlock detected
+   # ???
 C> {"type":"❤"}
+
+*** Queue example
+S> {"type":"queue_reduced","message":"{\"queue\":0,\"total\":49,\"maxtime\":3}"}
+S> {"type":"queue_reduced","message":"{\"queue\":0,\"total\":49,\"maxtime\":2}"}
+
+   # From server.js:
+   #  var percentage = lastStatus.queue.position / queue.total * 100;
+      if (queue.maxtime) {
+         let minutes = Math.round((queue.maxtime - ((Date.now() / 1000) - lastStatus.queue.jointime)) / 60);
+         if (minutes < 1 || lastStatus.queue.pending === "ready") {
+             minutes = 1;
+         }
+         if (minutes > lastStatus.queue.minutes) {
+             minutes = lastStatus.queue.minutes;
+         }
+         if (lastStatus.queue.minutes - minutes <= 3) {
+             lastStatus.queue.minutes = minutes;
+         }
+         lastStatus.queue.time = "ca. " + lastStatus.queue.minutes + " min";
+      }
+
+*** type=tick
+S> {"stream":"tick","type":"tick","data":{"averageTickTime":8.526042}}
+S> {"stream":"tick","type":"tick","data":{"averageTickTime":1.4948028}}
+
+   # From legilimens.js:
+   # let tps = Math.round(Math.min(1000 / data.averageTickTime, 20) * 10) / 10;

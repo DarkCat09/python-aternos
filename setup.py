@@ -3,9 +3,14 @@ import setuptools
 with open('README.md', 'rt') as readme:
 	long_description = readme.read()
 
+with open('requirements.txt', 'rt') as f:
+	requires = f.readlines()
+	for i, r in enumerate(requires):
+		requires[i] = r.strip('\r\n')
+
 setuptools.setup(
 	name='python-aternos',
-	version='0.5',
+	version='0.6',
 	author='Chechkenev Andrey (@DarkCat09)',
 	author_email='aacd0709@mail.ru',
 	description='An unofficial Aternos API',
@@ -21,11 +26,7 @@ setuptools.setup(
 		'License :: OSI Approved :: Apache Software License',
 		'Operating System :: OS Independent'
 	],
-	install_requires=[
-		'lxml==4.6.2',
-		'requests==2.25.1',
-		'cloudscraper==1.2.58'
-	],
+	install_requires=requires,
 	packages=['python_aternos'],
 	python_requires=">=3.6",
 )

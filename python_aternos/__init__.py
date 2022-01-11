@@ -5,7 +5,8 @@ from typing import Optional, Union, List
 from . import atserver
 from . import atconnect
 from . import aterrors
-from . import client_secrets
+
+from .aterrors import AternosCredentialsError
 
 class Client:
 
@@ -13,48 +14,58 @@ class Client:
 
 		self.atconn = atconn
 
-		# if google:
-		# 	flow = Flow.from_client_config\
-		# 	(
-		# 		json.loads(
-		# 			base64.standard_base64decode(client_secrets.CSJSON)
-		# 		),
-		# 		scopes=['openid', 'email']
-		# 	)
-		# 	# localhost:8764
-		# 	flow.run_local_server(port=8764, open_browser=False)
-
 	@classmethod
 	def from_hashed(cls, username:str, md5:str):
 
 		atconn = atconnect.AternosConnect()
-		token = atconn.parse_token()
-		sec = atconn.generate_sec()
+		atconn.parse_token()
+		atconn.generate_sec()
 
-		loginreq = self.atconn.request_cloudflare(
+		credentials = {
+			'user': username,
+			'password': md5
+		}
+
+		loginreq = atconn.request_cloudflare(
 			f'https://aternos.org/panel/ajax/account/login.php',
-			atconnect.REQPOST, data=self.credentials,
+			atconnect.REQPOST, data=credentials,
 			sendtoken=True
 		)
 
 		if loginreq.cookies.get('ATERNOS_SESSION', None) == None:
-			raise aterrors.AternosCredentialsError(
+			raise AternosCredentialsError(
 				'Check your username and password'
 			)
 
-		cls(atconn)
+		return cls(atconn)
 
 	@classmethod
 	def from_credentials(cls, username:str, password:str):
-		cls.from_hashed(
-			username,
-			hashlib.md5(password.encode('utf-8'))\
-			.hexdigest().lower()
-		)
+
+		pswd_bytes = password.encode('utf-8')
+		md5 = hashlib.md5(pswd_bytes).hexdigest().lower()
+
+		return cls.from_hashed(username, md5)
 
 	@classmethod
-	def with_google(cls):
-		pass
+	def from_session(cls, session:str):
+		
+		atconn = atconnect.AternosConnect()
+		atconn.session.cookies.set('ATERNOS_SESSION', session)
+		atconn.parse_token()
+		atconn.generate_sec()
+
+		return cls(atconn)
+
+	@staticmethod
+	def google() -> str:
+
+		atconn = atconnect.AternosConnect()
+		auth = atconn.request_cloudflare(
+			'https://aternos.org/auth/google-login',
+			atconnect.REQGET, redirect=False
+		)
+		return auth.headers['Location']
 
 	@property
 	def servers(self) -> List[atserver.AternosServer]:

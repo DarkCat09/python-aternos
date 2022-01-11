@@ -1,3 +1,4 @@
+import enum
 import re
 import lxml.html
 from typing import Any, Dict, List, Optional
@@ -8,68 +9,75 @@ from . import atconnect
 if TYPE_CHECKING:
 	from atserver import AternosServer
 
-OPT_PLAYERS = 'max-players'
-OPT_GAMEMODE = 'gamemode'
-OPT_DIFFICULTY = 'difficulty'
-OPT_WHITELIST = 'white-list'
-OPT_ONLINE = 'online-mode'
-OPT_PVP = 'pvp'
-OPT_CMDBLOCK = 'enable-command-block'
-OPT_FLIGHT = 'allow-flight'
-OPT_ANIMALS = 'spawn-animals'
-OPT_MONSTERS = 'spawn-monsters'
-OPT_VILLAGERS = 'spawn-npcs'
-OPT_NETHER = 'allow-nether'
-OPT_FORCEGM = 'force-gamemode'
-OPT_SPAWNLOCK = 'spawn-protection'
-OPT_CHEATS = 'allow-cheats'
-OPT_RESOURCEPACK = 'resource-pack'
+class ServerOpts(enum.Enum):
+	players = 'max-players'
+	gm = 'gamemode'
+	difficulty = 'difficulty'
+	whl = 'white-list'
+	online = 'online-mode'
+	pvp = 'pvp'
+	cmdblock = 'enable-command-block'
+	flight = 'allow-flight'
+	animals = 'spawn-animals'
+	monsters = 'spawn-monsters'
+	villagers = 'spawn-npcs'
+	nether = 'allow-nether'
+	forcegm = 'force-gamemode'
+	spawnlock = 'spawn-protection'
+	cmds = 'allow-cheats'
+	pack = 'resource-pack'
 
 DAT_PREFIX = 'Data:'
-DAT_SEED = 'RandomSeed'
-DAT_HARDCORE = 'hardcore'
-DAT_DIFFICULTY = 'Difficulty'
+
+class WorldOpts(enum.Enum):
+	seed = 'randomseed'
+	hardcore = 'hardcore'
+	difficulty = 'difficulty'
 
 DAT_GR_PREFIX = 'Data:GameRules:'
-DAT_GR_ADVS = 'announceAdvancements'
-DAT_GR_CMDOUT = 'commandBlockOutput'
-DAT_GR_ELYTRA = 'disableElytraMovementCheck'
-DAT_GR_DAYLIGHT = 'doDaylightCycle'
-DAT_GR_ENTDROPS = 'doEntityDrops'
-DAT_GR_FIRETICK = 'doFireTick'
-DAT_GR_LIMITCRAFT = 'doLimitedCrafting'
-DAT_GR_MOBLOOT = 'doMobLoot'
-DAT_GR_MOBS = 'doMobSpawning'
-DAT_GR_TILEDROPS = 'doTileDrops'
-DAT_GR_WEATHER = 'doWeatherCycle'
-DAT_GR_KEEPINV = 'keepInventory'
-DAT_GR_DEATHMSG = 'showDeathMessages'
-DAT_GR_ADMINCMDLOG = 'logAdminCommands'
-DAT_GR_CMDLEN = 'maxCommandChainLength'
-DAT_GR_ENTCRAM = 'maxEntityCramming'
-DAT_GR_MOBGRIEF = 'mobGriefing'
-DAT_GR_REGEN = 'naturalRegeneration'
-DAT_GR_RNDTICK = 'randomTickSpeed'
-DAT_GR_SPAWNRADIUS = 'spawnRadius'
-DAT_GR_REDUCEDF3 = 'reducedDebugInfo'
-DAT_GR_SPECTCHUNK = 'spectatorsGenerateChunks'
-DAT_GR_CMDFB = 'sendCommandFeedback'
+
+class WorldRules(enum.Enum):
+	advs = 'announceadvancements'
+	cmdout = 'commandblockoutput'
+	elytra = 'disableelytramovementcheck'
+	daynight = 'dodaylightcycle'
+	entdrop = 'doentitydrops'
+	fire = 'dofiretick'
+	limitcraft = 'dolimitedcrafting'
+	mobloot = 'domobloot'
+	mobs = 'domobspawning'
+	blockdrop = 'dotiledrops'
+	weather = 'doweathercycle'
+	keepinv = 'keepinventory'
+	deathmsg = 'showdeathmessages'
+	admincmdlog = 'logadmincommands'
+	cmdlen = 'maxcommandchainlength'
+	entcram = 'maxentitycramming'
+	mobgrief = 'mobgriefing'
+	regen = 'naturalregeneration'
+	rndtick = 'randomtickspeed'
+	spawnradius = 'spawnradius'
+	reducedf3 = 'reduceddebuginfo'
+	spectchunkgen = 'spectatorsgeneratechunks'
+	cmdfb = 'sendcommandfeedback'
 
 DAT_TYPE_WORLD = 0
 DAT_TYPE_GR = 1
 
-GM_SURVIVAL = 0
-GM_CREATIVE = 1
-GM_ADVENTURE = 2
-GM_SPECTATOR = 3
+class Gamemode(enum.IntEnum):
+	survival = 0
+	creative = 1
+	adventure = 2
+	spectator = 3
 
-DF_PEACEFUL = 0
-DF_EASY = 1
-DF_NORMAL = 2
-DF_HARD = 3
+class Difficulty(enum.IntEnum):
+	peaceful = 0
+	easy = 1
+	normal = 2
+	hard = 3
 
-JAVA_JDK = 'openjdk:{}'
-JAVA_OPENJ9 = 'adoptopenjdk:{}-jre-openj9-bionic'
+JDK = 'openjdk:{}'
+OJ9 = 'adoptopenjdk:{}-jre-openj9-bionic'
 
 FLAG_PROP_TYPE = 1
 
@@ -81,6 +89,7 @@ class AternosConfig:
 
 	@property
 	def timezone(self) -> str:
+
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options',
 			atconnect.REQGET
@@ -93,6 +102,7 @@ class AternosConfig:
 
 	@timezone.setter
 	def timezone(self, value:str) -> None:
+
 		matches_tz = re.search(r'(?:^[A-Z]\w+\/[A-Z]\w+$)|^UTC$', value)
 		if matches_tz == None:
 			raise AttributeError('Timezone must match zoneinfo format: Area/Location')
@@ -105,6 +115,7 @@ class AternosConfig:
 
 	@property
 	def java_version(self) -> str:
+
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options',
 			atconnect.REQGET
@@ -117,9 +128,9 @@ class AternosConfig:
 
 	@java_version.setter
 	def java_version(self, value:str) -> None:
-		matches_jdkver = re.search(r'^(?:adopt)*openjdk:(\d+)(?:-jre-openj9-bionic)*$', value)
+		matches_jdkver = re.search(r'^(?:adopt)?openjdk:(\d+)(?:-jre-openj9-bionic)?$', value)
 		if matches_jdkver == None:
-			raise AttributeError('Java image version must match "[adopt]openjdk:%d[-jre-openj9-bionic]" format')
+			raise AttributeError('Incorrect Java image version format!')
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/image.php',
@@ -149,6 +160,7 @@ class AternosConfig:
 	def set_world_prop(
 		self, option:str, value:Any,
 		proptype:int, world:str='world') -> None:
+
 		prefix = DAT_PREFIX
 		if proptype == DAT_TYPE_GR:
 			prefix = DAT_GR_PREFIX
@@ -162,6 +174,7 @@ class AternosConfig:
 	def get_world_props(
 		self, world:str='world',
 		flags:int=FLAG_PROP_TYPE) -> Dict[str,Any]:
+
 		self.__get_all_props(
 			f'https://aternos.org/files/{world}/level.dat',
 			flags, [DAT_PREFIX, DAT_GR_PREFIX]
