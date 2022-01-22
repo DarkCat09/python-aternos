@@ -11,6 +11,7 @@ from . import aterrors
 from . import atfm
 from . import atconf
 from . import atplayers
+from .atwss import AternosWss
 
 JAVA = 0
 BEDROCK = 1
@@ -26,7 +27,9 @@ class Status(enum.IntEnum):
 	on = 1
 	loading = 2
 	shutdown = 3
+	unknown = 6
 	error = 7
+	confirm = 10
 
 class AternosServer:
 
@@ -58,38 +61,12 @@ class AternosServer:
 		self.atconn.parse_token(servreq.content)
 		self.atconn.generate_sec()
 
-	async def wss(self):
+	async def wss(self) -> AternosWss:
 
-		session = self.atconn.session.cookies['ATERNOS_SESSION']
-		headers = [
-			('User-Agent', atconnect.REQUA),
-			('Cookie',
-				f'ATERNOS_SESSION={session}; ' + \
-				f'ATERNOS_SERVER={self.servid}')
-		]
-
-		async with websockets.connect(
-			'wss://aternos.org/hermes',
-			extra_headers=headers
-		) as websocket:
-			while True:
-				msg = await websocket.recv()
-				r = json.loads(msg)
-
-				if r['type'] == 'line' \
-				and r['stream'] == 'console'\
-				and self.savelog:
-					self.log.append(r['data'])
-
-				if r['type'] == 'heap':
-					self._ram = r['data']['usage']
-
-				if r['type'] == 'tick':
-					aver = 1000 / r['data']['averageTickTime']
-					self._tps = 20 if aver > 20 else aver
-
-				if r['type'] == 'status':
-					self._info = json.loads(r['message'])
+		return AternosWss(
+			self.atconn.session.cookies,
+			self.servid
+		)
 
 	def start(self, headstart:bool=False, accepteula:bool=True) -> None:
 

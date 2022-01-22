@@ -99,3 +99,8 @@ S> {"stream":"tick","type":"tick","data":{"averageTickTime":1.4948028}}
 
    # From legilimens.js:
    # let tps = Math.round(Math.min(1000 / data.averageTickTime, 20) * 10) / 10;
+
+*** players
+S> {"type":"status","message":"{\"brand\":\"aternos\",\"status\":1,\"change\":1642165691,\"slots\":20,\"problems\":0,\"players\":1,\"playerlist\":[\"s1e2m3e4n\"],\"message\":{\"text\":\"\",\"class\":\"blue\"},\"dynip\":\"sawfish.aternos.host:46436\",\"bedrock\":false,\"host\":\"sawfish.aternos.host\",\"port\":46436,\"headstarts\":null,\"ram\":1700,\"lang\":\"online\",\"label\":\"Online\",\"class\":\"online\",\"countdown\":null,\"queue\":null,\"id\":\"NFbPTf7qPsvKkH75\",\"name\":\"dcat09t\",\"software\":\"Vanilla\",\"softwareId\":\"awFonCo1EWJo3Ch8\",\"type\":\"vanilla\",\"version\":\"1.12.2\",\"deprecated\":false,\"ip\":\"dcat09t.aternos.me\",\"displayAddress\":\"dcat09t.aternos.me:46436\",\"motd\":\"     dcat09t!\",\"onlineMode\":false,\"icon\":\"fa-play-circle\",\"dns\":{\"type\":\"SRV\",\"domains\":[\"dcat09t.aternos.me\"],\"host\":\"sawfish.aternos.host\",\"port\":46436,\"ip\":\"185.107.193.120\"},\"maxram\":1700}"}
+
+   # Look at the "players" and "playerlist" fields

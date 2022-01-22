@@ -4,8 +4,16 @@ import base64
 
 brkregex = re.compile(r'\((?!\)|[\'\"])(.+?)(?<!\(|[\'\"])\)')
 
-def parse_brackets(f):
-	return brkregex.search(f)[1]
+def parse_brackets(f, arrow):
+	
+	match = brkregex.finditer(f)
+	if not arrow:
+		return match[0].group(1)
+
+	for r in match:
+		func = r.group(1)
+		if '=>' in func:
+			return func
 
 def to_ecma5_function(f):
 	fnstart = f.find('{')+1

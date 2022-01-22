@@ -28,5 +28,5 @@ setuptools.setup(
 	],
 	install_requires=requires,
 	packages=['python_aternos'],
-	python_requires=">=3.6",
+	python_requires=">=3.7",
 )

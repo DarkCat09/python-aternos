@@ -10,7 +10,18 @@ with open('../token.txt', 'rt') as f:
 	del lines[len(lines)-1] # Remove empty string
 	tests = lines
 
-arrowre = re.compile(r'(\w+?|\(\w+?(?:,\s*\w+?)*\)|\(\))\s*=>\s*({\s*[\s\S]+\s*}|[^\r\n]+?(?:;|$))')
+brkregex = re.compile(r'\((?!\)|[\'\"])(.+?)(?<!\(|[\'\"])\)')
+
+def parse_brackets(f, arrow=True):
+
+	match = brkregex.finditer(f)
+	if not arrow:
+		return match[0].group(1)
+
+	for r in match:
+		func = r.group(1)
+		if '=>' in func:
+			return func
 
 def to_ecma5_function(f):
 	# return "(function() { " + f[f.index("{")+1 : f.index("}")] + "})();"
@@ -23,20 +34,21 @@ def atob(s):
 	return base64.standard_b64decode(str(s)).decode('utf-8')
 
 def arrow_conv(f):
-	m = arrowre.search(f)
-	while m != None:
-		print(f)
-		params = m.group(1).strip('()')
-		body = m.group(2)
-		if body.startswith('{')\
-		and body.endswith('}'):
-			body = body.strip('{}')
-		else:
-			body = f'return {body}'
-		f = arrowre.sub(f'function({params}){{{body}}}', f)
-		m = arrowre.search(f)
-		print(f)
-	#print('function(' + m.group(1).strip("()") + '){return ' + m.group(2) + ';}')
+	if '=>' in f:
+		inner = parse_brackets(f)
+		print(inner)
+		while brkregex.match(inner) != None:
+			print(inner)
+			inner = parse_brackets(inner)
+
+		func = re.sub(
+			r'(\w+)\s*=>\s*(.+)',
+			r'function(\1){return \2}', inner
+		)
+		start = f.find(inner)
+		end = start + len(inner)
+		f = f[:start] + func + f[end:]
+		print('*r:', f)
 	return f
 
 ctx = js2py.EvalJs({'atob': atob})
