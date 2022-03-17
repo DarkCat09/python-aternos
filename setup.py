@@ -22,6 +22,7 @@ setuptools.setup(
 		'Documentation': 'https://github.com/DarkCat09/python-aternos/wiki/Client-(entry-point)',
 	},
 	classifiers=[
+		'Development Status :: 4 - Beta',
 		'Programming Language :: Python :: 3',
 		'License :: OSI Approved :: Apache Software License',
 		'Operating System :: OS Independent'

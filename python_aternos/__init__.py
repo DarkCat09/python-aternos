@@ -1,11 +1,9 @@
 import hashlib
 import lxml.html
-from typing import Optional, Union, List
+from typing import List
 
-from . import atserver
-from . import atconnect
-from . import aterrors
-
+from .atserver import AternosServer
+from .atconnect import AternosConnect
 from .aterrors import AternosCredentialsError
 
 class Client:
@@ -17,7 +15,7 @@ class Client:
 	@classmethod
 	def from_hashed(cls, username:str, md5:str):
 
-		atconn = atconnect.AternosConnect()
+		atconn = AternosConnect()
 		atconn.parse_token()
 		atconn.generate_sec()
 
@@ -50,7 +48,7 @@ class Client:
 	@classmethod
 	def from_session(cls, session:str):
 		
-		atconn = atconnect.AternosConnect()
+		atconn = AternosConnect()
 		atconn.session.cookies.set('ATERNOS_SESSION', session)
 		atconn.parse_token()
 		atconn.generate_sec()
@@ -60,7 +58,7 @@ class Client:
 	@staticmethod
 	def google() -> str:
 
-		atconn = atconnect.AternosConnect()
+		atconn = AternosConnect()
 		auth = atconn.request_cloudflare(
 			'https://aternos.org/auth/google-login',
 			atconnect.REQGET, redirect=False
@@ -79,6 +77,6 @@ class Client:
 		servers = []
 		for server in serverslist:
 			servid = server.xpath('./div[@class="server-body"]/@data-id')[0]
-			servers.append(atserver.AternosServer(servid, self.atconn))
+			servers.append(AternosServer(servid, self.atconn))
 
 		return servers
