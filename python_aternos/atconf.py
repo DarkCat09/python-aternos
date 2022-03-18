@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from . import atconnect
 
 if TYPE_CHECKING:
-	from atserver import AternosServer
+	from .atserver import AternosServer
 
 class ServerOpts(enum.Enum):
 	players = 'max-players'
@@ -28,38 +28,47 @@ class ServerOpts(enum.Enum):
 	pack = 'resource-pack'
 
 DAT_PREFIX = 'Data:'
+DAT_GR_PREFIX = 'Data:GameRules:'
 
 class WorldOpts(enum.Enum):
 	seed = 'randomseed'
 	hardcore = 'hardcore'
 	difficulty = 'difficulty'
 
-DAT_GR_PREFIX = 'Data:GameRules:'
-
 class WorldRules(enum.Enum):
-	advs = 'announceadvancements'
-	cmdout = 'commandblockoutput'
-	elytra = 'disableelytramovementcheck'
-	daynight = 'dodaylightcycle'
-	entdrop = 'doentitydrops'
-	fire = 'dofiretick'
-	limitcraft = 'dolimitedcrafting'
-	mobloot = 'domobloot'
-	mobs = 'domobspawning'
-	blockdrop = 'dotiledrops'
-	weather = 'doweathercycle'
-	keepinv = 'keepinventory'
-	deathmsg = 'showdeathmessages'
-	admincmdlog = 'logadmincommands'
-	cmdlen = 'maxcommandchainlength'
-	entcram = 'maxentitycramming'
-	mobgrief = 'mobgriefing'
-	regen = 'naturalregeneration'
-	rndtick = 'randomtickspeed'
-	spawnradius = 'spawnradius'
-	reducedf3 = 'reduceddebuginfo'
-	spectchunkgen = 'spectatorsgeneratechunks'
-	cmdfb = 'sendcommandfeedback'
+	advs = 'announceAdvancements'
+	univanger = 'universalAnger'
+	cmdout = 'commandBlockOutput'
+	elytra = 'disableElytraMovementCheck'
+	raids = 'disableRaids'
+	daynight = 'doDaylightCycle'
+	entdrop = 'doEntityDrops'
+	fire = 'doFireTick'
+	phantoms = 'doInsomnia'
+	immrespawn = 'doImmediateRespawn'
+	limitcraft = 'doLimitedCrafting'
+	mobloot = 'doMobLoot'
+	mobs = 'doMobSpawning'
+	patrols = 'doPatrolSpawning'
+	blockdrop = 'doTileDrops'
+	traders = 'doTraderSpawning'
+	weather = 'doWeatherCycle'
+	drowndmg = 'drowningDamage'
+	falldmg = 'fallDamage'
+	firedmg = 'fireDamage'
+	forgive = 'forgiveDeadPlayers'
+	keepinv = 'keepInventory'
+	deathmsg = 'showDeathMessages'
+	admincmdlog = 'logAdminCommands'
+	cmdlen = 'maxCommandChainLength'
+	entcram = 'maxEntityCramming'
+	mobgrief = 'mobGriefing'
+	regen = 'naturalRegeneration'
+	rndtick = 'randomTickspeed'
+	spawnradius = 'spawnRadius'
+	reducedf3 = 'reducedDebugInfo'
+	spectchunkgen = 'spectatorsGenerateChunks'
+	cmdfb = 'sendCommandFeedback'
 
 DAT_TYPE_WORLD = 0
 DAT_TYPE_GR = 1
@@ -78,6 +87,11 @@ class Difficulty(enum.IntEnum):
 
 JDK = 'openjdk:{}'
 OJ9 = 'adoptopenjdk:{}-jre-openj9-bionic'
+convert = {
+	'config-option-number': int,
+	'config-option-select': int,
+	'config-option-toggle': bool
+}
 
 FLAG_PROP_TYPE = 1
 
@@ -91,8 +105,7 @@ class AternosConfig:
 	def timezone(self) -> str:
 
 		optreq = self.atserv.atserver_request(
-			'https://aternos.org/options',
-			atconnect.REQGET
+			'https://aternos.org/options', 'GET'
 		)
 		opttree = lxml.html.fromstring(optreq)
 
@@ -109,7 +122,7 @@ class AternosConfig:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/timezone.php',
-			atconnect.REQPOST, data={'timezone': value},
+			'POST', data={'timezone': value},
 			sendtoken=True
 		)
 
@@ -118,7 +131,7 @@ class AternosConfig:
 
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options',
-			atconnect.REQGET
+			'GET'
 		)
 		opttree = lxml.html.fromstring(optreq)
 
@@ -134,7 +147,7 @@ class AternosConfig:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/image.php',
-			atconnect.REQPOST, data={'image': value},
+			'POST', data={'image': value},
 			sendtoken=True
 		)
 
@@ -152,7 +165,7 @@ class AternosConfig:
 
 	def set_server_props(self, props:Dict[str,Any]) -> None:
 		for key in props:
-			set_server_prop(key, props[key])
+			self.set_server_prop(key, props[key])
 
 	#
 	# level.dat
@@ -182,7 +195,7 @@ class AternosConfig:
 
 	def set_world_props(self, props:Dict[str,Any]) -> None:
 		for key in props:
-			set_world_prop(key, prop[key])
+			self.set_world_prop(key, props[key])
 
 	#
 	# helpers
@@ -191,7 +204,7 @@ class AternosConfig:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/config.php',
-			atconnect.REQPOST, data={
+			'POST', data={
 				'file': file,
 				'option': option,
 				'value': value
@@ -203,8 +216,8 @@ class AternosConfig:
 		prefixes:Optional[List[str]]=None) -> Dict[str,Any]:
 
 		optreq = self.atserv.atserver_request(
-			'https://aternos.org/options',
-			atconnect.REQGET
+			url,
+			'GET'
 		)
 		opttree = lxml.html.fromstring(optreq.content)
 

@@ -1,13 +1,13 @@
 class AternosError(Exception):
 	pass
 
-class AternosCredentialsError(AternosError):
+class CredentialsError(AternosError):
 	pass
 
-class AternosServerStartError(AternosError):
+class ServerError(AternosError):
 	pass
 
-class AternosIOError(AternosError):
+class FileError(AternosError):
 	pass
 
 class CloudflareError(AternosError):

@@ -1,7 +1,7 @@
 import regex
 import base64
 import js2py
-from typing import Optional, Union, List, Any
+from typing import Any
 
 # Thanks to http://regex.inginf.units.it/
 arrowexp = regex.compile(r'\w[^\}]*+')

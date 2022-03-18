@@ -6,11 +6,9 @@ from requests import Response
 from cloudscraper import CloudScraper
 from typing import Optional, Union
 
-from . import aterrors
 from . import atjsparse
+from .aterrors import CredentialsError, CloudflareError
 
-REQGET = 0
-REQPOST = 1
 REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
 
 class AternosConnect:
@@ -23,7 +21,7 @@ class AternosConnect:
 
 		if response == None:
 			loginpage = self.request_cloudflare(
-				f'https://aternos.org/go/', REQGET
+				f'https://aternos.org/go/', 'GET'
 			).content
 			pagetree = lxml.html.fromstring(loginpage)
 		else:
@@ -36,13 +34,11 @@ class AternosConnect:
 			js_code = re.findall(r'\(\(\)(.*?)\)\(\);', text)
 			token_func = js_code[1] if len(js_code) > 1 else js_code[0]
 
-			print('*** Function:', token_func)
-
 			ctx = atjsparse.exec(token_func)
 			self.token = ctx.window['AJAX_TOKEN']
 
 		except (IndexError, TypeError):
-			raise aterrors.AternosCredentialsError(
+			raise CredentialsError(
 				'Unable to parse TOKEN from the page'
 			)
 
@@ -92,7 +88,7 @@ class AternosConnect:
 		return result
 
 	def request_cloudflare(
-		self, url:str, method:int, retries:int=10,
+		self, url:str, method:str, retries:int=10,
 		params:Optional[dict]=None, data:Optional[dict]=None,
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
 		sendtoken:bool=False, redirect:bool=True) -> Response:
@@ -127,7 +123,7 @@ class AternosConnect:
 
 			time.sleep(1)
 
-			if method == REQPOST:
+			if method == 'POST':
 				req = self.session.post(
 					url, data=data, params=params,
 					headers=headers, cookies=reqcookies,
@@ -143,7 +139,7 @@ class AternosConnect:
 			if not cftitle in req.text:
 				break
 			if not countdown > 0:
-				raise aterrors.CloudflareError(
+				raise CloudflareError(
 					'The retries limit has been reached'
 				)
 			countdown -= 1

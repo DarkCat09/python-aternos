@@ -1,20 +1,22 @@
+import enum
 import lxml.html
 from typing import Union
 from typing import TYPE_CHECKING
 
-from . import atconnect
+from .aterrors import FileError
 
 if TYPE_CHECKING:
-	from atserver import AternosServer
+	from .atserver import AternosServer
 
-FTYPE_FILE = 0
-FTYPE_DIR = 1
+class FileType(enum.IntEnum):
+	file = 0
+	directory = 1
 
 class AternosFile:
 
 	def __init__(
 		self, atserv:'AternosServer',
-		path:str, name:str, ftype:int=FTYPE_FILE,
+		path:str, name:str, ftype:int=FileType.file,
 		size:Union[int,float]=0, dlallowed:bool=False) -> None:
 
 		self.atserv = atserv
@@ -28,33 +30,33 @@ class AternosFile:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/delete.php',
-			atconnect.REQPOST, data={'file': self._name},
+			'POST', data={'file': self._name},
 			sendtoken=True
 		)
 
-	@property
-	def content(self) -> bytes:
+	def get_content(self) -> bytes:
 		file = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/files/download.php',
-			atconnect.REQGET, params={'file': self.path.replace('/','%2F')}
+			'GET', params={
+				'file': self._path
+			}
 		)
 		if not self._dlallowed:
-			raise AternosIOError('Downloading this file is not allowed. Try to get text')
+			raise FileError('Downloading this file is not allowed. Try to get text')
 		return file.content
 
-	@content.setter
-	def content(self, value:bytes) -> None:
+	def set_content(self, value:bytes) -> None:
 		self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/save.php',
-			atconnect.REQPOST, data={'content': value},
-			sendtoken=True
+			'POST', data={
+				'file': self._path,
+				'content': value
+			}, sendtoken=True
 		)
 
-	@property
-	def text(self) -> str:
+	def get_text(self) -> str:
 		editor = self.atserv.atserver_request(
-			f'https://aternos.org/files/{self._name}',
-			atconnect.REQGET
+			f'https://aternos.org/files/{self._name}', 'GET'
 		)
 		edittree = lxml.html.fromstring(editor.content)
 
@@ -66,13 +68,8 @@ class AternosFile:
 			rawlines.append(line.text)
 		return rawlines
 
-	@text.setter
-	def text(self, value:str) -> None:
-		self.atserv.atserver_request(
-			f'https://aternos.org/panel/ajax/save.php',
-			atconnect.REQPOST, data={'content': value},
-			sendtoken=True
-		)
+	def set_text(self, value:str) -> None:
+		self.set_content(value.encode('utf-8'))
 
 	@property
 	def path(self):
@@ -84,13 +81,13 @@ class AternosFile:
 
 	@property
 	def is_dir(self) -> bool:
-		if self._ftype == FTYPE_DIR:
+		if self._ftype == FileType.directory:
 			return True
 		return False
 
 	@property
 	def is_file(self) -> bool:
-		if self._ftype == FTYPE_FILE:
+		if self._ftype == FileType.file:
 			return True
 		return False
 	

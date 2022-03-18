@@ -2,25 +2,22 @@ import enum
 import re
 import json
 import lxml.html
-import websockets
 from requests import Response
-from typing import Optional, Dict
+from typing import Optional
 
-from . import atconnect
-from . import aterrors
-from . import atfm
-from . import atconf
-from . import atplayers
+from .atconnect import AternosConnect
+from .aterrors import ServerError
+from .atfm import FileManager
+from .atconf import AternosConfig
+from .atplayers import PlayersList
 from .atwss import AternosWss
 
 JAVA = 0
 BEDROCK = 1
 
-class Lists(enum.Enum):
-	whl = 'whitelist'
-	ops = 'ops'
-	ban = 'banned-players'
-	ips = 'banned-ips'
+class Edition(enum.IntEnum):
+	java = 0
+	bedrock = 1
 
 class Status(enum.IntEnum):
 	off = 0
@@ -35,7 +32,7 @@ class AternosServer:
 
 	def __init__(
 		self, servid:str,
-		atconn:atconnect.AternosConnect,
+		atconn:AternosConnect,
 		savelog:bool=True) -> None:
 
 		self.servid = servid
@@ -44,8 +41,7 @@ class AternosServer:
 		self.log = []
 
 		servreq = self.atserver_request(
-			'https://aternos.org/server',
-			atconnect.REQGET
+			'https://aternos.org/server', 'GET'
 		)
 		servtree = lxml.html.fromstring(servreq.content)
 
@@ -72,7 +68,7 @@ class AternosServer:
 
 		startreq = self.atserver_request(
 			'https://aternos.org/panel/ajax/start.php',
-			atconnect.REQGET, params={'headstart': int(headstart)},
+			'GET', params={'headstart': int(headstart)},
 			sendtoken=True
 		)
 		startresult = startreq.json()
@@ -86,33 +82,33 @@ class AternosServer:
 			self.start(accepteula=False)
 
 		elif error == 'eula':
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				'EULA was not accepted. Use start(accepteula=True)'
 			)
 
 		elif error == 'already':
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				'Server is already running'
 			)
 
 		elif error == 'wrongversion':
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				'Incorrect software version installed'
 			)
 
 		elif error == 'file':
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				'File server is unavailbale, view status.aternos.gmbh'
 			)
 
 		elif error == 'size':
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				f'Available storage size is 4GB, ' + \
 				f'your server used: {startresult["size"]}'
 			)
 
 		else:
-			raise aterrors.AternosServerStartError(
+			raise ServerError(
 				f'Unable to start server, code: {error}'
 			)
 
@@ -120,56 +116,48 @@ class AternosServer:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/confirm.php',
-			atconnect.REQGET, sendtoken=True
+			'GET', sendtoken=True
 		)
 
 	def stop(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/stop.php',
-			atconnect.REQGET, sendtoken=True
+			'GET', sendtoken=True
 		)
 
 	def cancel(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/cancel.php',
-			atconnect.REQGET, sendtoken=True
+			'GET', sendtoken=True
 		)
 
 	def restart(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/restart.php',
-			atconnect.REQGET, sendtoken=True
+			'GET', sendtoken=True
 		)
 
 	def eula(self) -> None:
 
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/eula.php',
-			atconnect.REQGET, sendtoken=True
+			'GET', sendtoken=True
 		)
 
-	def files(self) -> atfm.AternosFileManager:
+	def files(self) -> FileManager:
 
-		return atfm.AternosFileManager(self)
+		return FileManager(self)
 
-	def config(self) -> atconf.AternosConfig:
+	def config(self) -> AternosConfig:
 
-		return atconf.AternosConfig(self)
+		return AternosConfig(self)
 
-	def players(self, lst:str) -> atplayers.AternosPlayersList:
+	def get_players(self, lst:str) -> PlayersList:
 
-		correct = False
-		for lsttype in Lists:
-			if lsttype.value == lst:
-				correct = True
-
-		if not correct:
-			raise AttributeError('Incorrect players list type! Use Lists enum')
-
-		return atplayers.AternosPlayersList(lst, self)
+		return PlayersList(lst, self)
 
 	def atserver_request(
 		self, url:str, method:int,
@@ -197,7 +185,7 @@ class AternosServer:
 	def subdomain(self, value:str) -> None:
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/options/subdomain.php',
-			atconnect.REQGET, params={'subdomain': value},
+			'GET', params={'subdomain': value},
 			sendtoken=True
 		)
 
@@ -209,7 +197,7 @@ class AternosServer:
 	def motd(self, value:str) -> None:
 		self.atserver_request(
 			'https://aternos.org/panel/ajax/options/motd.php',
-			atconnect.REQPOST, data={'motd': value},
+			'POST', data={'motd': value},
 			sendtoken=True
 		)
 

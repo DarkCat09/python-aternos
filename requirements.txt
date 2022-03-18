@@ -1,5 +1,6 @@
-lxml==4.8.0
-requests==2.25.1
-cloudscraper==1.2.58
-js2py==0.71
-websockets==10.1
+lxml>=4.8.0
+requests>=2.25.1
+cloudscraper>=1.2.58
+js2py>=0.71
+websockets>=10.1
+regex>=2022.3.15

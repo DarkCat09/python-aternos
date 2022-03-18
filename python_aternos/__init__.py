@@ -4,7 +4,9 @@ from typing import List
 
 from .atserver import AternosServer
 from .atconnect import AternosConnect
-from .aterrors import AternosCredentialsError
+from .aterrors import CredentialsError
+
+__all__ = ['Client', 'atconf', 'atconnect', 'aterrors', 'atfile', 'atfm', 'atjsparse', 'atplayers', 'atserver', 'atwss']
 
 class Client:
 
@@ -31,7 +33,7 @@ class Client:
 		)
 
 		if loginreq.cookies.get('ATERNOS_SESSION', None) == None:
-			raise AternosCredentialsError(
+			raise CredentialsError(
 				'Check your username and password'
 			)
 
@@ -65,8 +67,7 @@ class Client:
 		)
 		return auth.headers['Location']
 
-	@property
-	def servers(self) -> List[atserver.AternosServer]:
+	def list_servers(self) -> List[atserver.AternosServer]:
 		serverspage = self.atconn.request_cloudflare(
 			'https://aternos.org/servers/',
 			atconnect.REQGET

@@ -1,28 +1,26 @@
 import lxml.html
-from typing import Optional, Union, List
+from typing import Union, List
 from typing import TYPE_CHECKING
 
-from . import atconnect
-from . import atfile
-
+from .atfile import AternosFile, FileType
 if TYPE_CHECKING:
-	from atserver import AternosServer
+	from .atserver import AternosServer
 
-class AternosFileManager:
+class FileManager:
 
 	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 
-	def listdir(self, path:str='') -> List[atfile.AternosFile]:
+	def listdir(self, path:str='') -> List[AternosFile]:
 
 		filesreq = self.atserv.atserver_request(
-			f'https://aternos.org/files/{path}',
-			atconnect.REQGET
+			f'https://aternos.org/files/{path}', 'GET'
 		)
 		filestree = lxml.html.fromstring(filesreq.content)
 		fileslist = filestree.xpath(
-			'//div[@class="files"]/div[@class="directory dropzone"]' + \
+			'//div[@class="files"]' + \
+			'/div[@class="directory dropzone"]' + \
 			'/div[@class="file clickable"]'
 		)
 
@@ -30,9 +28,9 @@ class AternosFileManager:
 		for f in fileslist:
 
 			ftype_raw = f.xpath('/@data-type')
-			ftype = atfile.FTYPE_FILE \
+			ftype = FileType.file \
 				if ftype_raw == 'file' \
-				else atfile.FTYPE_DIR
+				else FileType.directory
 
 			fsize_raw = f.xpath('/div[@class="filesize"]')
 			fsize = 0
@@ -43,11 +41,11 @@ class AternosFileManager:
 				fsize_msr = fsize_text[fsize_text.rfind(' ')+1:]
 
 				try:
-					fsize = convert_size(float(fsize_num), fsize_msr)
+					fsize = self.convert_size(float(fsize_num), fsize_msr)
 				except ValueError:
 					fsize = -1
 
-			dlbutton = f.xpath('/div[@class="js-download-file btn btn-main btn-small btn-notext btn-no-margin"]')
+			dlbutton = f.xpath('/div[contains(@class,"js-download-file ")]')
 			dlallowed = False
 			if len(dlbutton) > 0:
 				dlallowed = True
@@ -56,7 +54,7 @@ class AternosFileManager:
 			filepath = fullpath[:fullpath.rfind('/')]
 			filename = fullpath[fullpath.rfind('/'):]
 			files.append(
-				atfile.AternosFile(
+				AternosFile(
 					self.atserv,
 					filepath, filename,
 					ftype, fsize, dlallowed
@@ -79,12 +77,12 @@ class AternosFileManager:
 			result = -1
 		return result
 
-	def get_file(self, path:str) -> Union[atfile.AternosFile,None]:
+	def get_file(self, path:str) -> Union[AternosFile,None]:
 
 		filepath = path[:path.rfind('/')]
 		filename = path[path.rfind('/'):]
 
-		filedir = listdir(filepath)
+		filedir = self.listdir(filepath)
 		for file in filedir:
 			if file.name == filename:
 				return file
@@ -96,7 +94,7 @@ class AternosFileManager:
 		file = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/files/download.php?' + \
 			f'file={path.replace("/","%2F")}',
-			atconnect.REQGET
+			'GET'
 		)
 
 		return file.content
@@ -106,7 +104,7 @@ class AternosFileManager:
 		world = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/worlds/download.php?' + \
 			f'world={world.replace("/","%2F")}',
-			atconnect.REQGET
+			'GET'
 		)
 
 		return world.content
