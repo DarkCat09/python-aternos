@@ -1,7 +1,5 @@
 import enum
-import re
 import json
-import lxml.html
 from requests import Response
 from typing import Optional
 
@@ -11,9 +9,6 @@ from .atfm import FileManager
 from .atconf import AternosConfig
 from .atplayers import PlayersList
 from .atwss import AternosWss
-
-JAVA = 0
-BEDROCK = 1
 
 class Edition(enum.IntEnum):
 	java = 0
@@ -32,37 +27,22 @@ class AternosServer:
 
 	def __init__(
 		self, servid:str,
-		atconn:AternosConnect,
-		savelog:bool=True) -> None:
+		atconn:AternosConnect) -> None:
 
 		self.servid = servid
 		self.atconn = atconn
-		self.savelog = savelog
-		self.log = []
+	
+	def fetch(self) -> None:
 
 		servreq = self.atserver_request(
-			'https://aternos.org/server', 'GET'
+			'https://aternos.org/panel/ajax/status.php',
+			'GET', sendtoken=True
 		)
-		servtree = lxml.html.fromstring(servreq.content)
+		self._info = json.loads(servreq.content)
 
-		self._info = json.loads(
-			re.search(
-				r'var\s*lastStatus\s*=\s*({.*})',
-				servtree.head.text_content()
-			)[1]
-		)
-		self._ram = 0
-		self._tps = 0
+	def wss(self, autoconfirm:bool=False) -> AternosWss:
 
-		self.atconn.parse_token(servreq.content)
-		self.atconn.generate_sec()
-
-	async def wss(self) -> AternosWss:
-
-		return AternosWss(
-			self.atconn.session.cookies,
-			self.servid
-		)
+		return AternosWss(self, autoconfirm)
 
 	def start(self, headstart:bool=False, accepteula:bool=True) -> None:
 
@@ -98,7 +78,7 @@ class AternosServer:
 
 		elif error == 'file':
 			raise ServerError(
-				'File server is unavailbale, view status.aternos.gmbh'
+				'File server is unavailbale, view https://status.aternos.gmbh'
 			)
 
 		elif error == 'size':
@@ -155,7 +135,7 @@ class AternosServer:
 
 		return AternosConfig(self)
 
-	def get_players(self, lst:str) -> PlayersList:
+	def players(self, lst:str) -> PlayersList:
 
 		return PlayersList(lst, self)
 
@@ -225,11 +205,15 @@ class AternosServer:
 	@property
 	def version(self) -> str:
 		return self._info['version']
+	
+	@property
+	def status(self) -> str:
+		return self._info['class']
 
 	@property
-	def status(self) -> int:
+	def status_num(self) -> int:
 		return int(self._info['status'])
 
 	@property
 	def ram(self) -> int:
-		return self._ram
+		return int(self._info['ram'])

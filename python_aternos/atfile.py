@@ -17,51 +17,53 @@ class AternosFile:
 	def __init__(
 		self, atserv:'AternosServer',
 		path:str, name:str, ftype:int=FileType.file,
-		size:Union[int,float]=0, dlallowed:bool=False) -> None:
+		size:Union[int,float]=0) -> None:
 
 		self.atserv = atserv
 		self._path = path
 		self._name = name
+		self._full = path + name
 		self._ftype = ftype
 		self._size = float(size)
-		self._dlallowed = dlallowed
 
 	def delete(self) -> None:
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/delete.php',
-			'POST', data={'file': self._name},
+			'POST', data={'file': self._full},
 			sendtoken=True
 		)
 
 	def get_content(self) -> bytes:
+
 		file = self.atserv.atserver_request(
-			f'https://aternos.org/panel/ajax/files/download.php',
+			'https://aternos.org/panel/ajax/files/download.php',
 			'GET', params={
-				'file': self._path
+				'file': self._full
 			}
 		)
-		if not self._dlallowed:
-			raise FileError('Downloading this file is not allowed. Try to get text')
+		if file.content == b'{"success":false}':
+			raise FileError('Unable to download the file. Try to get text')
 		return file.content
 
 	def set_content(self, value:bytes) -> None:
+
 		self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/save.php',
 			'POST', data={
-				'file': self._path,
+				'file': self._full,
 				'content': value
 			}, sendtoken=True
 		)
 
 	def get_text(self) -> str:
+
 		editor = self.atserv.atserver_request(
 			f'https://aternos.org/files/{self._name}', 'GET'
 		)
 		edittree = lxml.html.fromstring(editor.content)
 
-		editfield = edittree.xpath('//div[@class="ace_layer ace_text-layer"]')[0]
-		editlines = editfield.xpath('/div[@class="ace_line"]')
+		editlines = edittree.xpath('//div[@class="ace_line"]')
 		rawlines = []
 
 		for line in editlines:
@@ -69,6 +71,7 @@ class AternosFile:
 		return rawlines
 
 	def set_text(self, value:str) -> None:
+		
 		self.set_content(value.encode('utf-8'))
 
 	@property
@@ -78,6 +81,10 @@ class AternosFile:
 	@property
 	def name(self) -> str:
 		return self._name
+	
+	@property
+	def full(self) -> str:
+		return self._full
 
 	@property
 	def is_dir(self) -> bool:
@@ -94,7 +101,3 @@ class AternosFile:
 	@property
 	def size(self) -> float:
 		return self._size
-
-	@property
-	def dlallowed(self) -> bool:
-		return self._dlallowed

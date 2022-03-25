@@ -7,7 +7,7 @@ from cloudscraper import CloudScraper
 from typing import Optional, Union
 
 from . import atjsparse
-from .aterrors import CredentialsError, CloudflareError
+from .aterrors import CredentialsError
 
 REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
 
@@ -15,17 +15,14 @@ class AternosConnect:
 
 	def __init__(self) -> None:
 
-		pass
+		self.session = CloudScraper()
 
-	def parse_token(self, response:Optional[Union[str,bytes]]=None) -> str:
+	def parse_token(self) -> str:
 
-		if response == None:
-			loginpage = self.request_cloudflare(
-				f'https://aternos.org/go/', 'GET'
-			).content
-			pagetree = lxml.html.fromstring(loginpage)
-		else:
-			pagetree = lxml.html.fromstring(response)
+		loginpage = self.request_cloudflare(
+			f'https://aternos.org/go/', 'GET'
+		).content
+		pagetree = lxml.html.fromstring(loginpage)
 
 		try:
 			pagehead = pagetree.head
@@ -58,9 +55,10 @@ class AternosConnect:
 
 	def generate_aternos_rand(self, randlen:int=16) -> str:
 
-		rand_arr = []
-		for i in range(randlen+1):
-			rand_arr.append('')
+		# a list with randlen+1 empty strings:
+		# generate a string with spaces,
+		# then split it by space
+		rand_arr = (' ' * (randlen+1)).split(' ')
 
 		rand = random.random()
 		rand_alphanum = self.convert_num(rand, 36) + ('0' * 17)
@@ -88,60 +86,36 @@ class AternosConnect:
 		return result
 
 	def request_cloudflare(
-		self, url:str, method:str, retries:int=10,
+		self, url:str, method:str,
 		params:Optional[dict]=None, data:Optional[dict]=None,
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
 		sendtoken:bool=False, redirect:bool=True) -> Response:
 
-		cftitle = '<title>Please Wait... | Cloudflare</title>'
-
-		if params == None:
-			params = {}
-
-		if headers == None:
-			headers = {}
+		params = params if params else {}
+		data = data if data else {}
+		headers = headers if headers else {}
+		reqcookies = reqcookies if reqcookies else {}
 		headers['User-Agent'] = REQUA
 
 		if sendtoken:
-			url += f'?TOKEN={self.token}&SEC={self.sec}'
+			params['TOKEN'] = self.token
+			params['SEC'] = self.sec
 
-		try:
-			cookies = self.session.cookies
-		except AttributeError:
-			cookies = None
-
-		countdown = retries
-		while True:
-
-			self.session = CloudScraper()
-			if cookies != None:
-				self.session.cookies = cookies
-
-			if reqcookies != None:
-				for cookiekey in reqcookies:
-					self.session.cookies.set(cookiekey, reqcookies[cookiekey])
-
-			time.sleep(1)
-
-			if method == 'POST':
-				req = self.session.post(
-					url, data=data, params=params,
-					headers=headers, cookies=reqcookies,
-					allow_redirects=redirect
-				)
-			else:
-				req = self.session.get(
-					url, params=params,
-					headers=headers, cookies=reqcookies,
-					allow_redirects=redirect
-				)
-
-			if not cftitle in req.text:
-				break
-			if not countdown > 0:
-				raise CloudflareError(
-					'The retries limit has been reached'
-				)
-			countdown -= 1
+		# requests.cookies.CookieConflictError bugfix
+		reqcookies['ATERNOS_SESSION'] = self.session.cookies['ATERNOS_SESSION']
+		del self.session.cookies['ATERNOS_SESSION']
+		
+		if method == 'POST':
+			req = self.session.post(
+				url, data=data, params=params,
+				headers=headers, cookies=reqcookies,
+				allow_redirects=redirect
+			)
+		else:
+			req = self.session.get(
+				url, params={**params, **data},
+				headers=headers, cookies=reqcookies,
+				allow_redirects=redirect
+			)
 
 		return req

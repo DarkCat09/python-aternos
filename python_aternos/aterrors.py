@@ -9,6 +9,3 @@ class ServerError(AternosError):
 
 class FileError(AternosError):
 	pass
-
-class CloudflareError(AternosError):
-	pass

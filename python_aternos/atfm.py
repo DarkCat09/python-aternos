@@ -18,21 +18,18 @@ class FileManager:
 			f'https://aternos.org/files/{path}', 'GET'
 		)
 		filestree = lxml.html.fromstring(filesreq.content)
-		fileslist = filestree.xpath(
-			'//div[@class="files"]' + \
-			'/div[@class="directory dropzone"]' + \
-			'/div[@class="file clickable"]'
-		)
+		fileslist = filestree.xpath('//div[@class="file clickable"]')
 
 		files = []
 		for f in fileslist:
 
-			ftype_raw = f.xpath('/@data-type')
+			ftype_raw = f.xpath('@data-type')[0]
 			ftype = FileType.file \
 				if ftype_raw == 'file' \
 				else FileType.directory
 
-			fsize_raw = f.xpath('/div[@class="filesize"]')
+			fsize_raw = f.xpath('./div[@class="filesize"]')
+			print(fsize_raw)
 			fsize = 0
 			if len(fsize_raw) > 0:
 
@@ -45,19 +42,14 @@ class FileManager:
 				except ValueError:
 					fsize = -1
 
-			dlbutton = f.xpath('/div[contains(@class,"js-download-file ")]')
-			dlallowed = False
-			if len(dlbutton) > 0:
-				dlallowed = True
-
-			fullpath = f.xpath('/@data-path')
+			fullpath = f.xpath('@data-path')[0]
 			filepath = fullpath[:fullpath.rfind('/')]
 			filename = fullpath[fullpath.rfind('/'):]
 			files.append(
 				AternosFile(
 					self.atserv,
 					filepath, filename,
-					ftype, fsize, dlallowed
+					ftype, fsize
 				)
 			)
 

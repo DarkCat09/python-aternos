@@ -28,7 +28,7 @@ class Client:
 
 		loginreq = atconn.request_cloudflare(
 			f'https://aternos.org/panel/ajax/account/login.php',
-			atconnect.REQPOST, data=credentials,
+			'POST', data=credentials,
 			sendtoken=True
 		)
 
@@ -51,7 +51,7 @@ class Client:
 	def from_session(cls, session:str):
 		
 		atconn = AternosConnect()
-		atconn.session.cookies.set('ATERNOS_SESSION', session)
+		atconn.session.cookies['ATERNOS_SESSION'] = session
 		atconn.parse_token()
 		atconn.generate_sec()
 
@@ -63,14 +63,13 @@ class Client:
 		atconn = AternosConnect()
 		auth = atconn.request_cloudflare(
 			'https://aternos.org/auth/google-login',
-			atconnect.REQGET, redirect=False
+			'GET', redirect=False
 		)
 		return auth.headers['Location']
 
 	def list_servers(self) -> List[atserver.AternosServer]:
 		serverspage = self.atconn.request_cloudflare(
-			'https://aternos.org/servers/',
-			atconnect.REQGET
+			'https://aternos.org/servers/', 'GET'
 		)
 		serverstree = lxml.html.fromstring(serverspage.content)
 		serverslist = serverstree.xpath('//div[contains(@class,"servers ")]/div')

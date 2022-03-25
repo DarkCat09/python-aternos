@@ -4,11 +4,11 @@ import lxml.html
 from typing import Any, Dict, List, Optional
 from typing import TYPE_CHECKING
 
-from . import atconnect
-
 if TYPE_CHECKING:
 	from .atserver import AternosServer
 
+#
+# server.options
 class ServerOpts(enum.Enum):
 	players = 'max-players'
 	gm = 'gamemode'
@@ -25,16 +25,20 @@ class ServerOpts(enum.Enum):
 	forcegm = 'force-gamemode'
 	spawnlock = 'spawn-protection'
 	cmds = 'allow-cheats'
+	packreq = 'require-resource-pack'
 	pack = 'resource-pack'
 
 DAT_PREFIX = 'Data:'
 DAT_GR_PREFIX = 'Data:GameRules:'
 
+# level.dat
 class WorldOpts(enum.Enum):
-	seed = 'randomseed'
+	seed12 = 'randomseed'
+	seed = 'seed'
 	hardcore = 'hardcore'
-	difficulty = 'difficulty'
+	difficulty = 'Difficulty'
 
+# /gamerule
 class WorldRules(enum.Enum):
 	advs = 'announceAdvancements'
 	univanger = 'universalAnger'
@@ -56,6 +60,7 @@ class WorldRules(enum.Enum):
 	drowndmg = 'drowningDamage'
 	falldmg = 'fallDamage'
 	firedmg = 'fireDamage'
+	snowdmg = 'freezeDamage'
 	forgive = 'forgiveDeadPlayers'
 	keepinv = 'keepInventory'
 	deathmsg = 'showDeathMessages'
@@ -64,7 +69,8 @@ class WorldRules(enum.Enum):
 	entcram = 'maxEntityCramming'
 	mobgrief = 'mobGriefing'
 	regen = 'naturalRegeneration'
-	rndtick = 'randomTickspeed'
+	sleeppct = 'playersSleepingPercentage'
+	rndtick = 'randomTickSpeed'
 	spawnradius = 'spawnRadius'
 	reducedf3 = 'reducedDebugInfo'
 	spectchunkgen = 'spectatorsGenerateChunks'
@@ -85,24 +91,43 @@ class Difficulty(enum.IntEnum):
 	normal = 2
 	hard = 3
 
-JDK = 'openjdk:{}'
-OJ9 = 'adoptopenjdk:{}-jre-openj9-bionic'
+#
+# jre types for set_java
+javatype = {
+	'jdk': 'openjdk:{ver}',
+	'openj9-1': 'adoptopenjdk:{ver}-jre-openj9-bionic',
+	'openj9-2': 'ibm-semeru-runtimes:open-{ver}-jre'
+}
+# checking java version format
+javacheck = re.compile(
+	''.join(
+		list(
+			map(
+				# create a regexp for each jre type,
+				# e.g.: (^openjdk:\d+$)|
+				lambda i: '(^' + javatype[i].format(ver=r'\d+') + '$)|',
+				javatype
+			)
+		)
+	).rstrip('|')
+)
+# checking timezone format
+tzcheck = re.compile(r'(^[A-Z]\w+\/[A-Z]\w+$)|^UTC$')
+# options types converting
 convert = {
 	'config-option-number': int,
 	'config-option-select': int,
 	'config-option-toggle': bool
 }
 
-FLAG_PROP_TYPE = 1
-
+# MAIN CLASS
 class AternosConfig:
 
 	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 
-	@property
-	def timezone(self) -> str:
+	def get_timezone(self) -> str:
 
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options', 'GET'
@@ -113,12 +138,11 @@ class AternosConfig:
 		tztext = tzopt.xpath('.//div[@class="option current"]')[0].text
 		return tztext.strip()
 
-	@timezone.setter
-	def timezone(self, value:str) -> None:
+	def set_timezone(self, value:str) -> None:
 
-		matches_tz = re.search(r'(?:^[A-Z]\w+\/[A-Z]\w+$)|^UTC$', value)
-		if matches_tz == None:
-			raise AttributeError('Timezone must match zoneinfo format: Area/Location')
+		matches_tz = tzcheck.search(value)
+		if not matches_tz:
+			raise ValueError('Timezone must match zoneinfo format: Area/Location')
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/timezone.php',
@@ -126,24 +150,21 @@ class AternosConfig:
 			sendtoken=True
 		)
 
-	@property
-	def java_version(self) -> str:
+	def get_java(self) -> str:
 
 		optreq = self.atserv.atserver_request(
-			'https://aternos.org/options',
-			'GET'
+			'https://aternos.org/options', 'GET'
 		)
 		opttree = lxml.html.fromstring(optreq)
-
 		imgopt = opttree.xpath('//div[@class="options-other-input image-switch"]')[0]
 		imgver = imgopt.xpath('.//div[@class="option current"]/@data-value')[0]
 		return imgver
 
-	@java_version.setter
-	def java_version(self, value:str) -> None:
-		matches_jdkver = re.search(r'^(?:adopt)?openjdk:(\d+)(?:-jre-openj9-bionic)?$', value)
-		if matches_jdkver == None:
-			raise AttributeError('Incorrect Java image version format!')
+	def set_java(self, value:str) -> None:
+
+		matches_jdkver = javacheck.search(value)
+		if not matches_jdkver:
+			raise ValueError('Incorrect Java image version format!')
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/image.php',
@@ -160,8 +181,8 @@ class AternosConfig:
 			option, value
 		)
 
-	def get_server_props(self, flags:int=FLAG_PROP_TYPE) -> Dict[str,Any]:
-		return self.__get_all_props('https://aternos.org/options', flags)
+	def get_server_props(self, proptyping:bool=True) -> Dict[str,Any]:
+		return self.__get_all_props('https://aternos.org/options', proptyping)
 
 	def set_server_props(self, props:Dict[str,Any]) -> None:
 		for key in props:
@@ -186,11 +207,11 @@ class AternosConfig:
 
 	def get_world_props(
 		self, world:str='world',
-		flags:int=FLAG_PROP_TYPE) -> Dict[str,Any]:
+		proptyping:bool=True) -> Dict[str,Any]:
 
 		self.__get_all_props(
 			f'https://aternos.org/files/{world}/level.dat',
-			flags, [DAT_PREFIX, DAT_GR_PREFIX]
+			proptyping, [DAT_PREFIX, DAT_GR_PREFIX]
 		)
 
 	def set_world_props(self, props:Dict[str,Any]) -> None:
@@ -212,37 +233,28 @@ class AternosConfig:
 		)
 
 	def __get_all_props(
-		self, url:str, flags:int=FLAG_PROP_TYPE,
+		self, url:str, proptyping:bool=True,
 		prefixes:Optional[List[str]]=None) -> Dict[str,Any]:
 
-		optreq = self.atserv.atserver_request(
-			url,
-			'GET'
-		)
+		optreq = self.atserv.atserver_request(url, 'GET')
 		opttree = lxml.html.fromstring(optreq.content)
-
 		configs = opttree.xpath('//div[@class="config-options"]')
-		for i in range(len(configs)):
 
-			conf = configs[i]
+		for i, conf in enumerate(configs):
 			opts = conf.xpath('/div[contains(@class,"config-option ")]')
 			result = {}
 
 			for opt in opts:
-
 				key = opt.xpath('.//span[@class="config-option-output-key"]')[0].text
 				value = opt.xpath('.//span[@class="config-option-output-value"]')[0].text
+
 				if prefixes != None:
 					key = f'{prefixes[i]}{key}'
 
 				opttype = opt.xpath('/@class').split(' ')[1]
-				if flags == FLAG_PROP_TYPE:
+				if proptyping and opttype in convert:
+					value = convert[opttype](value)
 
-					if opttype == 'config-option-number'\
-					or opttype == 'config-option-select':
-						value = int(value)
-
-					elif opttype == 'config-option-toggle':
-						value = bool(value)
 				result[key] = value
+
 		return result

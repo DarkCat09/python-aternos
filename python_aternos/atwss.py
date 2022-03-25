@@ -3,8 +3,11 @@ import json
 import asyncio
 import websockets
 from typing import Union, Any, Dict, Callable, Coroutine
+from typing import TYPE_CHECKING
 
 from .atconnect import REQUA
+if TYPE_CHECKING:
+	from .atserver import AternosServer
 
 class Streams(enum.IntEnum):
 	status = 0
@@ -15,11 +18,19 @@ class Streams(enum.IntEnum):
 
 class AternosWss:
 
-	def __init__(self, session:str, servid:str) -> None:
+	def __init__(self, atserv:'AternosServer', autoconfirm:bool=False) -> None:
 		
-		self.session = session
-		self.servid = servid
+		self.atserv = atserv
+		self.cookies = atserv.atconn.session.cookies
+		self.session = self.cookies['ATERNOS_SESSION']
+		self.servid = self.cookies['ATERNOS_SERVER']
 		self.recv = {}
+		self.autoconfirm = autoconfirm
+		self.confirmed = False
+	
+	async def confirm(self) -> None:
+
+		self.atserv.confirm()
 
 	def wssreceiver(self, stream:int) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
 		def decorator(func:Callable[[Any],Coroutine[Any,Any,None]]) -> None:
@@ -29,18 +40,21 @@ class AternosWss:
 	async def connect(self) -> None:
 		
 		headers = [
+			('Host', 'aternos.org'),
 			('User-Agent', REQUA),
 			(
 				'Cookie',
-				f'ATERNOS_SESSION={self.session}; ' +\
+				f'ATERNOS_SESSION={self.session}; ' + \
 				f'ATERNOS_SERVER={self.servid}'
 			)
 		]
 		self.socket = await websockets.connect(
-			'wss://aternos.org/hermes',
+			'wss://aternos.org/hermes/',
+			origin='https://aternos.org',
 			extra_headers=headers
 		)
-		asyncio.run(wssworker())
+		
+		await self.wssworker()
 
 	async def close(self) -> None:
 		
@@ -56,8 +70,8 @@ class AternosWss:
 
 	async def wssworker(self) -> None:
 
-		keep = asyncio.create_task(keepalive())
-		msgs = asyncio.create_task(receiver())
+		keep = asyncio.create_task(self.keepalive())
+		msgs = asyncio.create_task(self.receiver())
 		await keep
 		await msgs
 
@@ -89,6 +103,16 @@ class AternosWss:
 			elif obj['type'] == 'status':
 				msgtype = Streams.status
 				msg = json.loads(obj['message'])
+
+				if not self.autoconfirm:
+					continue
+				if msg['class'] == 'queueing' \
+				and msg['queue']['pending'] == 'pending'\
+				and not self.confirmed:
+					t = asyncio.create_task(
+						self.confirm()
+					)
+					await t
 
 			if msgtype in self.recv:
 				t = asyncio.create_task(
