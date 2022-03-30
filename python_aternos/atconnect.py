@@ -1,6 +1,6 @@
 import re
-import time
 import random
+import logging
 import lxml.html
 from requests import Response
 from cloudscraper import CloudScraper
@@ -16,6 +16,7 @@ class AternosConnect:
 	def __init__(self) -> None:
 
 		self.session = CloudScraper()
+		self.atsession = ''
 
 	def parse_token(self) -> str:
 
@@ -91,10 +92,18 @@ class AternosConnect:
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
 		sendtoken:bool=False, redirect:bool=True) -> Response:
 
-		params = params if params else {}
-		data = data if data else {}
-		headers = headers if headers else {}
-		reqcookies = reqcookies if reqcookies else {}
+		try:
+			self.atsession = self.session.cookies['ATERNOS_SESSION']
+		except KeyError:
+			pass
+
+		if method not in ('GET', 'POST'):
+			raise NotImplementedError('Only GET and POST are available')
+
+		params = params or {}
+		data = data or {}
+		headers = headers or {}
+		reqcookies = reqcookies or {}
 		headers['User-Agent'] = REQUA
 
 		if sendtoken:
@@ -102,8 +111,15 @@ class AternosConnect:
 			params['SEC'] = self.sec
 
 		# requests.cookies.CookieConflictError bugfix
-		reqcookies['ATERNOS_SESSION'] = self.session.cookies['ATERNOS_SESSION']
+		reqcookies['ATERNOS_SESSION'] = self.atsession
 		del self.session.cookies['ATERNOS_SESSION']
+
+		logging.debug(f'Requesting({method})' + url)
+		logging.debug('headers=' + str(headers))
+		logging.debug('params=' + str(params))
+		logging.debug('data=' + str(data))
+		logging.debug('req-cookies=' + str(reqcookies))
+		logging.debug('session-cookies=' + str(self.session.cookies))
 		
 		if method == 'POST':
 			req = self.session.post(
@@ -117,5 +133,12 @@ class AternosConnect:
 				headers=headers, cookies=reqcookies,
 				allow_redirects=redirect
 			)
+		
+		logging.info(
+			f'{method} completed with {req.status_code} status'
+		)
+
+		with open('debug.html', 'wb') as f:
+			f.write(req.content)
 
 		return req

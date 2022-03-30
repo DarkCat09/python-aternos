@@ -14,11 +14,12 @@ class FileManager:
 
 	def listdir(self, path:str='') -> List[AternosFile]:
 
+		path = path.lstrip('/')
 		filesreq = self.atserv.atserver_request(
 			f'https://aternos.org/files/{path}', 'GET'
 		)
 		filestree = lxml.html.fromstring(filesreq.content)
-		fileslist = filestree.xpath('//div[@class="file clickable"]')
+		fileslist = filestree.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," file ")]')
 
 		files = []
 		for f in fileslist:
@@ -29,7 +30,6 @@ class FileManager:
 				else FileType.directory
 
 			fsize_raw = f.xpath('./div[@class="filesize"]')
-			print(fsize_raw)
 			fsize = 0
 			if len(fsize_raw) > 0:
 
@@ -64,10 +64,9 @@ class FileManager:
 			'GB': 1000000000
 		}
 		try:
-			result = num * measure_match[measure]
+			return num * measure_match[measure]
 		except KeyError:
-			result = -1
-		return result
+			return -1
 
 	def get_file(self, path:str) -> Union[AternosFile,None]:
 

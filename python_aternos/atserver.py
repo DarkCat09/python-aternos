@@ -27,10 +27,13 @@ class AternosServer:
 
 	def __init__(
 		self, servid:str,
-		atconn:AternosConnect) -> None:
+		atconn:AternosConnect,
+		reqinfo:bool=True) -> None:
 
 		self.servid = servid
 		self.atconn = atconn
+		if reqinfo:
+			self.fetch()
 	
 	def fetch(self) -> None:
 

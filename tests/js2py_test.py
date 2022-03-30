@@ -8,28 +8,29 @@ class TestJs2Py(unittest.TestCase):
 	def setUp(self) -> None:
 
 		self.tests = []
-		with open('../token.txt', 'rt') as f:
+		with open('token.txt', 'rt') as f:
 			lines = re.split(r'[\r\n]', f.read())
 			del lines[len(lines)-1] # Remove empty string
 			self.tests = lines
 		
 		self.results = [
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2rKOA1IFdBcHhEM616cb'
-			'2iXh5W5uEYq5fWJIazQ6'
-			'CuUcmZ27Fb8bVBNw12Vj'
-			'YPPe8Ph7vzYaZ9PF9oQP'
-			'UfLlemvKEE16ltk0hZNM'
-			'q6pYdP6r7xiVHhbotvlN'
-			'q6pYdP6r7xiVHhbotvlN'
-			'XAIbksgkVX9JYboMDI7D'
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2rKOA1IFdBcHhEM616cb',
+			'2iXh5W5uEYq5fWJIazQ6',
+			'CuUcmZ27Fb8bVBNw12Vj',
+			'YPPe8Ph7vzYaZ9PF9oQP',
+			'UfLlemvKEE16ltk0hZNM',
+			'q6pYdP6r7xiVHhbotvlN',
+			'q6pYdP6r7xiVHhbotvlN',
+			'XAIbksgkVX9JYboMDI7D',
+			'sBImgVg6RL98W1khPYMl'
 		]
 	
 	def test_base64(self) -> None:

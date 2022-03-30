@@ -20,7 +20,7 @@ class AternosFile:
 		size:Union[int,float]=0) -> None:
 
 		self.atserv = atserv
-		self._path = path
+		self._path = path.lstrip('/')
 		self._name = name
 		self._full = path + name
 		self._ftype = ftype
@@ -59,7 +59,7 @@ class AternosFile:
 	def get_text(self) -> str:
 
 		editor = self.atserv.atserver_request(
-			f'https://aternos.org/files/{self._name}', 'GET'
+			f'https://aternos.org/files/{self._full}', 'GET'
 		)
 		edittree = lxml.html.fromstring(editor.content)
 
