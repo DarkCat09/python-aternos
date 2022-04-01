@@ -59,16 +59,12 @@ class AternosFile:
 	def get_text(self) -> str:
 
 		editor = self.atserv.atserver_request(
-			f'https://aternos.org/files/{self._full}', 'GET'
+			f'https://aternos.org/files/{self._full.lstrip("/")}', 'GET'
 		)
 		edittree = lxml.html.fromstring(editor.content)
-
-		editlines = edittree.xpath('//div[@class="ace_line"]')
-		rawlines = []
-
-		for line in editlines:
-			rawlines.append(line.text)
-		return rawlines
+		
+		editblock = edittree.xpath('//div[@id="editor"]')[0]
+		return editblock.text_content()
 
 	def set_text(self, value:str) -> None:
 		

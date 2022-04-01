@@ -138,7 +138,4 @@ class AternosConnect:
 			f'{method} completed with {req.status_code} status'
 		)
 
-		with open('debug.html', 'wb') as f:
-			f.write(req.content)
-
 		return req

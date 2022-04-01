@@ -1,3 +1,5 @@
+import os
+import re
 import hashlib
 import lxml.html
 from typing import List
@@ -28,11 +30,10 @@ class Client:
 
 		loginreq = atconn.request_cloudflare(
 			f'https://aternos.org/panel/ajax/account/login.php',
-			'POST', data=credentials,
-			sendtoken=True
+			'POST', data=credentials, sendtoken=True
 		)
 
-		if loginreq.cookies.get('ATERNOS_SESSION', None) == None:
+		if 'ATERNOS_SESSION' not in loginreq.cookies:
 			raise CredentialsError(
 				'Check your username and password'
 			)
@@ -42,9 +43,7 @@ class Client:
 	@classmethod
 	def from_credentials(cls, username:str, password:str):
 
-		pswd_bytes = password.encode('utf-8')
-		md5 = hashlib.md5(pswd_bytes).hexdigest().lower()
-
+		md5 = Client.md5encode(password)
 		return cls.from_hashed(username, md5)
 
 	@classmethod
@@ -56,18 +55,29 @@ class Client:
 		atconn.generate_sec()
 
 		return cls(atconn)
+	
+	@classmethod
+	def restore_session(cls, file:str='~/.aternos'):
 
+		file = os.path.expanduser(file)
+		with open(file, 'rt') as f:
+			session = f.read().strip()
+		return cls.from_session(session)
+	
 	@staticmethod
-	def google() -> str:
+	def md5encode(passwd:str) -> str:
 
-		atconn = AternosConnect()
-		auth = atconn.request_cloudflare(
-			'https://aternos.org/auth/google-login',
-			'GET', redirect=False
-		)
-		return auth.headers['Location']
+		encoded = hashlib.md5(passwd.encode('utf-8'))
+		return encoded.hexdigest().lower()
+	
+	def save_session(self, file:str='~/.aternos') -> None:
 
-	def list_servers(self) -> List[atserver.AternosServer]:
+		file = os.path.expanduser(file)
+		with open(file, 'wt') as f:
+			f.write(self.atconn.atsession)
+
+	def list_servers(self) -> List[AternosServer]:
+
 		serverspage = self.atconn.request_cloudflare(
 			'https://aternos.org/servers/', 'GET'
 		)
@@ -80,3 +90,37 @@ class Client:
 			servers.append(AternosServer(servid, self.atconn))
 
 		return servers
+	
+	def get_server(self, servid:str) -> AternosServer:
+
+		return AternosServer(servid, self.atconn)
+	
+	def change_username(self, value:str) -> None:
+
+		self.atconn.request_cloudflare(
+			'https://aternos.org/panel/ajax/account/username.php',
+			'POST', data={'username': value}
+		)
+	
+	def change_email(self, value:str) -> None:
+
+		email = re.compile(r'^[A-Za-z0-9\-_+.]+@[A-Za-z0-9\-_+.]+\.[A-Za-z0-9\-]+$|^$')
+		if not email.match(value):
+			raise ValueError('Invalid e-mail!')
+
+		self.atconn.request_cloudflare(
+			'https://aternos.org/panel/ajax/account/email.php',
+			'POST', data={'email': value}
+		)
+	
+	def change_password(self, old:str, new:str) -> None:
+
+		old = Client.md5encode(old)
+		new = Client.md5encode(new)
+		self.atconn.request_cloudflare(
+			'https://aternos.org/panel/ajax/account/password.php',
+			'POST', data={
+				'oldpassword': old,
+				'newpassword': new
+			}
+		)

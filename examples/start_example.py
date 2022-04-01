@@ -5,7 +5,7 @@ user = input('Username: ')
 pswd = getpass('Password: ')
 aternos = Client.from_credentials(user, pswd)
 
-srvs = aternos.servers
+srvs = aternos.list_servers()
 print(srvs)
 
 s = srvs[0]
