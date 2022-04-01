@@ -7,7 +7,7 @@ It uses [aternos](https://aternos.org/)' private API and html parsing.
 pip install python-aternos
 ```
 > Note for Windows users:  
-Install `lxml` package from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml) if you have a problem with it,
+Install `lxml` package from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml) if you have a problem with it,  
 and then execute `pip install --no-deps python-aternos`
 
 ## Usage
