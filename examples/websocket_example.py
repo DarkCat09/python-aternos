@@ -9,7 +9,7 @@ s = aternos.list_servers()[0]
 socket = s.wss()
 
 @socket.wssreceiver(atwss.Streams.console)
-def console(msg):
+async def console(msg):
     print('Received: ' + msg)
 
 s.start()
