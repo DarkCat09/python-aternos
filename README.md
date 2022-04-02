@@ -2,7 +2,7 @@
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
-## Installation
+## Installing
 ```bash
 pip install python-aternos
 ```
