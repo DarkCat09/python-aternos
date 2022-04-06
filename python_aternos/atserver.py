@@ -17,7 +17,7 @@ class Edition(enum.IntEnum):
 class Status(enum.IntEnum):
 	off = 0
 	on = 1
-	loading = 2
+	starting = 2
 	shutdown = 3
 	unknown = 6
 	error = 7

@@ -1,6 +1,7 @@
 import enum
 import json
 import asyncio
+import logging
 import websockets
 from typing import Union, Any, Dict, Callable, Coroutine
 from typing import TYPE_CHECKING
@@ -9,12 +10,17 @@ from .atconnect import REQUA
 if TYPE_CHECKING:
 	from .atserver import AternosServer
 
-class Streams(enum.IntEnum):
-	status = 0
-	queue = 1
-	console = 2
-	ram = 3
-	tps = 4
+class Streams(enum.Enum):
+
+	status = (0,None)
+	queue = (1,None)
+	console = (2,'console')
+	ram = (3,'heap')
+	tps = (4,'tick')
+
+	def __init__(self, num:int, stream:str):
+		self.num = num
+		self.stream = stream
 
 class AternosWss:
 
@@ -23,7 +29,7 @@ class AternosWss:
 		self.atserv = atserv
 		self.cookies = atserv.atconn.session.cookies
 		self.session = self.cookies['ATERNOS_SESSION']
-		self.servid = self.cookies['ATERNOS_SERVER']
+		self.servid = atserv.servid
 		self.recv = {}
 		self.autoconfirm = autoconfirm
 		self.confirmed = False
@@ -32,7 +38,7 @@ class AternosWss:
 
 		self.atserv.confirm()
 
-	def wssreceiver(self, stream:int) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
+	def wssreceiver(self, stream:Streams) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
 		def decorator(func:Callable[[Any],Coroutine[Any,Any,None]]) -> None:
 			self.recv[stream] = func
 		return decorator
@@ -53,6 +59,30 @@ class AternosWss:
 			origin='https://aternos.org',
 			extra_headers=headers
 		)
+
+		@self.wssreceiver(Streams.status)
+		async def confirmfunc(msg):
+			# Autoconfirm
+			if not self.autoconfirm:
+				return
+			if msg['class'] == 'queueing' \
+			and msg['queue']['pending'] == 'pending'\
+			and not self.confirmed:
+				self.confirm()
+		
+		@self.wssreceiver(Streams.status)
+		async def streamsfunc(msg):
+			if msg['status'] == 2:
+				# Automatically start streams
+				for strm in self.recv:
+					if not isinstance(strm,Streams):
+						continue
+					if strm.stream:
+						logging.debug(f'Enabling {strm.stream} stream')
+						await self.send({
+							'stream': strm.stream,
+							'type': 'start'
+						})
 		
 		await self.wssworker()
 
@@ -66,7 +96,7 @@ class AternosWss:
 		if isinstance(obj, dict):
 			obj = json.dumps(obj)
 
-		self.socket.send(obj)
+		await self.socket.send(obj)
 
 	async def wssworker(self) -> None:
 
@@ -86,6 +116,7 @@ class AternosWss:
 		while True:
 			data = await self.socket.recv()
 			obj = json.loads(data)
+			msgtype = -1
 			
 			if obj['type'] == 'line':
 				msgtype = Streams.console
@@ -103,16 +134,6 @@ class AternosWss:
 			elif obj['type'] == 'status':
 				msgtype = Streams.status
 				msg = json.loads(obj['message'])
-
-				if not self.autoconfirm:
-					continue
-				if msg['class'] == 'queueing' \
-				and msg['queue']['pending'] == 'pending'\
-				and not self.confirmed:
-					t = asyncio.create_task(
-						self.confirm()
-					)
-					await t
 
 			if msgtype in self.recv:
 				t = asyncio.create_task(

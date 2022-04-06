@@ -1,3 +1,4 @@
+import asyncio
 from getpass import getpass
 from python_aternos import Client, atwss
 
@@ -10,6 +11,10 @@ socket = s.wss()
 
 @socket.wssreceiver(atwss.Streams.console)
 async def console(msg):
-    print('Received: ' + msg)
+    print('Received:', msg)
 
-s.start()
+async def main():
+    s.start()
+    await socket.connect()
+
+asyncio.run(main())
