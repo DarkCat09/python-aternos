@@ -62,10 +62,10 @@ if testserv != None:
 |v0.3|Implemented files API, added typization.|
 |v0.4|Implemented configuration API, some bugfixes.|
 |v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
-|v0.6|Code refactoring, websockets API and session saving to prevent detecting automation access.|
-|v0.7|Full implementation of config and software API, unit tests and documentation is planned.|
-|v0.8|Shared access API and Google Drive backups is planned.|
-|v0.9.x|A long debugging before stable release, SemVer version code.|
+|v0.6/v1.0.0|Code refactoring, websockets API and session saving to prevent detecting automation access.|
+|v1.0.1|Cloudflare bypassing fix, changed versioning (follows SemVer).|
+|v1.1.x|Full implementation of config and software API, unit tests and documentation is planned.|
+|v1.2.x|Shared access API and Google Drive backups is planned.|
 
 ## License
 [License Notice](NOTICE):
