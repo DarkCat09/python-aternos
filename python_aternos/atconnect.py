@@ -7,7 +7,7 @@ from cloudscraper import CloudScraper
 from typing import Optional, Union
 
 from . import atjsparse
-from .aterrors import CredentialsError
+from .aterrors import CredentialsError, CloudflareError
 
 REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
 
@@ -90,7 +90,10 @@ class AternosConnect:
 		self, url:str, method:str,
 		params:Optional[dict]=None, data:Optional[dict]=None,
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
-		sendtoken:bool=False, redirect:bool=True) -> Response:
+		sendtoken:bool=False, redirect:bool=True, retry:int=0) -> Response:
+
+		if retry > 2:
+			raise CloudflareError('Unable to bypass Cloudflare protection')
 
 		try:
 			self.atsession = self.session.cookies['ATERNOS_SESSION']
@@ -132,6 +135,15 @@ class AternosConnect:
 				url, params={**params, **data},
 				headers=headers, cookies=reqcookies,
 				allow_redirects=redirect
+			)
+		
+		if '<title>Please Wait... | Cloudflare</title>' in req.text:
+			logging.info('Retrying to bypass Cloudflare')
+			self.request_cloudflare(
+				url, method,
+				params, data,
+				headers, reqcookies,
+				sendtoken, redirect
 			)
 		
 		logging.info(

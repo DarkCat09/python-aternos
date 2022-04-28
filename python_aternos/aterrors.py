@@ -1,6 +1,9 @@
 class AternosError(Exception):
 	pass
 
+class CloudflareError(AternosError):
+	pass
+
 class CredentialsError(AternosError):
 	pass
 
