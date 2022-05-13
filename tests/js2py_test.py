@@ -27,10 +27,12 @@ class TestJs2Py(unittest.TestCase):
 			'CuUcmZ27Fb8bVBNw12Vj',
 			'YPPe8Ph7vzYaZ9PF9oQP',
 			'UfLlemvKEE16ltk0hZNM',
-			'q6pYdP6r7xiVHhbotvlN',
-			'q6pYdP6r7xiVHhbotvlN',
-			'XAIbksgkVX9JYboMDI7D',
-			'sBImgVg6RL98W1khPYMl'
+			'S1Oban9UGRXVIepREw9q',
+			'S1Oban9UGRXVIepREw9q',
+			'KYDDyT1DWOJTZpNtJWhM',
+			'lZPFwRqIGIf8JKk1LG02',
+			'KbxzYCJUrFjWzbeZcAmE',
+			'KbxzYCJUrFjWzbeZcAmE'
 		]
 	
 	def test_base64(self) -> None:
@@ -44,6 +46,27 @@ class TestJs2Py(unittest.TestCase):
 		token = '(() => {window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})();'
 		f = atjsparse.to_ecma5_function(token)
 		self.assertEqual(f, '(function(){window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})()')
+	
+	def test_ecma6parse(self) -> None:
+
+		code = '''
+		window.t0 =
+			window['document']&&
+			!window[["p","Ma"].reverse().join('')]||
+			!window[["ut","meo","i","etT","s"].reverse().join('')];'''
+
+		part1 = '''window.t1 = Boolean(window['document']);'''
+		part2 = '''window.t2 = Boolean(!window[["p","Ma"].reverse().join('')]);'''
+		part3 = '''window.t3 = Boolean(!window[["ut","meo","i","etT","s"].reverse().join('')]);'''
+
+		ctx0 = atjsparse.exec(code)
+		ctx1 = atjsparse.exec(part1)
+		ctx2 = atjsparse.exec(part2)
+		ctx3 = atjsparse.exec(part3)
+
+		self.assertEqual(ctx1.window['t1'], True)
+		self.assertEqual(ctx2.window['t2'], False)
+		self.assertEqual(ctx3.window['t3'], False)
 	
 	def test_exec(self) -> None:
 

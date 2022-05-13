@@ -20,5 +20,10 @@ def atob(s:str) -> str:
 
 def exec(f:str) -> Any:
 	ctx = js2py.EvalJs({'atob': atob})
+	ctx.execute('window.document = { };')
+	ctx.execute('window.Map = function(_i){ };')
+	ctx.execute('window.setTimeout = function(_f,_t){ };')
+	ctx.execute('window.setInterval = function(_f,_t){ };')
+	ctx.execute('window.encodeURIComponent = function(_s){ };')
 	ctx.execute(to_ecma5_function(f))
 	return ctx

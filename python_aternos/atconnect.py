@@ -4,12 +4,12 @@ import logging
 import lxml.html
 from requests import Response
 from cloudscraper import CloudScraper
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 
 from . import atjsparse
 from .aterrors import CredentialsError, CloudflareError
 
-REQUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Goanna/4.8 Firefox/68.0 PaleMoon/29.4.0.2'
+REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
 
 class AternosConnect:
 
@@ -86,13 +86,29 @@ class AternosConnect:
 			num //= base
 		return result
 
+	def add_headers(self, headers:Optional[Dict[str,str]]=None):
+
+		headers = headers or {}
+		headers.update({
+			'host': 'aternos.org',
+			'user-agent': REQUA,
+			'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="100", "Opera";v="86"',
+			'sec-ch-ua-mobile': '?0',
+			'sec-ch-ua-platform': '"Linux"',
+			'sec-fetch-dest': 'document',
+			'sec-fetch-mode': 'navigate',
+			'sec-fetch-site': 'same-origin',
+			'sec-fetch-user': '?1',
+			'upgrade-insecure-requests': '1'
+		})
+
 	def request_cloudflare(
 		self, url:str, method:str,
 		params:Optional[dict]=None, data:Optional[dict]=None,
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
 		sendtoken:bool=False, redirect:bool=True, retry:int=0) -> Response:
 
-		if retry > 2:
+		if retry > 3:
 			raise CloudflareError('Unable to bypass Cloudflare protection')
 
 		try:
@@ -105,9 +121,8 @@ class AternosConnect:
 
 		params = params or {}
 		data = data or {}
-		headers = headers or {}
 		reqcookies = reqcookies or {}
-		headers['User-Agent'] = REQUA
+		self.add_headers(headers)
 
 		if sendtoken:
 			params['TOKEN'] = self.token
@@ -143,7 +158,8 @@ class AternosConnect:
 				url, method,
 				params, data,
 				headers, reqcookies,
-				sendtoken, redirect
+				sendtoken, redirect,
+				retry - 1
 			)
 		
 		logging.info(
