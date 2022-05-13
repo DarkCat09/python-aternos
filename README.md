@@ -2,6 +2,10 @@
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
+> Note:  
+Now, the main repository is located on [Codeberg](https://codeberg.org/DarkCat09/python-aternos) because GitHub bans its Russian users.  
+I'm still updating the GH repository together with the Codeberg one.
+
 ## Installing
 ```bash
 pip install python-aternos
@@ -26,6 +30,8 @@ from python_aternos import Client
 aternos = Client.from_credentials('example', 'test123')
 # ----OR----
 aternos = Client.from_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
+# ----OR----
+aternos = Client.restore_session()
 
 # Returns AternosServer list
 servs = aternos.list_servers()
@@ -50,9 +56,9 @@ if testserv != None:
     # Starts server
     testserv.start()
 ```
-~~You can find full documentation on the [Project Wiki](https://github.com/DarkCat09/python-aternos/wiki).~~
+The documentation have not made yet. View examples and ask in the issues.
 
-## [More examples](/examples)
+## [More examples](https://codeberg.org/DarkCat09/python-aternos/src/branch/main/examples) / [on GitHub](https://github.com/DarkCat09/python-aternos/tree/main/examples)
 
 ## Changelog
 |Version|Description|
@@ -63,9 +69,10 @@ if testserv != None:
 |v0.4|Implemented configuration API, some bugfixes.|
 |v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
 |v0.6/v1.0.0|Code refactoring, websockets API and session saving to prevent detecting automation access.|
-|v1.0.1|Cloudflare bypassing fix, changed versioning (follows SemVer).|
-|v1.1.x|Full implementation of config and software API, unit tests and documentation is planned.|
-|v1.2.x|Shared access API and Google Drive backups is planned.|
+|v1.0.x|Lots of bugfixes, changed versioning (SemVer).|
+|v1.1.x|Switching to selenium with [a custom Chrome driver](https://github.com/ultrafunkamsterdam/undetected-chromedriver), writing API documentation.|
+|v1.2.x|Full implementation of config and software API, unit tests and documentation is planned.|
+|v1.3.x|Shared access API and Google Drive backups is planned.|
 
 ## License
 [License Notice](NOTICE):
