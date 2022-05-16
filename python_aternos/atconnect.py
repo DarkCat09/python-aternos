@@ -1,7 +1,6 @@
 import re
 import random
 import logging
-import lxml.html
 from requests import Response
 from cloudscraper import CloudScraper
 from typing import Optional, Union, Dict
@@ -10,6 +9,18 @@ from . import atjsparse
 from .aterrors import CredentialsError, CloudflareError
 
 REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
+REQHEADERS = {
+	'Host': 'aternos.org',
+	'User-Agent': REQUA,
+	'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="100", "Opera";v="86"',
+	'Sec-Ch-Ua-Mobile': '?0',
+	'Sec-Ch-Ua-Platform': '"Linux"',
+	'Sec-Fetch-Dest': 'document',
+	'Sec-Fetch-Mode': 'navigate',
+	'Sec-Fetch-Site': 'same-origin',
+	'Sec-Fetch-User': '?1',
+	'Upgrade-Insecure-Requests': '1'
+}
 
 class AternosConnect:
 
@@ -23,12 +34,24 @@ class AternosConnect:
 		loginpage = self.request_cloudflare(
 			f'https://aternos.org/go/', 'GET'
 		).content
-		pagetree = lxml.html.fromstring(loginpage)
+
+		# Using the standard string methods
+		# instead of the expensive xml parsing
+		head = b'<head>'
+		headtag = loginpage.find(head)
+		headend = loginpage.find(b'</head>', headtag + len(head))
+
+		# Some checks
+		if headtag < 0 or headend < 0:
+			pagehead = loginpage
+			raise RuntimeWarning('Unable to find <head> tag, parsing the whole page')
+
+		# Extracting <head> content
+		headtag = headtag + len(head)
+		pagehead = loginpage[headtag:headend]
 
 		try:
-			pagehead = pagetree.head
-			text = pagehead.text_content()
-
+			text = pagehead.decode('utf-8', 'replace')
 			js_code = re.findall(r'\(\(\)(.*?)\)\(\);', text)
 			token_func = js_code[1] if len(js_code) > 1 else js_code[0]
 
@@ -86,21 +109,11 @@ class AternosConnect:
 			num //= base
 		return result
 
-	def add_headers(self, headers:Optional[Dict[str,str]]=None):
+	def add_headers(self, headers:Optional[Dict[str,str]]=None) -> Dict[str,str]:
 
 		headers = headers or {}
-		headers.update({
-			'host': 'aternos.org',
-			'user-agent': REQUA,
-			'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="100", "Opera";v="86"',
-			'sec-ch-ua-mobile': '?0',
-			'sec-ch-ua-platform': '"Linux"',
-			'sec-fetch-dest': 'document',
-			'sec-fetch-mode': 'navigate',
-			'sec-fetch-site': 'same-origin',
-			'sec-fetch-user': '?1',
-			'upgrade-insecure-requests': '1'
-		})
+		headers.update(REQHEADERS)
+		return headers
 
 	def request_cloudflare(
 		self, url:str, method:str,
@@ -122,11 +135,12 @@ class AternosConnect:
 		params = params or {}
 		data = data or {}
 		reqcookies = reqcookies or {}
-		self.add_headers(headers)
+		headers = self.add_headers(headers)
 
 		if sendtoken:
 			params['TOKEN'] = self.token
 			params['SEC'] = self.sec
+			headers['X-Requested-With'] = 'XMLHttpRequest'
 
 		# requests.cookies.CookieConflictError bugfix
 		reqcookies['ATERNOS_SESSION'] = self.atsession
