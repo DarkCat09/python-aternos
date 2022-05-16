@@ -1,6 +1,6 @@
 ![Python-Aternos Logo](https://i.ibb.co/60SRKcH/aternos-400.png)
 ***
-# Python Aternos API
+# Python Aternos
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
