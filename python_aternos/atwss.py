@@ -136,7 +136,6 @@ class AternosWss:
 				msg = json.loads(obj['message'])
 
 			if msgtype in self.recv:
-				t = asyncio.create_task(
+				asyncio.create_task(
 					self.recv[msgtype](msg)
 				)
-				await t
