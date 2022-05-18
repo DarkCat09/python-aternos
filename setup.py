@@ -5,7 +5,7 @@ with open('README.md', 'rt') as readme:
 
 setuptools.setup(
 	name='python-aternos',
-	version='1.0.3',
+	version='1.0.4',
 	author='Chechkenev Andrey (@DarkCat09)',
 	author_email='aacd0709@mail.ru',
 	description='An unofficial Aternos API',
@@ -29,8 +29,7 @@ setuptools.setup(
 		'Operating System :: OS Independent',
 		'Operating System :: Microsoft :: Windows',
 		'Operating System :: POSIX :: Linux',
-		'Operating System :: MacOS',
-		'Operating System :: Other OS'
+		'Operating System :: MacOS'
 	],
 	install_requires=[
 		'lxml>=4.8.0',

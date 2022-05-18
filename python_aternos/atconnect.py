@@ -3,24 +3,12 @@ import random
 import logging
 from requests import Response
 from cloudscraper import CloudScraper
-from typing import Optional, Union, Dict
+from typing import Optional, Union
 
 from . import atjsparse
 from .aterrors import CredentialsError, CloudflareError
 
 REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
-REQHEADERS = {
-	'Host': 'aternos.org',
-	'User-Agent': REQUA,
-	'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="100", "Opera";v="86"',
-	'Sec-Ch-Ua-Mobile': '?0',
-	'Sec-Ch-Ua-Platform': '"Linux"',
-	'Sec-Fetch-Dest': 'document',
-	'Sec-Fetch-Mode': 'navigate',
-	'Sec-Fetch-Site': 'same-origin',
-	'Sec-Fetch-User': '?1',
-	'Upgrade-Insecure-Requests': '1'
-}
 
 class AternosConnect:
 
@@ -109,12 +97,6 @@ class AternosConnect:
 			num //= base
 		return result
 
-	def add_headers(self, headers:Optional[Dict[str,str]]=None) -> Dict[str,str]:
-
-		headers = headers or {}
-		headers.update(REQHEADERS)
-		return headers
-
 	def request_cloudflare(
 		self, url:str, method:str,
 		params:Optional[dict]=None, data:Optional[dict]=None,
@@ -129,13 +111,15 @@ class AternosConnect:
 		except KeyError:
 			pass
 
+		method = method or 'GET'
+		method = method.upper().strip()
 		if method not in ('GET', 'POST'):
 			raise NotImplementedError('Only GET and POST are available')
 
+		headers = headers or {}
 		params = params or {}
 		data = data or {}
 		reqcookies = reqcookies or {}
-		headers = self.add_headers(headers)
 
 		if sendtoken:
 			params['TOKEN'] = self.token
@@ -173,7 +157,7 @@ class AternosConnect:
 				params, data,
 				headers, reqcookies,
 				sendtoken, redirect,
-				retry - 1
+				retry + 1
 			)
 		
 		logging.info(

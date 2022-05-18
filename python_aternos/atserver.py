@@ -1,7 +1,7 @@
 import enum
 import json
 from requests import Response
-from typing import Optional
+from typing import Optional, List
 
 from .atconnect import AternosConnect
 from .aterrors import ServerError
@@ -186,7 +186,7 @@ class AternosServer:
 
 	@property
 	def address(self) -> str:
-		return f'{self.domain}:{self.port}'
+		return self._info['displayAddress']
 	
 	@property
 	def domain(self) -> str:
@@ -216,6 +216,18 @@ class AternosServer:
 	@property
 	def status_num(self) -> int:
 		return int(self._info['status'])
+	
+	@property
+	def players_list(self) -> List[str]:
+		return self._info['playerlist']
+	
+	@property
+	def players_count(self) -> int:
+		return int(self._info['players'])
+	
+	@property
+	def slots(self) -> int:
+		return int(self._info['slots'])
 
 	@property
 	def ram(self) -> int:

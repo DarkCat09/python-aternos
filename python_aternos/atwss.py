@@ -88,6 +88,8 @@ class AternosWss:
 
 	async def close(self) -> None:
 		
+		self.keep.cancel()
+		self.msgs.cancel()
 		await self.socket.close()
 		del self.socket
 
@@ -100,42 +102,48 @@ class AternosWss:
 
 	async def wssworker(self) -> None:
 
-		keep = asyncio.create_task(self.keepalive())
-		msgs = asyncio.create_task(self.receiver())
-		await keep
-		await msgs
+		self.keep = asyncio.create_task(self.keepalive())
+		self.msgs = asyncio.create_task(self.receiver())
 
 	async def keepalive(self) -> None:
 
-		while True:
-			await asyncio.sleep(49)
-			await self.socket.send('{"type":"\u2764"}')
+		try:
+			while True:
+				await asyncio.sleep(49)
+				await self.socket.send('{"type":"\u2764"}')
+
+		except asyncio.CancelledError:
+			pass
 
 	async def receiver(self) -> None:
 
-		while True:
-			data = await self.socket.recv()
-			obj = json.loads(data)
-			msgtype = -1
-			
-			if obj['type'] == 'line':
-				msgtype = Streams.console
-				msg = obj['data'].strip('\r\n ')
+		try:
+			while True:
+				data = await self.socket.recv()
+				obj = json.loads(data)
+				msgtype = -1
+				
+				if obj['type'] == 'line':
+					msgtype = Streams.console
+					msg = obj['data'].strip('\r\n ')
 
-			elif obj['type'] == 'heap':
-				msgtype = Streams.ram
-				msg = int(obj['data']['usage'])
+				elif obj['type'] == 'heap':
+					msgtype = Streams.ram
+					msg = int(obj['data']['usage'])
 
-			elif obj['type'] == 'tick':
-				msgtype = Streams.tps
-				ticks = 1000 / obj['data']['averageTickTime']
-				msg = 20 if ticks > 20 else ticks
+				elif obj['type'] == 'tick':
+					msgtype = Streams.tps
+					ticks = 1000 / obj['data']['averageTickTime']
+					msg = 20 if ticks > 20 else ticks
 
-			elif obj['type'] == 'status':
-				msgtype = Streams.status
-				msg = json.loads(obj['message'])
+				elif obj['type'] == 'status':
+					msgtype = Streams.status
+					msg = json.loads(obj['message'])
 
-			if msgtype in self.recv:
-				asyncio.create_task(
-					self.recv[msgtype](msg)
-				)
+				if msgtype in self.recv:
+					await asyncio.create_task(
+						self.recv[msgtype](msg)
+					)
+		
+		except asyncio.CancelledError:
+			pass

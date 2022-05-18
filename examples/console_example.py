@@ -24,16 +24,14 @@ async def main():
     )
 
 async def commands():
-    try:
-        while True:
-            cmd = await aioconsole.ainput('> ')
-            await socket.send({
-                'stream': 'console',
-                'type': 'command',
-                'data': cmd
-            })
-    except KeyboardInterrupt:
-        await socket.close()
-        print('* Exit')
+    while True:
+        cmd = await aioconsole.ainput('> ')
+        if cmd.strip() == '':
+            continue
+        await socket.send({
+            'stream': 'console',
+            'type': 'command',
+            'data': cmd
+        })
 
 asyncio.run(main())
