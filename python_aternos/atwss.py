@@ -3,7 +3,7 @@ import json
 import asyncio
 import logging
 import websockets
-from typing import Union, Any, Dict, Callable, Coroutine
+from typing import Union, Any, Dict, Callable, Coroutine, Tuple
 from typing import TYPE_CHECKING
 
 from .atconnect import REQUA
@@ -38,9 +38,9 @@ class AternosWss:
 
 		self.atserv.confirm()
 
-	def wssreceiver(self, stream:Streams) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
+	def wssreceiver(self, stream:Streams, *args:Any) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
 		def decorator(func:Callable[[Any],Coroutine[Any,Any,None]]) -> None:
-			self.recv[stream] = func
+			self.recv[stream] = (func, args)
 		return decorator
 
 	async def connect(self) -> None:
@@ -141,9 +141,19 @@ class AternosWss:
 					msg = json.loads(obj['message'])
 
 				if msgtype in self.recv:
-					await asyncio.create_task(
-						self.recv[msgtype](msg)
-					)
+
+					# function info tuple:
+					# (function, arguments)
+					func = self.recv[msgtype]
+
+					# if arguments is not empty
+					if func[1]:
+						# call the function with args
+						coro = func[0](msg, func[1])
+					else:
+						coro = func[0](msg)
+					# run
+					await asyncio.create_task(coro)
 		
 		except asyncio.CancelledError:
 			pass
