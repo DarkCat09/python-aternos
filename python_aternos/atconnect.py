@@ -6,7 +6,7 @@ from cloudscraper import CloudScraper
 from typing import Optional, Union
 
 from . import atjsparse
-from .aterrors import CredentialsError, CloudflareError
+from .aterrors import TokenError, CloudflareError
 
 REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
 
@@ -62,7 +62,7 @@ class AternosConnect:
 			self.token = ctx.window['AJAX_TOKEN']
 
 		except (IndexError, TypeError):
-			raise CredentialsError(
+			raise TokenError(
 				'Unable to parse TOKEN from the page'
 			)
 

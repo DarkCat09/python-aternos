@@ -4,15 +4,15 @@ class AternosError(Exception):
 
 class CloudflareError(AternosError):
 	
-	"""Raises when the parser is unable to bypass Cloudflare protection"""	
+	"""Raised when the parser is unable to bypass Cloudflare protection"""	
 
 class CredentialsError(AternosError):
 	
-	"""Raises when a session cookie is empty which means incorrect credentials"""
+	"""Raised when a session cookie is empty which means incorrect credentials"""
 
 class TokenError(AternosError):
 	
-	"""Raises when the parser is unable to extract Aternos ajax token"""
+	"""Raised when the parser is unable to extract Aternos ajax token"""
 
 class ServerError(AternosError):
 	
@@ -20,19 +20,20 @@ class ServerError(AternosError):
 
 class ServerEulaError(ServerError):
 
-	"""Raises when trying to start without confirming Mojang EULA"""
+	"""Raised when trying to start without confirming Mojang EULA"""
 
 class ServerRunningError(ServerError):
 
-	"""Raises when trying to start already running server"""
+	"""Raised when trying to start already running server"""
 
 class ServerSoftwareError(ServerError):
 
-	"""Raises when Aternos notifies about incorrect software version"""
+	"""Raised when Aternos notifies about incorrect software version"""
 
 class ServerStorageError(ServerError):
 
-	"""Raises when Aternos notifies about violation of storage limits (4 GB for now)"""
+	"""Raised when Aternos notifies about violation of storage limits (4 GB for now)"""
 
 class FileError(AternosError):
-	pass
+	
+	"""Raised when trying to execute a disallowed by Aternos file operation"""
