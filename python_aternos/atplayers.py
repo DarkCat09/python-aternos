@@ -15,6 +15,15 @@ class Lists(enum.Enum):
 
 class PlayersList:
 
+	"""Class for managing operators, whitelist and banned players lists
+	
+	:param lst: Players list type, must be
+	:class:`python_aternos.atplayers.Lists` enum value
+	:type lst: Union[str,Lists]
+	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
+	:type atserv: python_aternos.atserver.AternosServer
+	"""
+
 	def __init__(self, lst:Union[str,Lists], atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
@@ -23,6 +32,14 @@ class PlayersList:
 		self.parsed = False
 
 	def list_players(self, cache:bool=True) -> List[str]:
+
+		"""Parse a players list
+
+		:param cache: If the function can return cached list (highly recommended), defaults to True
+		:type cache: bool, optional
+		:return: List of players nicknames
+		:rtype: List[str]
+		"""
 
 		if cache and self.parsed:
 			return self.players
@@ -47,6 +64,12 @@ class PlayersList:
 
 	def add(self, name:str) -> None:
 
+		"""Appends a player to the list by the nickname
+
+		:param name: Player's nickname
+		:type name: str
+		"""
+
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/players/add.php',
 			'POST', data={
@@ -58,6 +81,12 @@ class PlayersList:
 		self.players.append(name)
 
 	def remove(self, name:str) -> None:
+		
+		"""Removes a player from the list by the nickname
+
+		:param name: Player's nickname
+		:type name: str
+		"""
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/players/remove.php',

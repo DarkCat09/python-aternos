@@ -1,15 +1,16 @@
 import enum
 import re
 import lxml.html
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Union, Optional
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from .atserver import AternosServer
 
-#
-# server.options
 class ServerOpts(enum.Enum):
+
+	"""server.options file"""
+
 	players = 'max-players'
 	gm = 'gamemode'
 	difficulty = 'difficulty'
@@ -31,15 +32,19 @@ class ServerOpts(enum.Enum):
 DAT_PREFIX = 'Data:'
 DAT_GR_PREFIX = 'Data:GameRules:'
 
-# level.dat
 class WorldOpts(enum.Enum):
+
+	"""level.dat file"""
+
 	seed12 = 'randomseed'
 	seed = 'seed'
 	hardcore = 'hardcore'
 	difficulty = 'Difficulty'
 
-# /gamerule
 class WorldRules(enum.Enum):
+
+	"""/gamerule list"""
+
 	advs = 'announceAdvancements'
 	univanger = 'universalAnger'
 	cmdout = 'commandBlockOutput'
@@ -76,41 +81,24 @@ class WorldRules(enum.Enum):
 	spectchunkgen = 'spectatorsGenerateChunks'
 	cmdfb = 'sendCommandFeedback'
 
-DAT_TYPE_WORLD = 0
-DAT_TYPE_GR = 1
-
 class Gamemode(enum.IntEnum):
+
+	"""/gamemode numeric list"""
+
 	survival = 0
 	creative = 1
 	adventure = 2
 	spectator = 3
 
 class Difficulty(enum.IntEnum):
+
+	"""/difficulty numeric list"""
+
 	peaceful = 0
 	easy = 1
 	normal = 2
 	hard = 3
 
-#
-# jre types for set_java
-javatype = {
-	'jdk': 'openjdk:{ver}',
-	'openj9-1': 'adoptopenjdk:{ver}-jre-openj9-bionic',
-	'openj9-2': 'ibm-semeru-runtimes:open-{ver}-jre'
-}
-# checking java version format
-javacheck = re.compile(
-	''.join(
-		list(
-			map(
-				# create a regexp for each jre type,
-				# e.g.: (^openjdk:\d+$)|
-				lambda i: '(^' + javatype[i].format(ver=r'\d+') + '$)|',
-				javatype
-			)
-		)
-	).rstrip('|')
-)
 # checking timezone format
 tzcheck = re.compile(r'(^[A-Z]\w+\/[A-Z]\w+$)|^UTC$')
 # options types converting
@@ -120,14 +108,25 @@ convert = {
 	'config-option-toggle': bool
 }
 
-# MAIN CLASS
 class AternosConfig:
+
+	"""Class for editing server settings
+	
+	:param atserv: :class:`python_aternos.atserver.AternosServer` object
+	:type atserv: python_aternos.atserver.AternosServer
+	"""
 
 	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 
 	def get_timezone(self) -> str:
+
+		"""Parses timezone from options page
+
+		:return: Area/Location
+		:rtype: str
+		"""
 
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options', 'GET'
@@ -140,6 +139,14 @@ class AternosConfig:
 
 	def set_timezone(self, value:str) -> None:
 
+		"""Sets new timezone
+
+		:param value: New timezone
+		:type value: str
+		:raises ValueError: If given string
+		doesn't match Area/Location format
+		"""
+
 		matches_tz = tzcheck.search(value)
 		if not matches_tz:
 			raise ValueError('Timezone must match zoneinfo format: Area/Location')
@@ -150,7 +157,13 @@ class AternosConfig:
 			sendtoken=True
 		)
 
-	def get_java(self) -> str:
+	def get_java(self) -> int:
+
+		"""Parses Java version from options page
+
+		:return: Java image version
+		:rtype: int
+		"""		
 
 		optreq = self.atserv.atserver_request(
 			'https://aternos.org/options', 'GET'
@@ -158,17 +171,21 @@ class AternosConfig:
 		opttree = lxml.html.fromstring(optreq)
 		imgopt = opttree.xpath('//div[@class="options-other-input image-switch"]')[0]
 		imgver = imgopt.xpath('.//div[@class="option current"]/@data-value')[0]
-		return imgver
 
-	def set_java(self, value:str) -> None:
+		jdkver = str(imgver or '').removeprefix('openjdk:')
+		return int(jdkver)
+	
+	def set_java(self, value:int) -> None:
 
-		matches_jdkver = javacheck.search(value)
-		if not matches_jdkver:
-			raise ValueError('Incorrect Java image version format!')
+		"""Sets new Java version
+
+		:param value: New Java image version
+		:type value: int
+		"""
 
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/image.php',
-			'POST', data={'image': value},
+			'POST', data={'image': f'openjdk:{value}'},
 			sendtoken=True
 		)
 
@@ -176,15 +193,42 @@ class AternosConfig:
 	# server.properties
 	#
 	def set_server_prop(self, option:str, value:Any) -> None:
+
+		"""Sets server.properties option
+
+		:param option: Option name
+		:type option: str
+		:param value: New value
+		:type value: Any
+		"""
+
 		self.__set_prop(
 			'/server.properties',
 			option, value
 		)
 
 	def get_server_props(self, proptyping:bool=True) -> Dict[str,Any]:
+
+		"""Parses all server.properties from options page
+
+		:param proptyping: If the returned dict should contain value
+		that matches property type (e.g. max-players will be int)
+		instead of string, defaults to True
+		:type proptyping: bool, optional
+		:return: Server.properties dict
+		:rtype: Dict[str,Any]
+		"""
+
 		return self.__get_all_props('https://aternos.org/options', proptyping)
 
 	def set_server_props(self, props:Dict[str,Any]) -> None:
+
+		"""Updates server.properties options with the given dict
+
+		:param props: Dict with properties `{key:value}`
+		:type props: Dict[str,Any]
+		"""
+
 		for key in props:
 			self.set_server_prop(key, props[key])
 
@@ -192,11 +236,26 @@ class AternosConfig:
 	# level.dat
 	#
 	def set_world_prop(
-		self, option:str, value:Any,
-		proptype:int, world:str='world') -> None:
+		self, option:Union[WorldOpts,WorldRules],
+		value:Any, gamerule:bool=False,
+		world:str='world') -> None:
+
+		"""Sets level.dat option for specified world
+
+		:param option: Option name
+		:type option: Union[WorldOpts,WorldRules]
+		:param value: New value
+		:type value: Any
+		:param gamerule: If the option
+		is a gamerule, defaults to False
+		:type gamerule: bool, optional
+		:param world: Name of the world which
+		level.dat must be edited, defaults to 'world'
+		:type world: str, optional
+		"""
 
 		prefix = DAT_PREFIX
-		if proptype == DAT_TYPE_GR:
+		if gamerule:
 			prefix = DAT_GR_PREFIX
 
 		self.__set_prop(
@@ -208,6 +267,18 @@ class AternosConfig:
 	def get_world_props(
 		self, world:str='world',
 		proptyping:bool=True) -> Dict[str,Any]:
+
+		"""Parses level.dat from specified world's options page
+
+		:param world: Name of the world, defaults to 'world'
+		:type world: str, optional
+		:param proptyping: If the returned dict should contain the value
+		that matches property type (e.g. randomTickSpeed will be bool)
+		instead of string, defaults to True
+		:type proptyping: bool, optional
+		:return: Level.dat dict
+		:rtype: Dict[str,Any]
+		"""
 
 		self.__get_all_props(
 			f'https://aternos.org/files/{world}/level.dat',

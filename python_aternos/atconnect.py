@@ -12,12 +12,27 @@ REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) 
 
 class AternosConnect:
 
+	"""
+	Class for sending API requests bypass Cloudflare
+	and parsing responses"""
+
 	def __init__(self) -> None:
 
 		self.session = CloudScraper()
 		self.atsession = ''
 
 	def parse_token(self) -> str:
+
+		"""Parses Aternos ajax token that
+		is needed for most requests
+
+		:raises RuntimeWarning: If the parser
+		can not find <head> tag in HTML response
+		:raises CredentialsError: If the parser
+		is unable to extract ajax token in HTML
+		:return: Aternos ajax token
+		:rtype: str
+		"""
 
 		loginpage = self.request_cloudflare(
 			f'https://aternos.org/go/', 'GET'
@@ -55,6 +70,13 @@ class AternosConnect:
 
 	def generate_sec(self) -> str:
 
+		"""Generates Aternos SEC token which
+		is also needed for most API requests
+
+		:return: Random SEC key:value string
+		:rtype: str
+		"""
+
 		randkey = self.generate_aternos_rand()
 		randval = self.generate_aternos_rand()
 		self.sec = f'{randkey}:{randval}'
@@ -66,6 +88,15 @@ class AternosConnect:
 		return self.sec
 
 	def generate_aternos_rand(self, randlen:int=16) -> str:
+
+		"""Generates a random string using
+		Aternos algorithm from main.js file
+
+		:param randlen: Random string length, defaults to 16
+		:type randlen: int, optional
+		:return: Random string for SEC token
+		:rtype: str
+		"""
 
 		# a list with randlen+1 empty strings:
 		# generate a string with spaces,
@@ -80,6 +111,20 @@ class AternosConnect:
 	def convert_num(
 		self, num:Union[int,float,str],
 		base:int, frombase:int=10) -> str:
+
+		"""Converts an integer to specified base
+
+		:param num: Integer in any base to convert.
+		If it is a float started with `0,`,
+		zero and comma will be removed to get int
+		:type num: Union[int,float,str]
+		:param base: New base
+		:type base: int
+		:param frombase: Given number base, defaults to 10
+		:type frombase: int, optional
+		:return: Number converted to a specified base
+		:rtype: str
+		"""
 
 		if isinstance(num, str):
 			num = int(num, frombase)
@@ -101,9 +146,41 @@ class AternosConnect:
 		self, url:str, method:str,
 		params:Optional[dict]=None, data:Optional[dict]=None,
 		headers:Optional[dict]=None, reqcookies:Optional[dict]=None,
-		sendtoken:bool=False, redirect:bool=True, retry:int=0) -> Response:
+		sendtoken:bool=False, redirect:bool=True, retry:int=3) -> Response:
 
-		if retry > 3:
+		"""Sends a request to Aternos API bypass Cloudflare
+
+		:param url: Request URL
+		:type url: str
+		:param method: Request method, must be GET or POST
+		:type method: str
+		:param params: URL parameters, defaults to None
+		:type params: Optional[dict], optional
+		:param data: POST request data, if the method is GET,
+		this dict will be combined with params, defaults to None
+		:type data: Optional[dict], optional
+		:param headers: Custom headers, defaults to None
+		:type headers: Optional[dict], optional
+		:param reqcookies: Cookies only for this request, defaults to None
+		:type reqcookies: Optional[dict], optional
+		:param sendtoken: If the ajax and SEC token
+		should be sent, defaults to False
+		:type sendtoken: bool, optional
+		:param redirect: If requests lib should follow
+		Location header in 3xx responses, defaults to True
+		:type redirect: bool, optional
+		:param retry: How many times parser must retry
+		connection to API bypass Cloudflare, defaults to 3
+		:type retry: int, optional
+		:raises CloudflareError:
+		When the parser has exceeded retries count
+		:raises NotImplementedError:
+		When the specified method is not GET or POST
+		:return: API response
+		:rtype: requests.Response
+		"""
+
+		if retry <= 0:
 			raise CloudflareError('Unable to bypass Cloudflare protection')
 
 		try:
@@ -157,7 +234,7 @@ class AternosConnect:
 				params, data,
 				headers, reqcookies,
 				sendtoken, redirect,
-				retry + 1
+				retry - 1
 			)
 		
 		logging.info(

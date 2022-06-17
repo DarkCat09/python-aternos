@@ -208,7 +208,7 @@ class AternosServer:
 	def config(self) -> AternosConfig:
 
 		"""Returns :class:`python_aternos.atconf.AternosConfig`
-		instance for changing server settings
+		instance for editing server settings
 
 		:return: :class:`python_aternos.atconf.AternosConfig` object
 		:rtype: python_aternos.atconf.AternosConfig
@@ -219,7 +219,7 @@ class AternosServer:
 	def players(self, lst:Lists) -> PlayersList:
 
 		"""Returns :class:`python_aternos.atplayers.PlayersList`
-		instance for managing operators, whitelist or banned players list
+		instance for managing operators, whitelist and banned players lists
 
 		:param lst: Players list type, must be
 		the :class:`python_aternos.atplayers.Lists` enum value
@@ -231,7 +231,7 @@ class AternosServer:
 		return PlayersList(lst, self)
 
 	def atserver_request(
-		self, url:str, method:int,
+		self, url:str, method:str,
 		params:Optional[dict]=None,
 		data:Optional[dict]=None,
 		headers:Optional[dict]=None,
@@ -244,15 +244,16 @@ class AternosServer:
 		:type url: str
 		:param method: Request method, must be GET or POST
 		:type method: str
-		:param params: URL parameters, defaults to an empty dictionary
-		:type params: dict, optional
-		:param data: POST request data. If the method is set to GET,
-		it will be combined with params. Defaults to an empty dictionary
-		:type data: dict, optional
-		:param headers: Custom headers, defaults to an empty dictionary
-		:type headers: dict, optional
-		:param sendtoken: Send ajax token in params
-		:type sendtoken: bool
+		:param params: URL parameters, defaults to None
+		:type params: Optional[dict], optional
+		:param data: POST request data, if the method is GET,
+		this dict will be combined with params, defaults to None
+		:type data: Optional[dict], optional
+		:param headers: Custom headers, defaults to None
+		:type headers: Optional[dict], optional
+		:param sendtoken: If the ajax and SEC token
+		should be sent, defaults to False
+		:type sendtoken: bool, optional
 		:return: API response
 		:rtype: requests.Response
 		"""

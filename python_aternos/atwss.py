@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 class Streams(enum.Enum):
 
+	"""WebSocket streams types"""
+
 	status = (0,None)
 	queue = (1,None)
 	console = (2,'console')
@@ -23,6 +25,15 @@ class Streams(enum.Enum):
 		self.stream = stream
 
 class AternosWss:
+
+	"""Class for managing websocket connection
+
+	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
+	:type atserv: python_aternos.atserver.AternosServer
+	:param autoconfirm: Automatically start server status listener
+	when AternosWss connects to API to confirm server launching, defaults to `False`
+	:type autoconfirm: bool, optional
+	"""
 
 	def __init__(self, atserv:'AternosServer', autoconfirm:bool=False) -> None:
 		
@@ -36,14 +47,31 @@ class AternosWss:
 	
 	async def confirm(self) -> None:
 
+		"""Simple way to call AternosServer.confirm from this class"""
+
 		self.atserv.confirm()
 
 	def wssreceiver(self, stream:Streams, *args:Any) -> Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]:
+
+		"""Decorator that marks your function as a stream receiver.
+		When websocket receives message from the specified stream,
+		it calls all listeners created with this decorator.
+
+		:param stream: Stream that your function should listen
+		:type stream: python_aternos.atwss.Streams
+		:param args: Arguments which will be passed to your function
+		:type args: tuple, optional
+		:return: ...
+		:rtype: Callable[[Callable[[Any],Coroutine[Any,Any,None]]],Any]
+		"""
+
 		def decorator(func:Callable[[Any],Coroutine[Any,Any,None]]) -> None:
 			self.recv[stream] = (func, args)
 		return decorator
 
 	async def connect(self) -> None:
+
+		"""Connect to the websocket server and start all stream listeners"""
 		
 		headers = [
 			('Host', 'aternos.org'),
@@ -62,7 +90,9 @@ class AternosWss:
 
 		@self.wssreceiver(Streams.status)
 		async def confirmfunc(msg):
-			# Autoconfirm
+
+			"""Automatically confirm Minecraft server launching"""
+
 			if not self.autoconfirm:
 				return
 			if msg['class'] == 'queueing' \
@@ -72,6 +102,22 @@ class AternosWss:
 		
 		@self.wssreceiver(Streams.status)
 		async def streamsfunc(msg):
+
+			"""Automatically starts streams. Detailed description:
+
+			According to the websocket messages from the web site,
+			Aternos can't receive any data from a stream (e.g. console) until
+			it requests this stream via the special message to the websocket server:
+			`{"stream":"console","type":"start"}`
+			on which the server responses with: `{"type":"connected"}`
+			Also, there are RAM (used heap) and TPS (ticks per second)
+			streams that must be enabled before trying to get information.
+			Enabling the stream for listening the server status is not needed,
+			these data is sent from API by default, so there's None value in
+			the second item of its stream type tuple (`<Streams.status: (0, None)>`).
+			https://github.com/DarkCat09/python-aternos/issues/22#issuecomment-1146788496
+			"""
+
 			if msg['status'] == 2:
 				# Automatically start streams
 				for strm in self.recv:
@@ -87,6 +133,8 @@ class AternosWss:
 		await self.wssworker()
 
 	async def close(self) -> None:
+
+		"""Closes websocket connection and stops all listeners"""
 		
 		self.keep.cancel()
 		self.msgs.cancel()
@@ -95,6 +143,12 @@ class AternosWss:
 
 	async def send(self, obj:Union[Dict[str, Any],str]) -> None:
 
+		"""Sends a message to websocket server
+
+		:param obj: Message, may be a string or a dict
+		:type obj: Union[Dict[str, Any],str]
+		"""
+
 		if isinstance(obj, dict):
 			obj = json.dumps(obj)
 
@@ -102,10 +156,16 @@ class AternosWss:
 
 	async def wssworker(self) -> None:
 
+		"""Starts async tasks in background
+		for receiving websocket messages
+		and sending keepalive ping"""
+
 		self.keep = asyncio.create_task(self.keepalive())
 		self.msgs = asyncio.create_task(self.receiver())
 
 	async def keepalive(self) -> None:
+
+		"""Each 49 seconds sends keepalive ping to websocket server"""
 
 		try:
 			while True:
@@ -116,6 +176,9 @@ class AternosWss:
 			pass
 
 	async def receiver(self) -> None:
+
+		"""Receives messages from websocket servers
+		and calls user's streams listeners"""
 
 		try:
 			while True:

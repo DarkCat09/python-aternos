@@ -9,14 +9,31 @@ if TYPE_CHECKING:
 	from .atserver import AternosServer
 
 class FileType(enum.IntEnum):
+
+	"""File or dierctory"""
+
 	file = 0
 	directory = 1
 
 class AternosFile:
 
+	"""File class which contains info about its path, type and size
+	
+	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
+	:type atserv: python_aternos.atserver.AternosServer
+	:param path: Path to the file
+	:type path: str
+	:param name: Filename
+	:type name: str
+	:param ftype: File or directory
+	:type ftype: python_aternos.atfile.FileType
+	:param size: File size, defaults to 0
+	:type size: Union[int,float], optional
+	"""
+
 	def __init__(
 		self, atserv:'AternosServer',
-		path:str, name:str, ftype:int=FileType.file,
+		path:str, name:str, ftype:FileType=FileType.file,
 		size:Union[int,float]=0) -> None:
 
 		self.atserv = atserv
@@ -28,6 +45,8 @@ class AternosFile:
 
 	def delete(self) -> None:
 
+		"""Deletes the file"""
+
 		self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/delete.php',
 			'POST', data={'file': self._full},
@@ -35,6 +54,14 @@ class AternosFile:
 		)
 
 	def get_content(self) -> bytes:
+
+		"""Requests file content in bytes (downloads it)
+
+		:raises FileError: If downloading
+		the file is not allowed by Aternos
+		:return: File content
+		:rtype: bytes
+		"""
 
 		file = self.atserv.atserver_request(
 			'https://aternos.org/panel/ajax/files/download.php',
@@ -48,6 +75,12 @@ class AternosFile:
 
 	def set_content(self, value:bytes) -> None:
 
+		"""Modifies the file content
+
+		:param value: New content
+		:type value: bytes
+		"""
+
 		self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/save.php',
 			'POST', data={
@@ -58,6 +91,13 @@ class AternosFile:
 
 	def get_text(self) -> str:
 
+		"""Requests editing the file as a text
+		(try it if downloading is disallowed)
+
+		:return: File text content
+		:rtype: str
+		"""
+
 		editor = self.atserv.atserver_request(
 			f'https://aternos.org/files/{self._full.lstrip("/")}', 'GET'
 		)
@@ -67,6 +107,14 @@ class AternosFile:
 		return editblock.text_content()
 
 	def set_text(self, value:str) -> None:
+		
+		"""Modifies the file content,
+		but unlike set_content takes
+		a string as a new value
+
+		:param value: New content
+		:type value: str
+		"""
 		
 		self.set_content(value.encode('utf-8'))
 

@@ -1,9 +1,15 @@
 import asyncio
+import logging
 from getpass import getpass
 from python_aternos import Client, atwss
 
 user = input('Username: ')
 pswd = getpass('Password: ')
+
+logs = input('Show detailed logs? (y/n) ').strip().lower() == 'y'
+if logs:
+    logging.basicConfig(level=logging.DEBUG)
+
 aternos = Client.from_credentials(user, pswd)
 
 s = aternos.list_servers()[0]

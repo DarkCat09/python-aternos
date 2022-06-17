@@ -1,5 +1,5 @@
 import lxml.html
-from typing import Union, List
+from typing import Union, Optional, List
 from typing import TYPE_CHECKING
 
 from .atfile import AternosFile, FileType
@@ -8,11 +8,27 @@ if TYPE_CHECKING:
 
 class FileManager:
 
+	"""Aternos file manager class for viewing files structure
+	
+	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
+	:type atserv: python_aternos.atserver.AternosServer
+	"""
+
 	def __init__(self, atserv:'AternosServer') -> None:
 
 		self.atserv = atserv
 
 	def listdir(self, path:str='') -> List[AternosFile]:
+
+		"""Requests a list of files
+		in the specified directory
+
+		:param path: Directory
+		(an empty string means root), defaults to ''
+		:type path: str, optional
+		:return: List of :class:`python_aternos.atfile.AternosFile`
+		:rtype: List[AternosFile]
+		"""
 
 		path = path.lstrip('/')
 		filesreq = self.atserv.atserver_request(
@@ -57,6 +73,16 @@ class FileManager:
 
 	def convert_size(self, num:Union[int,float], measure:str) -> float:
 
+		"""Converts "human" file size to size in bytes
+
+		:param num: Size
+		:type num: Union[int,float]
+		:param measure: Units (B, kB, MB, GB)
+		:type measure: str
+		:return: Size in bytes
+		:rtype: float
+		"""
+
 		measure_match = {
 			'B': 1,
 			'kB': 1000,
@@ -68,7 +94,16 @@ class FileManager:
 		except KeyError:
 			return -1
 
-	def get_file(self, path:str) -> Union[AternosFile,None]:
+	def get_file(self, path:str) -> Optional[AternosFile]:
+
+		"""Returns :class:`python_aternos.atfile.AternosFile`
+		instance by its path
+
+		:param path: Path to file including its filename
+		:type path: str
+		:return: _description_
+		:rtype: Optional[AternosFile]
+		"""
 
 		filepath = path[:path.rfind('/')]
 		filename = path[path.rfind('/'):]
@@ -82,6 +117,14 @@ class FileManager:
 
 	def dl_file(self, path:str) -> bytes:
 
+		"""Returns the file content in bytes (downloads it)
+
+		:param path: Path to file including its filename
+		:type path: str
+		:return: File content
+		:rtype: bytes
+		"""
+
 		file = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/files/download.php?' + \
 			f'file={path.replace("/","%2F")}',
@@ -91,6 +134,15 @@ class FileManager:
 		return file.content
 
 	def dl_world(self, world:str='world') -> bytes:
+
+		"""Returns the world zip file content
+		by its name (downloads it)
+
+		:param world: Name of world, defaults to 'world'
+		:type world: str, optional
+		:return: Zip file content
+		:rtype: bytes
+		"""
 
 		world = self.atserv.atserver_request(
 			f'https://aternos.org/panel/ajax/worlds/download.php?' + \
