@@ -1,5 +1,5 @@
 from getpass import getpass
-from python_aternos import Client, atserver
+from python_aternos import Client
 
 user = input('Username: ')
 pswd = getpass('Password: ')
@@ -9,7 +9,7 @@ s = aternos.list_servers()[0]
 files = s.files()
 
 while True:
-    
+
     cmd = input('> ').strip().lower()
 
     if cmd == 'help':
@@ -31,7 +31,7 @@ while True:
         print(path, 'contains:')
         for file in directory:
             print('\t' + file.name)
-    
+
     if cmd == 'world':
         file = files.get_file('/world')
         with open('world.zip', 'wb') as f:

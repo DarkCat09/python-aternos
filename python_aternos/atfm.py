@@ -4,150 +4,155 @@ from typing import TYPE_CHECKING
 
 from .atfile import AternosFile, FileType
 if TYPE_CHECKING:
-	from .atserver import AternosServer
+    from .atserver import AternosServer
+
 
 class FileManager:
 
-	"""Aternos file manager class for viewing files structure
-	
-	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
-	:type atserv: python_aternos.atserver.AternosServer
-	"""
+    """Aternos file manager class for viewing files structure
 
-	def __init__(self, atserv:'AternosServer') -> None:
+    :param atserv: :class:`python_aternos.atserver.AternosServer` instance
+    :type atserv: python_aternos.atserver.AternosServer
+    """
 
-		self.atserv = atserv
+    def __init__(self, atserv: 'AternosServer') -> None:
 
-	def listdir(self, path:str='') -> List[AternosFile]:
+        self.atserv = atserv
 
-		"""Requests a list of files
-		in the specified directory
+    def listdir(self, path: str = '') -> List[AternosFile]:
 
-		:param path: Directory
-		(an empty string means root), defaults to ''
-		:type path: str, optional
-		:return: List of :class:`python_aternos.atfile.AternosFile`
-		:rtype: List[AternosFile]
-		"""
+        """Requests a list of files
+        in the specified directory
 
-		path = path.lstrip('/')
-		filesreq = self.atserv.atserver_request(
-			f'https://aternos.org/files/{path}', 'GET'
-		)
-		filestree = lxml.html.fromstring(filesreq.content)
-		fileslist = filestree.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," file ")]')
+        :param path: Directory
+        (an empty string means root), defaults to ''
+        :type path: str, optional
+        :return: List of :class:`python_aternos.atfile.AternosFile`
+        :rtype: List[AternosFile]
+        """
 
-		files = []
-		for f in fileslist:
+        path = path.lstrip('/')
+        filesreq = self.atserv.atserver_request(
+            f'https://aternos.org/files/{path}', 'GET'
+        )
+        filestree = lxml.html.fromstring(filesreq.content)
+        fileslist = filestree.xpath(
+            '//div[contains(concat(" ",normalize-space(@class)," ")," file ")]'
+        )
 
-			ftype_raw = f.xpath('@data-type')[0]
-			ftype = FileType.file \
-				if ftype_raw == 'file' \
-				else FileType.directory
+        files = []
+        for f in fileslist:
 
-			fsize_raw = f.xpath('./div[@class="filesize"]')
-			fsize = 0
-			if len(fsize_raw) > 0:
+            ftype_raw = f.xpath('@data-type')[0]
+            ftype = FileType.file \
+                if ftype_raw == 'file' \
+                else FileType.directory
 
-				fsize_text = fsize_raw[0].text.strip()
-				fsize_num = fsize_text[:fsize_text.rfind(' ')]
-				fsize_msr = fsize_text[fsize_text.rfind(' ')+1:]
+            fsize_raw = f.xpath('./div[@class="filesize"]')
+            fsize = 0
+            if len(fsize_raw) > 0:
 
-				try:
-					fsize = self.convert_size(float(fsize_num), fsize_msr)
-				except ValueError:
-					fsize = -1
+                fsize_text = fsize_raw[0].text.strip()
+                fsize_num = fsize_text[:fsize_text.rfind(' ')]
+                fsize_msr = fsize_text[fsize_text.rfind(' ')+1:]
 
-			fullpath = f.xpath('@data-path')[0]
-			filepath = fullpath[:fullpath.rfind('/')]
-			filename = fullpath[fullpath.rfind('/'):]
-			files.append(
-				AternosFile(
-					self.atserv,
-					filepath, filename,
-					ftype, fsize
-				)
-			)
+                try:
+                    fsize = self.convert_size(float(fsize_num), fsize_msr)
+                except ValueError:
+                    fsize = -1
 
-		return files
+            fullpath = f.xpath('@data-path')[0]
+            filepath = fullpath[:fullpath.rfind('/')]
+            filename = fullpath[fullpath.rfind('/'):]
+            files.append(
+                AternosFile(
+                    self.atserv,
+                    filepath, filename,
+                    ftype, fsize
+                )
+            )
 
-	def convert_size(self, num:Union[int,float], measure:str) -> float:
+        return files
 
-		"""Converts "human" file size to size in bytes
+    def convert_size(self, num: Union[int, float], measure: str) -> float:
 
-		:param num: Size
-		:type num: Union[int,float]
-		:param measure: Units (B, kB, MB, GB)
-		:type measure: str
-		:return: Size in bytes
-		:rtype: float
-		"""
+        """Converts "human" file size to size in bytes
 
-		measure_match = {
-			'B': 1,
-			'kB': 1000,
-			'MB': 1000000,
-			'GB': 1000000000
-		}
-		try:
-			return num * measure_match[measure]
-		except KeyError:
-			return -1
+        :param num: Size
+        :type num: Union[int,float]
+        :param measure: Units (B, kB, MB, GB)
+        :type measure: str
+        :return: Size in bytes
+        :rtype: float
+        """
 
-	def get_file(self, path:str) -> Optional[AternosFile]:
+        measure_match = {
+            'B': 1,
+            'kB': 1000,
+            'MB': 1000000,
+            'GB': 1000000000
+        }
+        try:
+            return num * measure_match[measure]
+        except KeyError:
+            return -1
 
-		"""Returns :class:`python_aternos.atfile.AternosFile`
-		instance by its path
+    def get_file(self, path: str) -> Optional[AternosFile]:
 
-		:param path: Path to file including its filename
-		:type path: str
-		:return: _description_
-		:rtype: Optional[AternosFile]
-		"""
+        """Returns :class:`python_aternos.atfile.AternosFile`
+        instance by its path
 
-		filepath = path[:path.rfind('/')]
-		filename = path[path.rfind('/'):]
+        :param path: Path to file including its filename
+        :type path: str
+        :return: _description_
+        :rtype: Optional[AternosFile]
+        """
 
-		filedir = self.listdir(filepath)
-		for file in filedir:
-			if file.name == filename:
-				return file
+        filepath = path[:path.rfind('/')]
+        filename = path[path.rfind('/'):]
 
-		return None
+        filedir = self.listdir(filepath)
+        for file in filedir:
+            if file.name == filename:
+                return file
 
-	def dl_file(self, path:str) -> bytes:
+        return None
 
-		"""Returns the file content in bytes (downloads it)
+    def dl_file(self, path: str) -> bytes:
 
-		:param path: Path to file including its filename
-		:type path: str
-		:return: File content
-		:rtype: bytes
-		"""
+        """Returns the file content in bytes (downloads it)
 
-		file = self.atserv.atserver_request(
-			f'https://aternos.org/panel/ajax/files/download.php?' + \
-			f'file={path.replace("/","%2F")}',
-			'GET'
-		)
+        :param path: Path to file including its filename
+        :type path: str
+        :return: File content
+        :rtype: bytes
+        """
 
-		return file.content
+        file = self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/files/download.php'
+            'GET', params={
+                'file': path.replace('/', '%2F')
+            }
+        )
 
-	def dl_world(self, world:str='world') -> bytes:
+        return file.content
 
-		"""Returns the world zip file content
-		by its name (downloads it)
+    def dl_world(self, world: str = 'world') -> bytes:
 
-		:param world: Name of world, defaults to 'world'
-		:type world: str, optional
-		:return: Zip file content
-		:rtype: bytes
-		"""
+        """Returns the world zip file content
+        by its name (downloads it)
 
-		world = self.atserv.atserver_request(
-			f'https://aternos.org/panel/ajax/worlds/download.php?' + \
-			f'world={world.replace("/","%2F")}',
-			'GET'
-		)
+        :param world: Name of world, defaults to 'world'
+        :type world: str, optional
+        :return: Zip file content
+        :rtype: bytes
+        """
 
-		return world.content
+        world = self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/worlds/download.php'
+            'GET', params={
+                'world': world.replace('/', '%2F')
+            }
+        )
+
+        return world.content

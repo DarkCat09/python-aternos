@@ -6,142 +6,146 @@ from typing import TYPE_CHECKING
 from .aterrors import FileError
 
 if TYPE_CHECKING:
-	from .atserver import AternosServer
+    from .atserver import AternosServer
+
 
 class FileType(enum.IntEnum):
 
-	"""File or dierctory"""
+    """File or dierctory"""
 
-	file = 0
-	directory = 1
+    file = 0
+    directory = 1
+
 
 class AternosFile:
 
-	"""File class which contains info about its path, type and size
-	
-	:param atserv: :class:`python_aternos.atserver.AternosServer` instance
-	:type atserv: python_aternos.atserver.AternosServer
-	:param path: Path to the file
-	:type path: str
-	:param name: Filename
-	:type name: str
-	:param ftype: File or directory
-	:type ftype: python_aternos.atfile.FileType
-	:param size: File size, defaults to 0
-	:type size: Union[int,float], optional
-	"""
+    """File class which contains info about its path, type and size
 
-	def __init__(
-		self, atserv:'AternosServer',
-		path:str, name:str, ftype:FileType=FileType.file,
-		size:Union[int,float]=0) -> None:
+    :param atserv: :class:`python_aternos.atserver.AternosServer` instance
+    :type atserv: python_aternos.atserver.AternosServer
+    :param path: Path to the file
+    :type path: str
+    :param name: Filename
+    :type name: str
+    :param ftype: File or directory
+    :type ftype: python_aternos.atfile.FileType
+    :param size: File size, defaults to 0
+    :type size: Union[int,float], optional
+    """
 
-		self.atserv = atserv
-		self._path = path.lstrip('/')
-		self._name = name
-		self._full = path + name
-		self._ftype = ftype
-		self._size = float(size)
+    def __init__(
+            self,
+            atserv: 'AternosServer',
+            path: str, name: str,
+            ftype: FileType = FileType.file,
+            size: Union[int, float] = 0) -> None:
 
-	def delete(self) -> None:
+        self.atserv = atserv
+        self._path = path.lstrip('/')
+        self._name = name
+        self._full = path + name
+        self._ftype = ftype
+        self._size = float(size)
 
-		"""Deletes the file"""
+    def delete(self) -> None:
 
-		self.atserv.atserver_request(
-			'https://aternos.org/panel/ajax/delete.php',
-			'POST', data={'file': self._full},
-			sendtoken=True
-		)
+        """Deletes the file"""
 
-	def get_content(self) -> bytes:
+        self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/delete.php',
+            'POST', data={'file': self._full},
+            sendtoken=True
+        )
 
-		"""Requests file content in bytes (downloads it)
+    def get_content(self) -> bytes:
 
-		:raises FileError: If downloading
-		the file is not allowed by Aternos
-		:return: File content
-		:rtype: bytes
-		"""
+        """Requests file content in bytes (downloads it)
 
-		file = self.atserv.atserver_request(
-			'https://aternos.org/panel/ajax/files/download.php',
-			'GET', params={
-				'file': self._full
-			}
-		)
-		if file.content == b'{"success":false}':
-			raise FileError('Unable to download the file. Try to get text')
-		return file.content
+        :raises FileError: If downloading
+        the file is not allowed by Aternos
+        :return: File content
+        :rtype: bytes
+        """
 
-	def set_content(self, value:bytes) -> None:
+        file = self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/files/download.php',
+            'GET', params={
+                'file': self._full
+            }
+        )
+        if file.content == b'{"success":false}':
+            raise FileError('Unable to download the file. Try to get text')
+        return file.content
 
-		"""Modifies the file content
+    def set_content(self, value: bytes) -> None:
 
-		:param value: New content
-		:type value: bytes
-		"""
+        """Modifies the file content
 
-		self.atserv.atserver_request(
-			f'https://aternos.org/panel/ajax/save.php',
-			'POST', data={
-				'file': self._full,
-				'content': value
-			}, sendtoken=True
-		)
+        :param value: New content
+        :type value: bytes
+        """
 
-	def get_text(self) -> str:
+        self.atserv.atserver_request(
+            f'https://aternos.org/panel/ajax/save.php',
+            'POST', data={
+                'file': self._full,
+                'content': value
+            }, sendtoken=True
+        )
 
-		"""Requests editing the file as a text
-		(try it if downloading is disallowed)
+    def get_text(self) -> str:
 
-		:return: File text content
-		:rtype: str
-		"""
+        """Requests editing the file as a text
+        (try it if downloading is disallowed)
 
-		editor = self.atserv.atserver_request(
-			f'https://aternos.org/files/{self._full.lstrip("/")}', 'GET'
-		)
-		edittree = lxml.html.fromstring(editor.content)
-		
-		editblock = edittree.xpath('//div[@id="editor"]')[0]
-		return editblock.text_content()
+        :return: File text content
+        :rtype: str
+        """
 
-	def set_text(self, value:str) -> None:
-		
-		"""Modifies the file content,
-		but unlike set_content takes
-		a string as a new value
+        editor = self.atserv.atserver_request(
+            f'https://aternos.org/files/{self._full.lstrip("/")}', 'GET'
+        )
+        edittree = lxml.html.fromstring(editor.content)
 
-		:param value: New content
-		:type value: str
-		"""
-		
-		self.set_content(value.encode('utf-8'))
+        editblock = edittree.xpath('//div[@id="editor"]')[0]
+        return editblock.text_content()
 
-	@property
-	def path(self):
-		return self._path
+    def set_text(self, value: str) -> None:
 
-	@property
-	def name(self) -> str:
-		return self._name
-	
-	@property
-	def full(self) -> str:
-		return self._full
+        """Modifies the file content,
+        but unlike set_content takes
+        a string as a new value
 
-	@property
-	def is_dir(self) -> bool:
-		if self._ftype == FileType.directory:
-			return True
-		return False
+        :param value: New content
+        :type value: str
+        """
 
-	@property
-	def is_file(self) -> bool:
-		if self._ftype == FileType.file:
-			return True
-		return False
-	
-	@property
-	def size(self) -> float:
-		return self._size
+        self.set_content(value.encode('utf-8'))
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def full(self) -> str:
+        return self._full
+
+    @property
+    def is_dir(self) -> bool:
+        if self._ftype == FileType.directory:
+            return True
+        return False
+
+    @property
+    def is_file(self) -> bool:
+        if self._ftype == FileType.file:
+            return True
+        return False
+
+    @property
+    def size(self) -> float:
+        return self._size

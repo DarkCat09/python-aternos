@@ -1,0 +1,13 @@
+site_name: Python-Aternos
+
+theme:
+  name: readthedocs
+
+plugins:
+  - search
+  - mkdocstrings
+
+nav:
+  - index.md
+  - howto.md
+  - reference.md

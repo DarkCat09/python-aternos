@@ -5,327 +5,346 @@ from typing import Any, Dict, List, Union, Optional
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from .atserver import AternosServer
-
-class ServerOpts(enum.Enum):
-
-	"""server.options file"""
-
-	players = 'max-players'
-	gm = 'gamemode'
-	difficulty = 'difficulty'
-	whl = 'white-list'
-	online = 'online-mode'
-	pvp = 'pvp'
-	cmdblock = 'enable-command-block'
-	flight = 'allow-flight'
-	animals = 'spawn-animals'
-	monsters = 'spawn-monsters'
-	villagers = 'spawn-npcs'
-	nether = 'allow-nether'
-	forcegm = 'force-gamemode'
-	spawnlock = 'spawn-protection'
-	cmds = 'allow-cheats'
-	packreq = 'require-resource-pack'
-	pack = 'resource-pack'
+    from .atserver import AternosServer
 
 DAT_PREFIX = 'Data:'
 DAT_GR_PREFIX = 'Data:GameRules:'
 
+
+class ServerOpts(enum.Enum):
+
+    """server.options file"""
+
+    players = 'max-players'
+    gm = 'gamemode'
+    difficulty = 'difficulty'
+    whl = 'white-list'
+    online = 'online-mode'
+    pvp = 'pvp'
+    cmdblock = 'enable-command-block'
+    flight = 'allow-flight'
+    animals = 'spawn-animals'
+    monsters = 'spawn-monsters'
+    villagers = 'spawn-npcs'
+    nether = 'allow-nether'
+    forcegm = 'force-gamemode'
+    spawnlock = 'spawn-protection'
+    cmds = 'allow-cheats'
+    packreq = 'require-resource-pack'
+    pack = 'resource-pack'
+
+
 class WorldOpts(enum.Enum):
 
-	"""level.dat file"""
+    """level.dat file"""
 
-	seed12 = 'randomseed'
-	seed = 'seed'
-	hardcore = 'hardcore'
-	difficulty = 'Difficulty'
+    seed12 = 'randomseed'
+    seed = 'seed'
+    hardcore = 'hardcore'
+    difficulty = 'Difficulty'
+
 
 class WorldRules(enum.Enum):
 
-	"""/gamerule list"""
+    """/gamerule list"""
 
-	advs = 'announceAdvancements'
-	univanger = 'universalAnger'
-	cmdout = 'commandBlockOutput'
-	elytra = 'disableElytraMovementCheck'
-	raids = 'disableRaids'
-	daynight = 'doDaylightCycle'
-	entdrop = 'doEntityDrops'
-	fire = 'doFireTick'
-	phantoms = 'doInsomnia'
-	immrespawn = 'doImmediateRespawn'
-	limitcraft = 'doLimitedCrafting'
-	mobloot = 'doMobLoot'
-	mobs = 'doMobSpawning'
-	patrols = 'doPatrolSpawning'
-	blockdrop = 'doTileDrops'
-	traders = 'doTraderSpawning'
-	weather = 'doWeatherCycle'
-	drowndmg = 'drowningDamage'
-	falldmg = 'fallDamage'
-	firedmg = 'fireDamage'
-	snowdmg = 'freezeDamage'
-	forgive = 'forgiveDeadPlayers'
-	keepinv = 'keepInventory'
-	deathmsg = 'showDeathMessages'
-	admincmdlog = 'logAdminCommands'
-	cmdlen = 'maxCommandChainLength'
-	entcram = 'maxEntityCramming'
-	mobgrief = 'mobGriefing'
-	regen = 'naturalRegeneration'
-	sleeppct = 'playersSleepingPercentage'
-	rndtick = 'randomTickSpeed'
-	spawnradius = 'spawnRadius'
-	reducedf3 = 'reducedDebugInfo'
-	spectchunkgen = 'spectatorsGenerateChunks'
-	cmdfb = 'sendCommandFeedback'
+    advs = 'announceAdvancements'
+    univanger = 'universalAnger'
+    cmdout = 'commandBlockOutput'
+    elytra = 'disableElytraMovementCheck'
+    raids = 'disableRaids'
+    daynight = 'doDaylightCycle'
+    entdrop = 'doEntityDrops'
+    fire = 'doFireTick'
+    phantoms = 'doInsomnia'
+    immrespawn = 'doImmediateRespawn'
+    limitcraft = 'doLimitedCrafting'
+    mobloot = 'doMobLoot'
+    mobs = 'doMobSpawning'
+    patrols = 'doPatrolSpawning'
+    blockdrop = 'doTileDrops'
+    traders = 'doTraderSpawning'
+    weather = 'doWeatherCycle'
+    drowndmg = 'drowningDamage'
+    falldmg = 'fallDamage'
+    firedmg = 'fireDamage'
+    snowdmg = 'freezeDamage'
+    forgive = 'forgiveDeadPlayers'
+    keepinv = 'keepInventory'
+    deathmsg = 'showDeathMessages'
+    admincmdlog = 'logAdminCommands'
+    cmdlen = 'maxCommandChainLength'
+    entcram = 'maxEntityCramming'
+    mobgrief = 'mobGriefing'
+    regen = 'naturalRegeneration'
+    sleeppct = 'playersSleepingPercentage'
+    rndtick = 'randomTickSpeed'
+    spawnradius = 'spawnRadius'
+    reducedf3 = 'reducedDebugInfo'
+    spectchunkgen = 'spectatorsGenerateChunks'
+    cmdfb = 'sendCommandFeedback'
+
 
 class Gamemode(enum.IntEnum):
 
-	"""/gamemode numeric list"""
+    """/gamemode numeric list"""
 
-	survival = 0
-	creative = 1
-	adventure = 2
-	spectator = 3
+    survival = 0
+    creative = 1
+    adventure = 2
+    spectator = 3
+
 
 class Difficulty(enum.IntEnum):
 
-	"""/difficulty numeric list"""
+    """/difficulty numeric list"""
 
-	peaceful = 0
-	easy = 1
-	normal = 2
-	hard = 3
+    peaceful = 0
+    easy = 1
+    normal = 2
+    hard = 3
+
 
 # checking timezone format
 tzcheck = re.compile(r'(^[A-Z]\w+\/[A-Z]\w+$)|^UTC$')
 # options types converting
 convert = {
-	'config-option-number': int,
-	'config-option-select': int,
-	'config-option-toggle': bool
+    'config-option-number': int,
+    'config-option-select': int,
+    'config-option-toggle': bool
 }
+
 
 class AternosConfig:
 
-	"""Class for editing server settings
-	
-	:param atserv: :class:`python_aternos.atserver.AternosServer` object
-	:type atserv: python_aternos.atserver.AternosServer
-	"""
+    """Class for editing server settings
 
-	def __init__(self, atserv:'AternosServer') -> None:
+    :param atserv: :class:`python_aternos.atserver.AternosServer` object
+    :type atserv: python_aternos.atserver.AternosServer
+    """
 
-		self.atserv = atserv
+    def __init__(self, atserv: 'AternosServer') -> None:
 
-	def get_timezone(self) -> str:
+        self.atserv = atserv
 
-		"""Parses timezone from options page
+    def get_timezone(self) -> str:
 
-		:return: Area/Location
-		:rtype: str
-		"""
+        """Parses timezone from options page
 
-		optreq = self.atserv.atserver_request(
-			'https://aternos.org/options', 'GET'
-		)
-		opttree = lxml.html.fromstring(optreq)
+        :return: Area/Location
+        :rtype: str
+        """
 
-		tzopt = opttree.xpath('//div[@class="options-other-input timezone-switch"]')[0]
-		tztext = tzopt.xpath('.//div[@class="option current"]')[0].text
-		return tztext.strip()
+        optreq = self.atserv.atserver_request(
+            'https://aternos.org/options', 'GET'
+        )
+        opttree = lxml.html.fromstring(optreq)
 
-	def set_timezone(self, value:str) -> None:
+        tzopt = opttree.xpath(
+            '//div[@class="options-other-input timezone-switch"]'
+        )[0]
+        tztext = tzopt.xpath('.//div[@class="option current"]')[0].text
+        return tztext.strip()
 
-		"""Sets new timezone
+    def set_timezone(self, value: str) -> None:
 
-		:param value: New timezone
-		:type value: str
-		:raises ValueError: If given string
-		doesn't match Area/Location format
-		"""
+        """Sets new timezone
 
-		matches_tz = tzcheck.search(value)
-		if not matches_tz:
-			raise ValueError('Timezone must match zoneinfo format: Area/Location')
+        :param value: New timezone
+        :type value: str
+        :raises ValueError: If given string
+        doesn't match Area/Location format
+        """
 
-		self.atserv.atserver_request(
-			'https://aternos.org/panel/ajax/timezone.php',
-			'POST', data={'timezone': value},
-			sendtoken=True
-		)
+        matches_tz = tzcheck.search(value)
+        if not matches_tz:
+            raise ValueError(
+                'Timezone must match zoneinfo format: Area/Location'
+            )
 
-	def get_java(self) -> int:
+        self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/timezone.php',
+            'POST', data={'timezone': value},
+            sendtoken=True
+        )
 
-		"""Parses Java version from options page
+    def get_java(self) -> int:
 
-		:return: Java image version
-		:rtype: int
-		"""		
+        """Parses Java version from options page
 
-		optreq = self.atserv.atserver_request(
-			'https://aternos.org/options', 'GET'
-		)
-		opttree = lxml.html.fromstring(optreq)
-		imgopt = opttree.xpath('//div[@class="options-other-input image-switch"]')[0]
-		imgver = imgopt.xpath('.//div[@class="option current"]/@data-value')[0]
+        :return: Java image version
+        :rtype: int
+        """
 
-		jdkver = str(imgver or '').removeprefix('openjdk:')
-		return int(jdkver)
-	
-	def set_java(self, value:int) -> None:
+        optreq = self.atserv.atserver_request(
+            'https://aternos.org/options', 'GET'
+        )
+        opttree = lxml.html.fromstring(optreq)
+        imgopt = opttree.xpath(
+            '//div[@class="options-other-input image-switch"]'
+        )[0]
+        imgver = imgopt.xpath(
+            './/div[@class="option current"]/@data-value'
+        )[0]
 
-		"""Sets new Java version
+        jdkver = str(imgver or '').removeprefix('openjdk:')
+        return int(jdkver)
 
-		:param value: New Java image version
-		:type value: int
-		"""
+    def set_java(self, value: int) -> None:
 
-		self.atserv.atserver_request(
-			'https://aternos.org/panel/ajax/image.php',
-			'POST', data={'image': f'openjdk:{value}'},
-			sendtoken=True
-		)
+        """Sets new Java version
 
-	#
-	# server.properties
-	#
-	def set_server_prop(self, option:str, value:Any) -> None:
+        :param value: New Java image version
+        :type value: int
+        """
 
-		"""Sets server.properties option
+        self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/image.php',
+            'POST', data={'image': f'openjdk:{value}'},
+            sendtoken=True
+        )
 
-		:param option: Option name
-		:type option: str
-		:param value: New value
-		:type value: Any
-		"""
+    #
+    # server.properties
+    #
+    def set_server_prop(self, option: str, value: Any) -> None:
 
-		self.__set_prop(
-			'/server.properties',
-			option, value
-		)
+        """Sets server.properties option
 
-	def get_server_props(self, proptyping:bool=True) -> Dict[str,Any]:
+        :param option: Option name
+        :type option: str
+        :param value: New value
+        :type value: Any
+        """
 
-		"""Parses all server.properties from options page
+        self.__set_prop(
+            '/server.properties',
+            option, value
+        )
 
-		:param proptyping: If the returned dict should contain value
-		that matches property type (e.g. max-players will be int)
-		instead of string, defaults to True
-		:type proptyping: bool, optional
-		:return: Server.properties dict
-		:rtype: Dict[str,Any]
-		"""
+    def get_server_props(self, proptyping: bool = True) -> Dict[str, Any]:
 
-		return self.__get_all_props('https://aternos.org/options', proptyping)
+        """Parses all server.properties from options page
 
-	def set_server_props(self, props:Dict[str,Any]) -> None:
+        :param proptyping: If the returned dict should contain value
+        that matches property type (e.g. max-players will be int)
+        instead of string, defaults to True
+        :type proptyping: bool, optional
+        :return: Server.properties dict
+        :rtype: Dict[str,Any]
+        """
 
-		"""Updates server.properties options with the given dict
+        return self.__get_all_props('https://aternos.org/options', proptyping)
 
-		:param props: Dict with properties `{key:value}`
-		:type props: Dict[str,Any]
-		"""
+    def set_server_props(self, props: Dict[str, Any]) -> None:
 
-		for key in props:
-			self.set_server_prop(key, props[key])
+        """Updates server.properties options with the given dict
 
-	#
-	# level.dat
-	#
-	def set_world_prop(
-		self, option:Union[WorldOpts,WorldRules],
-		value:Any, gamerule:bool=False,
-		world:str='world') -> None:
+        :param props: Dict with properties `{key:value}`
+        :type props: Dict[str,Any]
+        """
 
-		"""Sets level.dat option for specified world
+        for key in props:
+            self.set_server_prop(key, props[key])
 
-		:param option: Option name
-		:type option: Union[WorldOpts,WorldRules]
-		:param value: New value
-		:type value: Any
-		:param gamerule: If the option
-		is a gamerule, defaults to False
-		:type gamerule: bool, optional
-		:param world: Name of the world which
-		level.dat must be edited, defaults to 'world'
-		:type world: str, optional
-		"""
+    #
+    # level.dat
+    #
+    def set_world_prop(
+            self, option: Union[WorldOpts, WorldRules],
+            value: Any, gamerule: bool = False,
+            world: str = 'world') -> None:
 
-		prefix = DAT_PREFIX
-		if gamerule:
-			prefix = DAT_GR_PREFIX
+        """Sets level.dat option for specified world
 
-		self.__set_prop(
-			f'/{world}/level.dat',
-			f'{prefix}{option}',
-			value
-		)
+        :param option: Option name
+        :type option: Union[WorldOpts,WorldRules]
+        :param value: New value
+        :type value: Any
+        :param gamerule: If the option
+        is a gamerule, defaults to False
+        :type gamerule: bool, optional
+        :param world: Name of the world which
+        level.dat must be edited, defaults to 'world'
+        :type world: str, optional
+        """
 
-	def get_world_props(
-		self, world:str='world',
-		proptyping:bool=True) -> Dict[str,Any]:
+        prefix = DAT_PREFIX
+        if gamerule:
+            prefix = DAT_GR_PREFIX
 
-		"""Parses level.dat from specified world's options page
+        self.__set_prop(
+            f'/{world}/level.dat',
+            f'{prefix}{option}',
+            value
+        )
 
-		:param world: Name of the world, defaults to 'world'
-		:type world: str, optional
-		:param proptyping: If the returned dict should contain the value
-		that matches property type (e.g. randomTickSpeed will be bool)
-		instead of string, defaults to True
-		:type proptyping: bool, optional
-		:return: Level.dat dict
-		:rtype: Dict[str,Any]
-		"""
+    def get_world_props(
+            self, world: str = 'world',
+            proptyping: bool = True) -> Dict[str, Any]:
 
-		self.__get_all_props(
-			f'https://aternos.org/files/{world}/level.dat',
-			proptyping, [DAT_PREFIX, DAT_GR_PREFIX]
-		)
+        """Parses level.dat from specified world's options page
 
-	def set_world_props(self, props:Dict[str,Any]) -> None:
-		for key in props:
-			self.set_world_prop(key, props[key])
+        :param world: Name of the world, defaults to 'world'
+        :type world: str, optional
+        :param proptyping: If the returned dict should contain the value
+        that matches property type (e.g. randomTickSpeed will be bool)
+        instead of string, defaults to True
+        :type proptyping: bool, optional
+        :return: Level.dat dict
+        :rtype: Dict[str,Any]
+        """
 
-	#
-	# helpers
-	#
-	def __set_prop(self, file:str, option:str, value:Any) -> None:
+        self.__get_all_props(
+            f'https://aternos.org/files/{world}/level.dat',
+            proptyping, [DAT_PREFIX, DAT_GR_PREFIX]
+        )
 
-		self.atserv.atserver_request(
-			'https://aternos.org/panel/ajax/config.php',
-			'POST', data={
-				'file': file,
-				'option': option,
-				'value': value
-			}, sendtoken=True
-		)
+    def set_world_props(self, props: Dict[str, Any]) -> None:
+        for key in props:
+            self.set_world_prop(key, props[key])
 
-	def __get_all_props(
-		self, url:str, proptyping:bool=True,
-		prefixes:Optional[List[str]]=None) -> Dict[str,Any]:
+    #
+    # helpers
+    #
+    def __set_prop(self, file: str, option: str, value: Any) -> None:
 
-		optreq = self.atserv.atserver_request(url, 'GET')
-		opttree = lxml.html.fromstring(optreq.content)
-		configs = opttree.xpath('//div[@class="config-options"]')
+        self.atserv.atserver_request(
+            'https://aternos.org/panel/ajax/config.php',
+            'POST', data={
+                'file': file,
+                'option': option,
+                'value': value
+            }, sendtoken=True
+        )
 
-		for i, conf in enumerate(configs):
-			opts = conf.xpath('/div[contains(@class,"config-option ")]')
-			result = {}
+    def __get_all_props(
+            self, url: str, proptyping: bool = True,
+            prefixes: Optional[List[str]] = None) -> Dict[str, Any]:
 
-			for opt in opts:
-				key = opt.xpath('.//span[@class="config-option-output-key"]')[0].text
-				value = opt.xpath('.//span[@class="config-option-output-value"]')[0].text
+        optreq = self.atserv.atserver_request(url, 'GET')
+        opttree = lxml.html.fromstring(optreq.content)
+        configs = opttree.xpath('//div[@class="config-options"]')
 
-				if prefixes != None:
-					key = f'{prefixes[i]}{key}'
+        for i, conf in enumerate(configs):
+            opts = conf.xpath('/div[contains(@class,"config-option ")]')
+            result = {}
 
-				opttype = opt.xpath('/@class').split(' ')[1]
-				if proptyping and opttype in convert:
-					value = convert[opttype](value)
+            for opt in opts:
+                key = opt.xpath(
+                    './/span[@class="config-option-output-key"]'
+                )[0].text
+                value = opt.xpath(
+                    './/span[@class="config-option-output-value"]'
+                )[0].text
 
-				result[key] = value
+                if prefixes is not None:
+                    key = f'{prefixes[i]}{key}'
 
-		return result
+                opttype = opt.xpath('/@class').split(' ')[1]
+                if proptyping and opttype in convert:
+                    value = convert[opttype](value)
+
+                result[key] = value
+
+        return result

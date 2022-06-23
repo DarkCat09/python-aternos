@@ -16,12 +16,14 @@ if resp:
     async def console(msg):
         print('<', msg)
 
+
 async def main():
     s.start()
     await asyncio.gather(
         socket.connect(),
         commands()
     )
+
 
 async def commands():
     while True:
