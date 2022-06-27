@@ -4,10 +4,6 @@
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
-> Note:  
-Now, the main repository is located on [Codeberg](https://codeberg.org/DarkCat09/python-aternos) because GitHub bans its Russian users.  
-I'm still updating the GH repository together with the Codeberg one.
-
 ## Installing
 ```bash
 pip install python-aternos
@@ -72,9 +68,10 @@ The documentation have not made yet. View examples and ask in the issues.
 |v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
 |v0.6/v1.0.0|Code refactoring, websockets API and session saving to prevent detecting automation access.|
 |v1.0.x|Lots of bugfixes, changed versioning (SemVer).|
-|v1.1.x|Switching to selenium with [a custom Chrome driver](https://github.com/ultrafunkamsterdam/undetected-chromedriver), writing API documentation.|
-|v1.2.x|Full implementation of config and software API, unit tests and documentation are planned.|
-|v1.3.x|Shared access API and Google Drive backups are planned.|
+|v1.1.x|Documentation and unit tests, switching to [c-websockets](https://pypi.org/project/c-websockets/).|
+|v1.2.x|Switching to selenium with [a custom Chrome driver](https://github.com/ultrafunkamsterdam/undetected-chromedriver), writing API documentation.|
+|v1.3.x|Full implementation of config and software API.|
+|v1.4.x|Shared access API and Google Drive backups.|
 
 ## License
 [License Notice](NOTICE):
