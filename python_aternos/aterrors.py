@@ -54,3 +54,8 @@ class FileError(AternosError):
 
     """Raised when trying to execute a disallowed
     by Aternos file operation"""
+
+    
+class PermissionError(AternosError):
+    """Raised when trying to execute a non-allowed
+    command on a server (Think friends permissions)"""
