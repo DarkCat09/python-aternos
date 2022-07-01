@@ -249,4 +249,6 @@ class AternosConnect:
             f'{method} completed with {req.status_code} status'
         )
 
+        req.raise_for_status()
+
         return req

@@ -1,3 +1,6 @@
+from typing import Final
+
+
 class AternosError(Exception):
 
     """Common error class"""
@@ -23,31 +26,53 @@ class TokenError(AternosError):
 
 class ServerError(AternosError):
 
-    """Common class for server errors"""
+    """Common class for server errors
+
+    :param reason: Code which contains error reason
+    :type reason: str
+    :param message: Error message, defaults to ''
+    :type message: str, optional
+    """
+
+    def __init__(self, reason: str, message: str = '') -> None:
+
+        self.reason = reason
+        super().__init__(message)
 
 
-class ServerEulaError(ServerError):
+class ServerStartError(AternosError):
 
-    """Raised when trying to start without
-    confirming Mojang EULA"""
+    """Raised when Aternos can not start Minecraft server
 
+    :param reason: Code which contains error reason
+    :type reason: str
+    """
 
-class ServerRunningError(ServerError):
+    MESSAGE: Final = 'Unable to start server, code: {}'
+    reason_msg = {
 
-    """Raised when trying to start
-    already running server"""
+        'eula':
+            'EULA was not accepted. '
+            'Use start(accepteula=True)',
 
+        'already': 'Server is already running',
+        'wrongversion': 'Incorrect software version installed',
 
-class ServerSoftwareError(ServerError):
+        'file':
+            'File server is unavailbale, '
+            'view https://status.aternos.gmbh',
 
-    """Raised when Aternos notifies about
-    incorrect software version"""
+        'size': 'Available storage size limit (4 GB) was reached'
+    }
 
+    def __init__(self, reason: str) -> None:
 
-class ServerStorageError(ServerError):
-
-    """Raised when Aternos notifies about
-    violation of storage limits (4 GB for now)"""
+        super().__init__(
+            reason,
+            self.reason_msg.get(
+                reason, self.MESSAGE.format(reason)
+            )
+        )
 
 
 class FileError(AternosError):
@@ -55,7 +80,8 @@ class FileError(AternosError):
     """Raised when trying to execute a disallowed
     by Aternos file operation"""
 
-    
+
 class PermissionError(AternosError):
-    """Raised when trying to execute a non-allowed
-    command on a server (Think friends permissions)"""
+
+    """Raised when trying to execute a disallowed command,
+    usually because of shared access rights"""
