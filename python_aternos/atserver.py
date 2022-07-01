@@ -170,10 +170,14 @@ class AternosServer:
 
         """Stops the server"""
 
-        self.atserver_request(
+        r = self.atserver_request(
             'https://aternos.org/panel/ajax/stop.php',
             'GET', sendtoken=True
         )
+        if r.status_code == 402:
+            raise PermissionError(
+                "You don't have the permission to stop the server.
+            )
 
     def cancel(self) -> None:
 
@@ -188,10 +192,14 @@ class AternosServer:
 
         """Restarts the server"""
 
-        self.atserver_request(
+        r = self.atserver_request(
             'https://aternos.org/panel/ajax/restart.php',
             'GET', sendtoken=True
         )
+        if r.status_code == 402:
+            raise PermissionError(
+                "You don't have the permission to restart the server.
+            )
 
     def eula(self) -> None:
 
