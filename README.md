@@ -68,8 +68,8 @@ The documentation have not made yet. View examples and ask in the issues.
 |v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
 |v0.6/v1.0.0|Code refactoring, websockets API and session saving to prevent detecting automation access.|
 |v1.0.x|Lots of bugfixes, changed versioning (SemVer).|
-|v1.1.x|Documentation and unit tests, switching to [c-websockets](https://pypi.org/project/c-websockets/).|
-|v1.2.x|Switching to selenium with [a custom Chrome driver](https://github.com/ultrafunkamsterdam/undetected-chromedriver), writing API documentation.|
+|v1.1.x|Documentation, unit tests, pylint. And also bugfixes.|
+|v1.2.x|Solution for #25|
 |v1.3.x|Full implementation of config and software API.|
 |v1.4.x|Shared access API and Google Drive backups.|
 
