@@ -26,6 +26,7 @@ from .aterrors import ServerRunningError
 from .aterrors import ServerSoftwareError
 from .aterrors import ServerStorageError
 from .aterrors import FileError
+from .aterrors import PermissionError
 from .atjsparse import exec, atob
 from .atjsparse import to_ecma5_function
 
