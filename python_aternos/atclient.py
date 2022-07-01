@@ -5,7 +5,7 @@ import os
 import re
 import hashlib
 import lxml.html
-from typing import List
+from typing import List, Optional
 
 from .atserver import AternosServer
 from .atconnect import AternosConnect
@@ -21,9 +21,17 @@ class Client:
     :type atconn: python_aternos.atconnect.AternosConnect
     """
 
-    def __init__(self, atconn: AternosConnect) -> None:
+    def __init__(
+            self,
+            atconn: AternosConnect,
+            servers: Optional[List[str]] = None) -> None:
 
         self.atconn = atconn
+        self.parsed = False
+        self.servers: List[AternosServer] = []
+
+        if servers:
+            self.refresh_servers(servers)
 
     @classmethod
     def from_hashed(cls, username: str, md5: str):
@@ -78,7 +86,10 @@ class Client:
         return cls.from_hashed(username, md5)
 
     @classmethod
-    def from_session(cls, session: str):
+    def from_session(
+            cls,
+            session: str,
+            servers: Optional[List[str]] = None):
 
         """Log in to Aternos using a session cookie value
 
@@ -93,7 +104,7 @@ class Client:
         atconn.parse_token()
         atconn.generate_sec()
 
-        return cls(atconn)
+        return cls(atconn, servers)
 
     @classmethod
     def restore_session(cls, file: str = '~/.aternos'):
@@ -101,7 +112,7 @@ class Client:
         """Log in to Aternos using a saved ATERNOS_SESSION cookie
 
         :param file: File where a session cookie
-        was saved, deafults to ~/.aternos
+        was saved, deafults to `~/.aternos`
         :type file: str, optional
         :return: Client instance
         :rtype: python_aternos.Client
@@ -109,7 +120,16 @@ class Client:
 
         file = os.path.expanduser(file)
         with open(file, 'rt') as f:
-            session = f.read().strip()
+            saved = f.read().replace('\r\n', '\n').split('\n')
+
+        session = saved[0].strip()
+
+        if len(saved) > 1:
+            return cls.from_session(
+                session=session,
+                servers=saved[1:]
+            )
+
         return cls.from_session(session)
 
     @staticmethod
@@ -126,41 +146,80 @@ class Client:
         encoded = hashlib.md5(passwd.encode('utf-8'))
         return encoded.hexdigest().lower()
 
-    def save_session(self, file: str = '~/.aternos') -> None:
+    def save_session(
+            self,
+            file: str = '~/.aternos',
+            incl_servers: bool = True) -> None:
 
         """Saves an ATERNOS_SESSION cookie to a file
 
         :param file: File where a session cookie
-        must be saved, defaults to ~/.aternos
+        must be saved, defaults to `~/.aternos`
         :type file: str, optional
+        :param incl_servers: If the function
+        should include the servers IDs to
+        reduce API requests count (recommended),
+        defaults to True
+        :type incl_servers: bool, optional
         """
 
         file = os.path.expanduser(file)
         with open(file, 'wt') as f:
-            f.write(self.atconn.atsession)
 
-    def list_servers(self) -> List[AternosServer]:
+            f.write(self.atconn.atsession + '\n')
+            if not incl_servers:
+                return
+
+            for s in self.servers:
+                f.write(s.servid + '\n')
+
+    def list_servers(self, cache: bool = True) -> List[AternosServer]:
 
         """Parses a list of your servers from Aternos website
 
+        :param cache: If the function should use
+        cached servers list (recommended), defaults to True
+        :type cache: bool, optional
         :return: List of :class:`python_aternos.atserver.AternosServer` objects
         :rtype: list
         """
+
+        if cache and self.parsed:
+            return self.servers
 
         serverspage = self.atconn.request_cloudflare(
             'https://aternos.org/servers/', 'GET'
         )
         serverstree = lxml.html.fromstring(serverspage.content)
-        serverslist = serverstree.xpath(
+
+        servers = serverstree.xpath(
             '//div[contains(@class,"servers ")]/div'
+            '/div[@class="server-body"]/@data-id'
         )
+        self.refresh_servers(servers)
 
-        servers = []
-        for server in serverslist:
-            servid = server.xpath('./div[@class="server-body"]/@data-id')[0]
-            servers.append(AternosServer(servid, self.atconn))
+        return self.servers
 
-        return servers
+    def refresh_servers(self, ids: List[str]) -> None:
+
+        """Replaces cached servers list creating
+        :class:`AternosServer` objects by given IDs
+
+        :param ids: Servers unique identifiers
+        :type ids: List[str]
+        """
+
+        self.servers = []
+        for s in ids:
+
+            servid = s.strip()
+            if servid == '':
+                continue
+
+            srv = AternosServer(servid, self.atconn)
+            self.servers.append(srv)
+
+        self.parsed = True
 
     def get_server(self, servid: str) -> AternosServer:
 

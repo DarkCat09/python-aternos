@@ -31,7 +31,8 @@ display_failed() {
 
 	local IFS=', '
 	if [[ ${#failed[@]} > 0 ]]; then
-	echo -e "$FAILED[!] View output for: ${failed[*]}$RESET"
+	joined=`echo -n ${failed[*]} | sed 's/ /, /'`
+	echo -e "$FAILED[!] View output of: $joined$RESET"
 	else
 	echo -e "$SUCCESS[V] All tests are passed successfully$RESET"
 	fi
