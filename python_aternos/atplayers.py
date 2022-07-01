@@ -35,7 +35,7 @@ class PlayersList:
 
         self.atserv = atserv
         self.lst = Lists(lst)
-        
+
         common_whl = (self.lst == Lists.whl)
         bedrock = (atserv.edition == Edition.bedrock)
         if common_whl and bedrock:

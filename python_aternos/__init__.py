@@ -21,10 +21,7 @@ from .aterrors import CloudflareError
 from .aterrors import CredentialsError
 from .aterrors import TokenError
 from .aterrors import ServerError
-from .aterrors import ServerEulaError
-from .aterrors import ServerRunningError
-from .aterrors import ServerSoftwareError
-from .aterrors import ServerStorageError
+from .aterrors import ServerStartError
 from .aterrors import FileError
 from .aterrors import PermissionError
 from .atjsparse import exec, atob
@@ -41,8 +38,8 @@ __all__ = [
     'PlayersList', 'AternosConfig', 'AternosWss',
     'FileManager', 'AternosFile', 'AternosError',
     'CloudflareError', 'CredentialsError', 'TokenError',
-    'ServerError', 'ServerEulaError', 'ServerRunningError',
-    'ServerSoftwareError', 'ServerStorageError', 'FileError',
+    'ServerError', 'ServerStartError', 'FileError',
+    'PermissionError',
     'exec', 'atob', 'to_ecma5_function',
 
     'Edition', 'Status', 'Lists',

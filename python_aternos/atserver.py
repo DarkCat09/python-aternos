@@ -4,11 +4,7 @@ from requests import Response
 from typing import Optional, List
 
 from .atconnect import AternosConnect
-from .aterrors import ServerError
-from .aterrors import ServerEulaError
-from .aterrors import ServerRunningError
-from .aterrors import ServerSoftwareError
-from .aterrors import ServerStorageError
+from .aterrors import ServerStartError
 from .atfm import FileManager
 from .atconf import AternosConfig
 from .atplayers import PlayersList
@@ -99,16 +95,8 @@ class AternosServer:
         :param accepteula: Automatically accept
         the Mojang EULA, defaults to `True`
         :type accepteula: bool, optional
-        :raises ServerEulaError: When trying to start a server
-        without accepting the Mojang EULA
-        :raises ServerRunningError: When trying to start a server
-        which is alreday running
-        :raises ServerSoftwareError: When Aternos notifies about
-        incorrect software version
-        :raises ServerStorageError: When Aternos notifies about
-        voilation of storage limits (4 GB for now)
-        :raises ServerError: When API is unable to start a Minecraft server
-        due to unavailability of Aternos' file servers or other problems
+        :raises ServerStartError: When Aternos
+        is unable to start the server
         """
 
         startreq = self.atserver_request(
@@ -120,42 +108,14 @@ class AternosServer:
 
         if startresult['success']:
             return
+
         error = startresult['error']
 
         if error == 'eula' and accepteula:
             self.eula()
-            self.start(accepteula=False)
+            return self.start(accepteula=False)
 
-        elif error == 'eula':
-            raise ServerEulaError(
-                'EULA was not accepted. Use start(accepteula=True)'
-            )
-
-        elif error == 'already':
-            raise ServerRunningError(
-                'Server is already running'
-            )
-
-        elif error == 'wrongversion':
-            raise ServerSoftwareError(
-                'Incorrect software version installed'
-            )
-
-        elif error == 'file':
-            raise ServerError(
-                'File server is unavailbale, view https://status.aternos.gmbh'
-            )
-
-        elif error == 'size':
-            raise ServerStorageError(
-                f'Available storage size is 4GB, '
-                f'your server used: {startresult["size"]}'
-            )
-
-        else:
-            raise ServerError(
-                f'Unable to start server, code: {error}'
-            )
+        raise ServerStartError(error)
 
     def confirm(self) -> None:
 
