@@ -1,3 +1,4 @@
+import os
 import re
 import unittest
 
@@ -11,33 +12,22 @@ class TestJs2Py(unittest.TestCase):
 
     def setUp(self) -> None:
 
+        self.path = os.path.abspath(os.path.dirname(__file__))
+        self.samples = os.path.join(self.path, 'samples')
+        self.input = os.path.join(self.samples, 'token_input.txt')
+        self.output = os.path.join(self.samples, 'token_output.txt')
+
         self.tests = []
-        with open('token.txt', 'rt') as f:
+        with open(self.input, 'rt') as f:
             lines = re.split(r'[\r\n]', f.read())
-            del lines[-1]  # Remove empty string at the end
+            del lines[-1]  # remove empty line at the end
             self.tests = lines
 
-        self.results = [
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2rKOA1IFdBcHhEM616cb',
-            '2iXh5W5uEYq5fWJIazQ6',
-            'CuUcmZ27Fb8bVBNw12Vj',
-            'YPPe8Ph7vzYaZ9PF9oQP',
-            'UfLlemvKEE16ltk0hZNM',
-            'S1Oban9UGRXVIepREw9q',
-            'S1Oban9UGRXVIepREw9q',
-            'KYDDyT1DWOJTZpNtJWhM',
-            'lZPFwRqIGIf8JKk1LG02',
-            'KbxzYCJUrFjWzbeZcAmE',
-            'KbxzYCJUrFjWzbeZcAmE'
-        ]
+        self.results = []
+        with open(self.output, 'rt') as f:
+            lines = re.split(r'[\r\n]', f.read())
+            del lines[-1]  # remove empty line at the end
+            self.results = lines
 
     def test_base64(self) -> None:
 

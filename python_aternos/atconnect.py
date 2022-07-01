@@ -236,7 +236,7 @@ class AternosConnect:
 
         if '<title>Please Wait... | Cloudflare</title>' in req.text:
             logging.info('Retrying to bypass Cloudflare')
-            self.request_cloudflare(
+            return self.request_cloudflare(
                 url, method,
                 params, data,
                 headers, reqcookies,
@@ -244,6 +244,7 @@ class AternosConnect:
                 retry - 1
             )
 
+        logging.debug('AternosConnect received: ' + req.text[:65])
         logging.info(
             f'{method} completed with {req.status_code} status'
         )
