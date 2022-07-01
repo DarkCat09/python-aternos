@@ -1,3 +1,5 @@
+"""Exceptions classes"""
+
 from typing import Final
 
 
@@ -81,7 +83,9 @@ class FileError(AternosError):
     by Aternos file operation"""
 
 
-class PermissionError(AternosError):
+# PermissionError is a built-in,
+# so this exception called AternosPermissionError
+class AternosPermissionError(AternosError):
 
     """Raised when trying to execute a disallowed command,
     usually because of shared access rights"""

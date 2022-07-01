@@ -1,9 +1,10 @@
+"""Operators, whitelist and banned players lists"""
+
 import enum
 import lxml.html
 from typing import List, Union
 from typing import TYPE_CHECKING
 
-from .atserver import Edition
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
@@ -31,13 +32,18 @@ class PlayersList:
     :type atserv: python_aternos.atserver.AternosServer
     """
 
-    def __init__(self, lst: Union[str, Lists], atserv: 'AternosServer') -> None:
+    def __init__(
+            self,
+            lst: Union[str, Lists],
+            atserv: 'AternosServer') -> None:
 
         self.atserv = atserv
         self.lst = Lists(lst)
 
         common_whl = (self.lst == Lists.whl)
-        bedrock = (atserv.edition == Edition.bedrock)
+        # 1 is atserver.Edition.bedrock
+        bedrock = (atserv.edition == 1)
+
         if common_whl and bedrock:
             self.lst = Lists.whl_be
 

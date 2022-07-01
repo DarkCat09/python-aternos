@@ -1,3 +1,5 @@
+"""Parsing and executing JavaScript code"""
+
 import regex
 import base64
 import js2py
@@ -27,10 +29,19 @@ def to_ecma5_function(f: str) -> str:
 
 
 def atob(s: str) -> str:
+
+    """Decodes base64 string
+
+    :param s: Encoded data
+    :type s: str
+    :return: Decoded string
+    :rtype: str
+    """
+
     return base64.standard_b64decode(str(s)).decode('utf-8')
 
 
-def exec(f: str) -> Any:
+def exec_js(f: str) -> Any:
 
     """Executes a JavaScript function
 

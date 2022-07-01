@@ -1,16 +1,24 @@
+"""Connects to Aternos API websocket
+for real-time information"""
+
 import enum
 import json
 import asyncio
 import logging
 import websockets
-from typing import Union, Any, Dict, Callable, Coroutine, Tuple
+from typing import Union, Any
+from typing import Dict, Tuple
+from typing import Callable, Coroutine
 from typing import TYPE_CHECKING
 
 from .atconnect import REQUA
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
-FunctionT = Callable[[Any], Coroutine[Any, Any, None]]
+OneArgT = Callable[[Any], Coroutine[Any, Any, None]]
+TwoArgT = Callable[[Any, Tuple[Any, ...]], Coroutine[Any, Any, None]]
+FunctionT = Union[OneArgT, TwoArgT]
+ArgsTuple = Tuple[FunctionT, Tuple[Any, ...]]
 
 
 class Streams(enum.Enum):
@@ -22,6 +30,7 @@ class Streams(enum.Enum):
     console = (2, 'console')
     ram = (3, 'heap')
     tps = (4, 'tick')
+    none = (-1, None)
 
     def __init__(self, num: int, stream: str) -> None:
         self.num = num
@@ -40,16 +49,24 @@ class AternosWss:
     :type autoconfirm: bool, optional
     """
 
-    def __init__(self, atserv: 'AternosServer', autoconfirm: bool = False) -> None:
+    def __init__(
+            self,
+            atserv: 'AternosServer',
+            autoconfirm: bool = False) -> None:
 
         self.atserv = atserv
         self.cookies = atserv.atconn.session.cookies
         self.session = self.cookies['ATERNOS_SESSION']
         self.servid = atserv.servid
-        recvtype = Dict[Streams, Tuple[FunctionT, Tuple[Any]]]
+
+        recvtype = Dict[Streams, ArgsTuple]
         self.recv: recvtype = {}
         self.autoconfirm = autoconfirm
         self.confirmed = False
+
+        self.socket: Any
+        self.keep: asyncio.Task
+        self.msgs: asyncio.Task
 
     async def confirm(self) -> None:
 
@@ -57,7 +74,10 @@ class AternosWss:
 
         self.atserv.confirm()
 
-    def wssreceiver(self, stream: Streams, *args: Any) -> Callable[[FunctionT], Any]:
+    def wssreceiver(
+            self,
+            stream: Streams,
+            *args: Any) -> Callable[[FunctionT], Any]:
 
         """Decorator that marks your function as a stream receiver.
         When websocket receives message from the specified stream,
@@ -88,7 +108,7 @@ class AternosWss:
                 f'ATERNOS_SERVER={self.servid}'
             )
         ]
-        self.socket = await websockets.connect(
+        self.socket = await websockets.connect(  # type: ignore
             'wss://aternos.org/hermes/',
             origin='https://aternos.org',
             extra_headers=headers
@@ -192,11 +212,11 @@ class AternosWss:
         """Receives messages from websocket servers
         and calls user's streams listeners"""
 
-        try:
-            while True:
+        while True:
+            try:
                 data = await self.socket.recv()
                 obj = json.loads(data)
-                msgtype = -1
+                msgtype = Streams.none
 
                 if obj['type'] == 'line':
                     msgtype = Streams.console
@@ -217,18 +237,19 @@ class AternosWss:
 
                 if msgtype in self.recv:
 
-                    # function info tuple:
-                    # (function, arguments)
-                    func = self.recv[msgtype]
+                    # function info tuple
+                    func: ArgsTuple = self.recv[msgtype]
 
                     # if arguments is not empty
                     if func[1]:
                         # call the function with args
-                        coro = func[0](msg, func[1])
+                        coro = func[0](msg, func[1])  # type: ignore
                     else:
-                        coro = func[0](msg)
+                        # mypy error: Too few arguments
+                        # looks like bug, so it is ignored
+                        coro = func[0](msg)  # type: ignore
                     # run
-                    await asyncio.create_task(coro)
+                    asyncio.create_task(coro)
 
-        except asyncio.CancelledError:
-            pass
+            except asyncio.CancelledError:
+                break

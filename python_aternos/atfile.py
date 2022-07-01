@@ -1,3 +1,5 @@
+"""File info object used by `python_aternos.atfm`"""
+
 import enum
 import lxml.html
 from typing import Union
@@ -86,7 +88,7 @@ class AternosFile:
         """
 
         self.atserv.atserver_request(
-            f'https://aternos.org/panel/ajax/save.php',
+            'https://aternos.org/panel/ajax/save.php',
             'POST', data={
                 'file': self._full,
                 'content': value
@@ -123,29 +125,74 @@ class AternosFile:
         self.set_content(value.encode('utf-8'))
 
     @property
-    def path(self):
+    def path(self) -> str:
+
+        """Path to a directory which
+        contains the file, without leading slash
+
+        :return: Full path to directory
+        :rtype: str
+        """
+
         return self._path
 
     @property
     def name(self) -> str:
+
+        """Filename including extension
+
+        :return: Filename
+        :rtype: str
+        """
+
         return self._name
 
     @property
     def full(self) -> str:
+
+        """Absolute path to the file,
+        without leading slash
+
+        :return: Full path
+        :rtype: str
+        """
+
         return self._full
 
     @property
     def is_dir(self) -> bool:
+
+        """Check if the file object is a directory
+
+        :return: `True` if the file
+        is a directory, otherwise `False`
+        :rtype: bool
+        """
+
         if self._ftype == FileType.directory:
             return True
         return False
 
     @property
     def is_file(self) -> bool:
+
+        """Check if the file object is not a directory
+
+        :return: `True` if it is a file, otherwise `False`
+        :rtype: bool
+        """
+
         if self._ftype == FileType.file:
             return True
         return False
 
     @property
     def size(self) -> float:
+
+        """File size in bytes
+
+        :return: File size
+        :rtype: float
+        """
+
         return self._size

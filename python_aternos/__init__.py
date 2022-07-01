@@ -1,3 +1,7 @@
+"""
+Unofficial Aternos API module written in Python.
+It uses Aternos' private API and html parsing"""
+
 from .atclient import Client
 from .atserver import AternosServer
 from .atserver import Edition
@@ -23,8 +27,8 @@ from .aterrors import TokenError
 from .aterrors import ServerError
 from .aterrors import ServerStartError
 from .aterrors import FileError
-from .aterrors import PermissionError
-from .atjsparse import exec, atob
+from .aterrors import AternosPermissionError
+from .atjsparse import exec_js, atob
 from .atjsparse import to_ecma5_function
 
 __all__ = [
@@ -39,8 +43,8 @@ __all__ = [
     'FileManager', 'AternosFile', 'AternosError',
     'CloudflareError', 'CredentialsError', 'TokenError',
     'ServerError', 'ServerStartError', 'FileError',
-    'PermissionError',
-    'exec', 'atob', 'to_ecma5_function',
+    'AternosPermissionError',
+    'exec_js', 'atob', 'to_ecma5_function',
 
     'Edition', 'Status', 'Lists',
     'ServerOpts', 'WorldOpts', 'WorldRules',

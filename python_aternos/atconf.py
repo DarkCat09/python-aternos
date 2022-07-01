@@ -1,3 +1,5 @@
+"""Modifying server and world options"""
+
 import enum
 import re
 import lxml.html
@@ -302,10 +304,25 @@ class AternosConfig:
 
     def set_world_props(
             self,
-            props: Dict[Union[WorldOpts, WorldRules], Any]) -> None:
+            props: Dict[Union[WorldOpts, WorldRules], Any],
+            world: str = 'world') -> None:
+
+        """Sets level.dat options from
+        the dictionary for the specified world
+
+        :param props: Level.dat options
+        :type props: Dict[Union[WorldOpts, WorldRules], Any]
+        :param world: name of the world which
+        level.dat must be edited, defaults to 'world'
+        :type world: str
+        """
 
         for key in props:
-            self.set_world_prop(key, props[key])
+            self.set_world_prop(
+                option=key,
+                value=props[key],
+                world=world
+            )
 
     #
     # helpers

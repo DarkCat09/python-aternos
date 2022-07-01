@@ -5,7 +5,7 @@ import unittest
 from python_aternos import atjsparse
 
 CONV_TOKEN_ARROW = '''(() => {window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})();'''
-CONV_TOKEN_FUNC = '(function(){window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})()'
+CONV_TOKEN_FUNC = '''(function(){window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})()'''
 
 
 class TestJs2Py(unittest.TestCase):
@@ -53,10 +53,10 @@ class TestJs2Py(unittest.TestCase):
         part2 = '''window.t2 = Boolean(!window[["p","Ma"].reverse().join('')]);'''
         part3 = '''window.t3 = Boolean(!window[["ut","meo","i","etT","s"].reverse().join('')]);'''
 
-        ctx0 = atjsparse.exec(code)
-        ctx1 = atjsparse.exec(part1)
-        ctx2 = atjsparse.exec(part2)
-        ctx3 = atjsparse.exec(part3)
+        ctx0 = atjsparse.exec_js(code)
+        ctx1 = atjsparse.exec_js(part1)
+        ctx2 = atjsparse.exec_js(part2)
+        ctx3 = atjsparse.exec_js(part3)
 
         self.assertEqual(ctx0.window['t0'], False)
         self.assertEqual(ctx1.window['t1'], True)
@@ -66,7 +66,7 @@ class TestJs2Py(unittest.TestCase):
     def test_exec(self) -> None:
 
         for i, f in enumerate(self.tests):
-            ctx = atjsparse.exec(f)
+            ctx = atjsparse.exec_js(f)
             res = ctx.window['AJAX_TOKEN']
             self.assertEqual(res, self.results[i])
 

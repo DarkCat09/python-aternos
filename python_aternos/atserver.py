@@ -1,3 +1,5 @@
+"""Aternos Minecraft server"""
+
 import enum
 import json
 from requests import Response
@@ -85,7 +87,10 @@ class AternosServer:
 
         return AternosWss(self, autoconfirm)
 
-    def start(self, headstart: bool = False, accepteula: bool = True) -> None:
+    def start(
+            self,
+            headstart: bool = False,
+            accepteula: bool = True) -> None:
 
         """Starts a server
 
@@ -113,7 +118,8 @@ class AternosServer:
 
         if error == 'eula' and accepteula:
             self.eula()
-            return self.start(accepteula=False)
+            self.start(accepteula=False)
+            return
 
         raise ServerStartError(error)
 
@@ -238,11 +244,25 @@ class AternosServer:
 
     @property
     def subdomain(self) -> str:
+
+        """Server subdomain (part of domain before `.aternos.me`)
+
+        :return: Subdomain
+        :rtype: str
+        """
+
         atdomain = self.domain
         return atdomain[:atdomain.find('.')]
 
     @subdomain.setter
     def subdomain(self, value: str) -> None:
+
+        """Set new subdomain for your server
+
+        :param value: Subdomain
+        :type value: str
+        """
+
         self.atserver_request(
             'https://aternos.org/panel/ajax/options/subdomain.php',
             'GET', params={'subdomain': value},
@@ -251,10 +271,25 @@ class AternosServer:
 
     @property
     def motd(self) -> str:
+
+        """Server message of the day,
+        which is shown below its name in the servers list
+
+        :return: MOTD
+        :rtype: str
+        """
+
         return self._info['motd']
 
     @motd.setter
     def motd(self, value: str) -> None:
+
+        """Set new message of the day
+
+        :param value: MOTD
+        :type value: str
+        """
+
         self.atserver_request(
             'https://aternos.org/panel/ajax/options/motd.php',
             'POST', data={'motd': value},
@@ -263,49 +298,135 @@ class AternosServer:
 
     @property
     def address(self) -> str:
+
+        """Full server address including domain and port
+
+        :return: Server address
+        :rtype: str
+        """
+
         return self._info['displayAddress']
 
     @property
     def domain(self) -> str:
+
+        """Server domain (test.aternos.me),
+        address without port number
+
+        :return: Domain
+        :rtype: str
+        """
+
         return self._info['ip']
 
     @property
     def port(self) -> int:
+
+        """Server port number
+
+        :return: Port
+        :rtype: int
+        """
+
         return self._info['port']
 
     @property
-    def edition(self) -> int:
+    def edition(self) -> Edition:
+
+        """Server software edition: Java or Bedrock
+
+        :return: Software edition
+        :rtype: Edition
+        """
+
         soft_type = self._info['bedrock']
-        return int(soft_type)
+        return Edition(soft_type)
 
     @property
     def software(self) -> str:
+
+        """Server software name (e.g. `Vanilla`)
+
+        :return: Software name
+        :rtype: str
+        """
+
         return self._info['software']
 
     @property
     def version(self) -> str:
+
+        """Server software version (e.g. `1.16.5`)
+
+        :return: Software version
+        :rtype: str
+        """
+
         return self._info['version']
 
     @property
     def status(self) -> str:
+
+        """Server status string (offline, loading)
+
+        :return: Status string
+        :rtype: str
+        """
+
         return self._info['class']
 
     @property
     def status_num(self) -> int:
-        return int(self._info['status'])
+
+        """Server numeric status. It is highly recommended
+        to use status string instead of a number.
+
+        :return: Status code
+        :rtype: Status
+        """
+
+        return Status(self._info['status'])
 
     @property
     def players_list(self) -> List[str]:
+
+        """List of connected players nicknames
+
+        :return: Connected players
+        :rtype: List[str]
+        """
+
         return self._info['playerlist']
 
     @property
     def players_count(self) -> int:
+
+        """How many connected players
+
+        :return: Connected players count
+        :rtype: int
+        """
+
         return int(self._info['players'])
 
     @property
     def slots(self) -> int:
+
+        """Server slots, how many players can connect
+
+        :return: Slots count
+        :rtype: int
+        """
+
         return int(self._info['slots'])
 
     @property
     def ram(self) -> int:
+
+        """Server used RAM in MB
+
+        :return: Used RAM
+        :rtype: int
+        """
+
         return int(self._info['ram'])

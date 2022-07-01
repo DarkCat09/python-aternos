@@ -1,5 +1,7 @@
+"""Exploring files in your server directory"""
+
 import lxml.html
-from typing import Union, Optional, List
+from typing import Union, Optional, Any, List
 from typing import TYPE_CHECKING
 
 from .atfile import AternosFile, FileType
@@ -32,10 +34,12 @@ class FileManager:
         """
 
         path = path.lstrip('/')
+
         filesreq = self.atserv.atserver_request(
             f'https://aternos.org/files/{path}', 'GET'
         )
         filestree = lxml.html.fromstring(filesreq.content)
+
         fileslist = filestree.xpath(
             '//div[contains(concat(" ",normalize-space(@class)," ")," file ")]'
         )
@@ -48,18 +52,9 @@ class FileManager:
                 if ftype_raw == 'file' \
                 else FileType.directory
 
-            fsize_raw = f.xpath('./div[@class="filesize"]')
-            fsize = 0.0
-            if len(fsize_raw) > 0:
-
-                fsize_text = fsize_raw[0].text.strip()
-                fsize_num = fsize_text[:fsize_text.rfind(' ')]
-                fsize_msr = fsize_text[fsize_text.rfind(' ')+1:]
-
-                try:
-                    fsize = self.convert_size(float(fsize_num), fsize_msr)
-                except ValueError:
-                    fsize = -1
+            fsize = self.extract_size(
+                f.xpath('./div[@class="filesize"]')
+            )
 
             fullpath = f.xpath('@data-path')[0]
             filepath = fullpath[:fullpath.rfind('/')]
@@ -74,7 +69,33 @@ class FileManager:
 
         return files
 
-    def convert_size(self, num: Union[int, float], measure: str) -> float:
+    def extract_size(self, fsize_raw: List[Any]) -> float:
+
+        """Parses file size from the LXML tree
+
+        :param fsize_raw: XPath method result
+        :type fsize_raw: List[Any]
+        :return: File size in bytes
+        :rtype: float
+        """
+
+        if len(fsize_raw) > 0:
+
+            fsize_text = fsize_raw[0].text.strip()
+            fsize_num = fsize_text[:fsize_text.rfind(' ')]
+            fsize_msr = fsize_text[fsize_text.rfind(' ') + 1:]
+
+            try:
+                return self.convert_size(float(fsize_num), fsize_msr)
+            except ValueError:
+                return -1.0
+
+        return 0.0
+
+    def convert_size(
+            self,
+            num: Union[int, float],
+            measure: str) -> float:
 
         """Converts "human" file size to size in bytes
 
@@ -92,10 +113,7 @@ class FileManager:
             'MB': 1000000,
             'GB': 1000000000
         }
-        try:
-            return num * measure_match[measure]
-        except KeyError:
-            return -1
+        return measure_match.get(measure, -1) * num
 
     def get_file(self, path: str) -> Optional[AternosFile]:
 
@@ -128,7 +146,7 @@ class FileManager:
         :rtype: bytes
         """
 
-        file = self.atserv.atserver_request(
+        file = self.atserv.atserver_request(  # type: ignore
             'https://aternos.org/panel/ajax/files/download.php'
             'GET', params={
                 'file': path.replace('/', '%2F')
@@ -148,11 +166,11 @@ class FileManager:
         :rtype: bytes
         """
 
-        world = self.atserv.atserver_request(
+        resp = self.atserv.atserver_request(  # type: ignore
             'https://aternos.org/panel/ajax/worlds/download.php'
             'GET', params={
                 'world': world.replace('/', '%2F')
             }
         )
 
-        return world.content
+        return resp.content

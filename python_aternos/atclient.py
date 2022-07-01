@@ -1,3 +1,6 @@
+"""Entry point. Authorizes on Aternos
+and allows to manage your account"""
+
 import os
 import re
 import hashlib
@@ -11,7 +14,7 @@ from .aterrors import CredentialsError
 
 class Client:
 
-    """Aternos API Client class whose object contains user's auth data
+    """Aternos API Client class object of which contains user's auth data
 
     :param atconn: :class:`python_aternos.atconnect.AternosConnect`
     instance with initialized Aternos session
@@ -47,7 +50,7 @@ class Client:
         }
 
         loginreq = atconn.request_cloudflare(
-            f'https://aternos.org/panel/ajax/account/login.php',
+            'https://aternos.org/panel/ajax/account/login.php',
             'POST', data=credentials, sendtoken=True
         )
 

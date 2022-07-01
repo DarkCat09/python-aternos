@@ -1,3 +1,5 @@
+"""Stores API connection session and sends requests"""
+
 import re
 import random
 import logging
@@ -6,9 +8,13 @@ from cloudscraper import CloudScraper
 from typing import Optional, Union
 
 from . import atjsparse
-from .aterrors import TokenError, CloudflareError
+from .aterrors import TokenError
+from .aterrors import CloudflareError
+from .aterrors import AternosPermissionError
 
-REQUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
+REQUA = \
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
+    '(KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
 
 
 class AternosConnect:
@@ -21,6 +27,8 @@ class AternosConnect:
 
         self.session = CloudScraper()
         self.atsession = ''
+        self.sec = ''
+        self.token = ''
 
     def parse_token(self) -> str:
 
@@ -36,7 +44,7 @@ class AternosConnect:
         """
 
         loginpage = self.request_cloudflare(
-            f'https://aternos.org/go/', 'GET'
+            'https://aternos.org/go/', 'GET'
         ).content
 
         # Using the standard string methods
@@ -61,13 +69,13 @@ class AternosConnect:
             js_code = re.findall(r'\(\(\)(.*?)\)\(\);', text)
             token_func = js_code[1] if len(js_code) > 1 else js_code[0]
 
-            ctx = atjsparse.exec(token_func)
+            ctx = atjsparse.exec_js(token_func)
             self.token = ctx.window['AJAX_TOKEN']
 
-        except (IndexError, TypeError):
+        except (IndexError, TypeError) as err:
             raise TokenError(
                 'Unable to parse TOKEN from the page'
-            )
+            ) from err
 
         return self.token
 
@@ -104,12 +112,12 @@ class AternosConnect:
         # a list with randlen+1 empty strings:
         # generate a string with spaces,
         # then split it by space
-        rand_arr = (' ' * (randlen+1)).split(' ')
+        rand_arr = (' ' * (randlen + 1)).split(' ')
 
         rand = random.random()
         rand_alphanum = self.convert_num(rand, 36) + ('0' * 17)
 
-        return (rand_alphanum[:18].join(rand_arr)[:randlen])
+        return rand_alphanum[:18].join(rand_arr)[:randlen]
 
     def convert_num(
             self, num: Union[int, float, str],
@@ -214,12 +222,12 @@ class AternosConnect:
         reqcookies['ATERNOS_SESSION'] = self.atsession
         del self.session.cookies['ATERNOS_SESSION']
 
-        logging.debug(f'Requesting({method})' + url)
-        logging.debug('headers=' + str(headers))
-        logging.debug('params=' + str(params))
-        logging.debug('data=' + str(data))
-        logging.debug('req-cookies=' + str(reqcookies))
-        logging.debug('session-cookies=' + str(self.session.cookies))
+        logging.debug(f'Requesting({method}){url}')
+        logging.debug(f'headers={headers}')
+        logging.debug(f'params={params}')
+        logging.debug(f'data={data}')
+        logging.debug(f'req-cookies={reqcookies}')
+        logging.debug(f'session-cookies={self.session.cookies}')
 
         if method == 'POST':
             req = self.session.post(
@@ -249,6 +257,8 @@ class AternosConnect:
             f'{method} completed with {req.status_code} status'
         )
 
-        req.raise_for_status()
+        if req.status_code == 402:
+            raise AternosPermissionError
 
+        req.raise_for_status()
         return req
