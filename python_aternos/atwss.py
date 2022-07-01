@@ -10,6 +10,8 @@ from .atconnect import REQUA
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
+FunctionT = Callable[[Any], Coroutine[Any, Any, None]]
+
 
 class Streams(enum.Enum):
 
@@ -44,7 +46,8 @@ class AternosWss:
         self.cookies = atserv.atconn.session.cookies
         self.session = self.cookies['ATERNOS_SESSION']
         self.servid = atserv.servid
-        self.recv = {}
+        recvtype = Dict[Streams, Tuple[FunctionT, Tuple[Any]]]
+        self.recv: recvtype = {}
         self.autoconfirm = autoconfirm
         self.confirmed = False
 
@@ -54,7 +57,7 @@ class AternosWss:
 
         self.atserv.confirm()
 
-    def wssreceiver(self, stream: Streams, *args: Any) -> Callable[[Callable[[Any], Coroutine[Any, Any, None]]], Any]:
+    def wssreceiver(self, stream: Streams, *args: Any) -> Callable[[FunctionT], Any]:
 
         """Decorator that marks your function as a stream receiver.
         When websocket receives message from the specified stream,
@@ -68,7 +71,7 @@ class AternosWss:
         :rtype: Callable[[Callable[[Any], Coroutine[Any, Any, None]]], Any]
         """
 
-        def decorator(func: Callable[[Any], Coroutine[Any, Any, None]]) -> None:
+        def decorator(func: FunctionT) -> None:
             self.recv[stream] = (func, args)
         return decorator
 

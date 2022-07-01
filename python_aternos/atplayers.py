@@ -3,6 +3,7 @@ import lxml.html
 from typing import List, Union
 from typing import TYPE_CHECKING
 
+from .atserver import Edition
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
@@ -12,6 +13,8 @@ class Lists(enum.Enum):
     """Players list type enum"""
 
     whl = 'whitelist'
+    whl_je = 'whitelist'
+    whl_be = 'allowlist'
     ops = 'ops'
     ban = 'banned-players'
     ips = 'banned-ips'
@@ -32,7 +35,13 @@ class PlayersList:
 
         self.atserv = atserv
         self.lst = Lists(lst)
-        self.players = []
+        
+        common_whl = (self.lst == Lists.whl)
+        bedrock = (atserv.edition == Edition.bedrock)
+        if common_whl and bedrock:
+            self.lst = Lists.whl_be
+
+        self.players: List[str] = []
         self.parsed = False
 
     def list_players(self, cache: bool = True) -> List[str]:

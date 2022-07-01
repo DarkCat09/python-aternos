@@ -295,12 +295,15 @@ class AternosConfig:
         :rtype: Dict[str,Any]
         """
 
-        self.__get_all_props(
+        return self.__get_all_props(
             f'https://aternos.org/files/{world}/level.dat',
             proptyping, [DAT_PREFIX, DAT_GR_PREFIX]
         )
 
-    def set_world_props(self, props: Dict[str, Any]) -> None:
+    def set_world_props(
+            self,
+            props: Dict[Union[WorldOpts, WorldRules], Any]) -> None:
+
         for key in props:
             self.set_world_prop(key, props[key])
 

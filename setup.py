@@ -38,7 +38,7 @@ setuptools.setup(
         'lxml>=4.8.0',
         'cloudscraper>=1.2.58',
         'js2py>=0.71',
-        'c-websockets>=2.1.3',
+        'websockets>=10.1',
         'regex>=2022.3.15'
     ],
     packages=['python_aternos'],

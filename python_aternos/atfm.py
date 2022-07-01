@@ -49,7 +49,7 @@ class FileManager:
                 else FileType.directory
 
             fsize_raw = f.xpath('./div[@class="filesize"]')
-            fsize = 0
+            fsize = 0.0
             if len(fsize_raw) > 0:
 
                 fsize_text = fsize_raw[0].text.strip()
