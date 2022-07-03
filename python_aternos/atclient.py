@@ -193,7 +193,7 @@ class Client:
         serverstree = lxml.html.fromstring(serverspage.content)
 
         servers = serverstree.xpath(
-            '//div[contains(@class,"servers ")]/div'
+            '/html/body/div[1]/main/div[3]/section/div[1]/div[2]/div'
             '/div[@class="server-body"]/@data-id'
         )
         self.refresh_servers(servers)
