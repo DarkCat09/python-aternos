@@ -193,7 +193,11 @@ class Client:
         serverstree = lxml.html.fromstring(serverspage.content)
 
         servers = serverstree.xpath(
+<<<<<<< HEAD
             '/html/body/div[1]/main/div[3]/section/div[1]/div[2]/div'
+=======
+            '//div[@class="servers"]/div'
+>>>>>>> f731f1b (Bugfixes in Client, Cloudflare page example)
             '/div[@class="server-body"]/@data-id'
         )
         self.refresh_servers(servers)
@@ -231,6 +235,15 @@ class Client:
         """
 
         return AternosServer(servid, self.atconn)
+    
+    def logout(self) -> None:
+
+        """Logouts from Aternos account"""
+
+        self.atconn.request_cloudflare(
+            'https://aternos.org/panel/ajax/account/logout.php',
+            'GET', sendtoken=True
+        )
 
     def change_username(self, value: str) -> None:
 
@@ -242,7 +255,7 @@ class Client:
 
         self.atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/username.php',
-            'POST', data={'username': value}
+            'POST', data={'username': value}, sendtoken=True
         )
 
     def change_email(self, value: str) -> None:
@@ -263,7 +276,7 @@ class Client:
 
         self.atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/email.php',
-            'POST', data={'email': value}
+            'POST', data={'email': value}, sendtoken=True
         )
 
     def change_password(self, old: str, new: str) -> None:
@@ -283,5 +296,5 @@ class Client:
             'POST', data={
                 'oldpassword': old,
                 'newpassword': new
-            }
+            }, sendtoken=True
         )
