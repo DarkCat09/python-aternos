@@ -2,9 +2,11 @@
 
 import enum
 import re
-import lxml.html
+
 from typing import Any, Dict, List, Union, Optional
 from typing import TYPE_CHECKING
+
+import lxml.html
 
 if TYPE_CHECKING:
     from .atserver import AternosServer

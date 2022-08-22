@@ -1,9 +1,11 @@
 """File info object used by `python_aternos.atfm`"""
 
 import enum
-import lxml.html
+
 from typing import Union
 from typing import TYPE_CHECKING
+
+import lxml.html
 
 from .aterrors import FileError
 

@@ -1,8 +1,9 @@
 """Exploring files in your server directory"""
 
-import lxml.html
 from typing import Union, Optional, Any, List
 from typing import TYPE_CHECKING
+
+import lxml.html
 
 from .atfile import AternosFile, FileType
 if TYPE_CHECKING:

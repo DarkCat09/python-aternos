@@ -1,9 +1,11 @@
 """Parsing and executing JavaScript code"""
 
-import regex
 import base64
-import js2py
+
 from typing import Any
+
+import regex
+import js2py
 
 # Thanks to http://regex.inginf.units.it/
 arrowexp = regex.compile(r'\w[^\}]*+')
@@ -19,6 +21,7 @@ def to_ecma5_function(f: str) -> str:
     :rtype: str
     """
 
+    f = regex.sub(r'/\*.+?\*/', '', f)
     match = arrowexp.search(f)
     conv = '(function(){' + match.group(0) + '})()'
     return regex.sub(

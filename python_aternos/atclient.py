@@ -4,8 +4,10 @@ and allows to manage your account"""
 import os
 import re
 import hashlib
-import lxml.html
+
 from typing import List, Optional
+
+import lxml.html
 
 from .atserver import AternosServer
 from .atconnect import AternosConnect
@@ -119,7 +121,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        with open(file, 'rt') as f:
+        with open(file, 'rt', encoding='utf-8') as f:
             saved = f.read().replace('\r\n', '\n').split('\n')
 
         session = saved[0].strip()
@@ -164,7 +166,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        with open(file, 'wt') as f:
+        with open(file, 'wt', encoding='utf-8') as f:
 
             f.write(self.atconn.atsession + '\n')
             if not incl_servers:

@@ -1,9 +1,11 @@
 """Operators, whitelist and banned players lists"""
 
 import enum
-import lxml.html
+
 from typing import List, Union
 from typing import TYPE_CHECKING
+
+import lxml.html
 
 if TYPE_CHECKING:
     from .atserver import AternosServer

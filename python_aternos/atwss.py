@@ -5,11 +5,13 @@ import enum
 import json
 import asyncio
 import logging
-import websockets
+
 from typing import Union, Any
-from typing import Dict, Tuple
+from typing import Tuple, Dict
 from typing import Callable, Coroutine
 from typing import TYPE_CHECKING
+
+import websockets
 
 from .atconnect import REQUA
 if TYPE_CHECKING:
@@ -55,9 +57,10 @@ class AternosWss:
             autoconfirm: bool = False) -> None:
 
         self.atserv = atserv
-        self.cookies = atserv.atconn.session.cookies
-        self.session = self.cookies['ATERNOS_SESSION']
         self.servid = atserv.servid
+
+        cookies = atserv.atconn.session.cookies
+        self.session = cookies['ATERNOS_SESSION']
 
         recvtype = Dict[Streams, ArgsTuple]
         self.recv: recvtype = {}

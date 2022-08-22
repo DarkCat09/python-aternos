@@ -1,11 +1,15 @@
 """Stores API connection session and sends requests"""
 
 import re
+import time
 import random
 import logging
-from requests import Response
-from cloudscraper import CloudScraper
+from functools import partial
+
 from typing import Optional, Union
+from requests import Response
+
+from cloudscraper import CloudScraper
 
 from . import atjsparse
 from .aterrors import TokenError
@@ -160,8 +164,7 @@ class AternosConnect:
             headers: Optional[dict] = None,
             reqcookies: Optional[dict] = None,
             sendtoken: bool = False,
-            redirect: bool = True,
-            retry: int = 3) -> Response:
+            retry: int = 5) -> Response:
 
         """Sends a request to Aternos API bypass Cloudflare
 
@@ -181,11 +184,8 @@ class AternosConnect:
         :param sendtoken: If the ajax and SEC token
         should be sent, defaults to False
         :type sendtoken: bool, optional
-        :param redirect: If requests lib should follow
-        Location header in 3xx responses, defaults to True
-        :type redirect: bool, optional
         :param retry: How many times parser must retry
-        connection to API bypass Cloudflare, defaults to 3
+        connection to API bypass Cloudflare, defaults to 5
         :type retry: int, optional
         :raises CloudflareError:
         When the parser has exceeded retries count
@@ -198,20 +198,25 @@ class AternosConnect:
         if retry <= 0:
             raise CloudflareError('Unable to bypass Cloudflare protection')
 
+        old_cookies = self.session.cookies
+        self.session = CloudScraper()
+        self.session.cookies.update(old_cookies)
+
         try:
             self.atsession = self.session.cookies['ATERNOS_SESSION']
         except KeyError:
+            # don't rewrite atsession value
             pass
+
+        params = params or {}
+        data = data or {}
+        headers = headers or {}
+        reqcookies = reqcookies or {}
 
         method = method or 'GET'
         method = method.upper().strip()
         if method not in ('GET', 'POST'):
             raise NotImplementedError('Only GET and POST are available')
-
-        headers = headers or {}
-        params = params or {}
-        data = data or {}
-        reqcookies = reqcookies or {}
 
         if sendtoken:
             params['TOKEN'] = self.token
@@ -230,26 +235,35 @@ class AternosConnect:
         logging.debug(f'session-cookies={self.session.cookies}')
 
         if method == 'POST':
-            req = self.session.post(
-                url, data=data, params=params,
-                headers=headers, cookies=reqcookies,
-                allow_redirects=redirect
+            sendreq = partial(
+                self.session.post,
+                params=params,
+                data=data
             )
         else:
-            req = self.session.get(
-                url, params={**params, **data},
-                headers=headers, cookies=reqcookies,
-                allow_redirects=redirect
+            sendreq = partial(
+                self.session.get,
+                params={**params, **data}
             )
 
-        if '<title>Please Wait... | Cloudflare</title>' in req.text:
+        req = sendreq(
+            url,
+            headers=headers,
+            cookies=reqcookies
+        )
+
+        resp_type = req.headers.get('content-type', '')
+        html_type = resp_type.find('text/html') != -1
+        cloudflare = req.status_code == 403
+
+        if html_type and cloudflare:
             logging.info('Retrying to bypass Cloudflare')
+            time.sleep(0.2)
             return self.request_cloudflare(
                 url, method,
                 params, data,
                 headers, reqcookies,
-                sendtoken, redirect,
-                retry - 1
+                sendtoken, retry - 1
             )
 
         logging.debug('AternosConnect received: ' + req.text[:65])

@@ -1,4 +1,4 @@
-failed=()
+failed=''
 
 title () {
 
@@ -16,7 +16,7 @@ error_msg () {
 	ERR='\033[1;31m'
 
 	if (( $1 )); then
-	failed+=$2
+	failed+="$2, "
 	echo -e "$ERR[X] Found errors$RESET"
 	else
 	echo -e "$OK[V] Passed successfully$RESET"
@@ -29,12 +29,11 @@ display_failed() {
 	FAILED='\033[1;33m'
 	SUCCESS='\033[1;32m'
 
-	local IFS=', '
-	if [[ ${#failed[@]} > 0 ]]; then
-	joined=`echo -n ${failed[*]} | sed 's/ /, /'`
+	if [[ $failed != '' ]]; then
+	joined=`echo -n "$failed" | sed 's/, $//'`
 	echo -e "$FAILED[!] View output of: $joined$RESET"
 	else
-	echo -e "$SUCCESS[V] All tests are passed successfully$RESET"
+	echo -e "$SUCCESS[V] All checks are passed successfully$RESET"
 	fi
 }
 

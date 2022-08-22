@@ -28,8 +28,7 @@ from .aterrors import ServerError
 from .aterrors import ServerStartError
 from .aterrors import FileError
 from .aterrors import AternosPermissionError
-from .atjsparse import exec_js, atob
-from .atjsparse import to_ecma5_function
+from .atjsparse import exec_js
 
 __all__ = [
 
@@ -43,8 +42,7 @@ __all__ = [
     'FileManager', 'AternosFile', 'AternosError',
     'CloudflareError', 'CredentialsError', 'TokenError',
     'ServerError', 'ServerStartError', 'FileError',
-    'AternosPermissionError',
-    'exec_js', 'atob', 'to_ecma5_function',
+    'AternosPermissionError', 'exec_js',
 
     'Edition', 'Status', 'Lists',
     'ServerOpts', 'WorldOpts', 'WorldRules',

@@ -2,8 +2,9 @@
 
 import enum
 import json
-from requests import Response
+
 from typing import Optional, List
+from requests import Response
 
 from .atconnect import AternosConnect
 from .aterrors import ServerStartError

@@ -1,10 +1,10 @@
 import os
-import re
 import unittest
+from typing import List
 
 from python_aternos import atjsparse
 
-CONV_TOKEN_ARROW = '''(() => {window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})();'''
+CONV_TOKEN_ARROW = '''(() => {/*AJAX_TOKEN=123}*/window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})();'''
 CONV_TOKEN_FUNC = '''(function(){window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})()'''
 
 
@@ -17,17 +17,16 @@ class TestJs2Py(unittest.TestCase):
         self.input = os.path.join(self.samples, 'token_input.txt')
         self.output = os.path.join(self.samples, 'token_output.txt')
 
-        self.tests = []
-        with open(self.input, 'rt') as f:
-            lines = re.split(r'[\r\n]', f.read())
-            del lines[-1]  # remove empty line at the end
-            self.tests = lines
+        def read_sample(file: str) -> List[str]:
+            with open(file, 'rt', encoding='utf-8') as f:
+                return f \
+                    .read() \
+                    .strip() \
+                    .replace('\r\n', '\n') \
+                    .split('\n')
 
-        self.results = []
-        with open(self.output, 'rt') as f:
-            lines = re.split(r'[\r\n]', f.read())
-            del lines[-1]  # remove empty line at the end
-            self.results = lines
+        self.tests = read_sample(self.input)
+        self.results = read_sample(self.output)
 
     def test_base64(self) -> None:
 
@@ -69,7 +68,3 @@ class TestJs2Py(unittest.TestCase):
             ctx = atjsparse.exec_js(f)
             res = ctx.window['AJAX_TOKEN']
             self.assertEqual(res, self.results[i])
-
-    def tearDown(self) -> None:
-        del self.tests
-        del self.results
