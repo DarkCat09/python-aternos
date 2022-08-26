@@ -121,13 +121,16 @@ convert = {
 
 class AternosConfig:
 
-    """Class for editing server settings
-
-    :param atserv: :class:`python_aternos.atserver.AternosServer` object
-    :type atserv: python_aternos.atserver.AternosServer
-    """
+    """Class for editing server settings"""
 
     def __init__(self, atserv: 'AternosServer') -> None:
+
+        """Class for editing server settings
+
+        Args:
+            atserv (python_aternos.atserver.AternosServer):
+                atserver.AternosServer object
+        """
 
         self.atserv = atserv
 
@@ -135,8 +138,8 @@ class AternosConfig:
 
         """Parses timezone from options page
 
-        :return: Area/Location
-        :rtype: str
+        Returns:
+            Area/Location
         """
 
         optreq = self.atserv.atserver_request(
@@ -154,10 +157,12 @@ class AternosConfig:
 
         """Sets new timezone
 
-        :param value: New timezone
-        :type value: str
-        :raises ValueError: If given string
-        doesn't match Area/Location format
+        Args:
+            value (str): New timezone
+
+        Raises:
+            ValueError: If given string doesn't
+                match `Area/Location` format
         """
 
         matches_tz = tzcheck.search(value)
@@ -176,8 +181,8 @@ class AternosConfig:
 
         """Parses Java version from options page
 
-        :return: Java image version
-        :rtype: int
+        Returns:
+            Java image version
         """
 
         optreq = self.atserv.atserver_request(
@@ -198,8 +203,8 @@ class AternosConfig:
 
         """Sets new Java version
 
-        :param value: New Java image version
-        :type value: int
+        Args:
+            value (int): New Java image version
         """
 
         self.atserv.atserver_request(
@@ -215,10 +220,9 @@ class AternosConfig:
 
         """Sets server.properties option
 
-        :param option: Option name
-        :type option: str
-        :param value: New value
-        :type value: Any
+        Args:
+            option (str): Option name
+            value (Any): New value
         """
 
         self.__set_prop(
@@ -230,12 +234,15 @@ class AternosConfig:
 
         """Parses all server.properties from options page
 
-        :param proptyping: If the returned dict should contain value
-        that matches property type (e.g. max-players will be int)
-        instead of string, defaults to True
-        :type proptyping: bool, optional
-        :return: Server.properties dict
-        :rtype: Dict[str,Any]
+        Args:
+            proptyping (bool, optional):
+                If the returned dict should
+                contain value that matches
+                property type (e.g. max-players will be int)
+                instead of string
+
+        Returns:
+            `server.properties` dictionary
         """
 
         return self.__get_all_props('https://aternos.org/options', proptyping)
@@ -244,8 +251,9 @@ class AternosConfig:
 
         """Updates server.properties options with the given dict
 
-        :param props: Dict with properties `{key:value}`
-        :type props: Dict[str,Any]
+        Args:
+            props (Dict[str,Any]):
+                Dictionary with `{key:value}` properties
         """
 
         for key in props:
@@ -261,16 +269,12 @@ class AternosConfig:
 
         """Sets level.dat option for specified world
 
-        :param option: Option name
-        :type option: Union[WorldOpts,WorldRules]
-        :param value: New value
-        :type value: Any
-        :param gamerule: If the option
-        is a gamerule, defaults to False
-        :type gamerule: bool, optional
-        :param world: Name of the world which
-        level.dat must be edited, defaults to 'world'
-        :type world: str, optional
+        Args:
+            option (Union[WorldOpts, WorldRules]): Option name
+            value (Any): New value
+            gamerule (bool, optional): If the option is a gamerule
+            world (str, optional): Name of the world which
+                `level.dat` must be edited
         """
 
         prefix = DAT_PREFIX
@@ -289,14 +293,16 @@ class AternosConfig:
 
         """Parses level.dat from specified world's options page
 
-        :param world: Name of the world, defaults to 'world'
-        :type world: str, optional
-        :param proptyping: If the returned dict should contain the value
-        that matches property type (e.g. randomTickSpeed will be bool)
-        instead of string, defaults to True
-        :type proptyping: bool, optional
-        :return: Level.dat dict
-        :rtype: Dict[str,Any]
+        Args:
+            world (str, optional): Name of the worl
+            proptyping (bool, optional):
+                If the returned dict should
+                contain the value that matches
+                property type (e.g. randomTickSpeed will be bool)
+                instead of string
+
+        Returns:
+            `level.dat` options dictionary
         """
 
         return self.__get_all_props(
@@ -312,11 +318,11 @@ class AternosConfig:
         """Sets level.dat options from
         the dictionary for the specified world
 
-        :param props: Level.dat options
-        :type props: Dict[Union[WorldOpts, WorldRules], Any]
-        :param world: name of the world which
-        level.dat must be edited, defaults to 'world'
-        :type world: str
+        Args:
+            props (Dict[Union[WorldOpts, WorldRules], Any]):
+                `level.dat` options
+            world (str): name of the world which
+                `level.dat` must be edited
         """
 
         for key in props:

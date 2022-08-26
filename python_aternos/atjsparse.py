@@ -1,9 +1,6 @@
 """Parsing and executing JavaScript code"""
 
 import base64
-
-from typing import Any
-
 import regex
 import js2py
 
@@ -13,12 +10,14 @@ arrowexp = regex.compile(r'\w[^\}]*+')
 
 def to_ecma5_function(f: str) -> str:
 
-    """Converts a ECMA6 function to ECMA5 format (without arrow expressions)
+    """Converts a ECMA6 function
+    to ECMA5 format (without arrow expressions)
 
-    :param f: ECMA6 function
-    :type f: str
-    :return: ECMA5 function
-    :rtype: str
+    Args:
+        f (str): ECMA6 function
+
+    Returns:
+        ECMA5 function
     """
 
     f = regex.sub(r'/\*.+?\*/', '', f)
@@ -35,23 +34,25 @@ def atob(s: str) -> str:
 
     """Decodes base64 string
 
-    :param s: Encoded data
-    :type s: str
-    :return: Decoded string
-    :rtype: str
+    Args:
+        s (str): Encoded data
+
+    Returns:
+        Decoded string
     """
 
     return base64.standard_b64decode(str(s)).decode('utf-8')
 
 
-def exec_js(f: str) -> Any:
+def exec_js(f: str) -> js2py.EvalJs:
 
     """Executes a JavaScript function
 
-    :param f: ECMA6 function
-    :type f: str
-    :return: JavaScript interpreter context
-    :rtype: Any
+    Args:
+        f (str): ECMA6 function
+
+    Returns:
+        JavaScript interpreter context
     """
 
     ctx = js2py.EvalJs({'atob': atob})

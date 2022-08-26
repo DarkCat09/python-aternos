@@ -2,12 +2,40 @@ site_name: Python-Aternos
 
 theme:
   name: readthedocs
+  sticky_navigation: false
+  include_homepage_in_sidebar: false
+  prev_next_buttons_location: both
+
+markdown_extensions:
+  - toc:
+      permalink: '#'
 
 plugins:
   - search
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
 
 nav:
-  - index.md
-  - howto.md
-  - reference.md
+  - Home: 'index.md'
+  - 'How-To Guide':
+      - 'Logging in': 'howto/auth.md'
+      - 'Servers': 'howto/server.md'
+      - 'Whitelist': 'howto/players.md'
+      - 'Files': 'howto/files.md'
+      - 'Settings': 'howto/config.md'
+      - 'Real-time updates': 'howto/websocket.md'
+      - 'Discord bot': 'howto/discord.md'
+  - 'API Reference':
+      - atclient: 'reference/atclient.md'
+      - atserver: 'reference/atserver.md'
+      - atplayers: 'reference/atplayers.md'
+      - atconf: 'reference/atconf.md'
+      - atfm: 'reference/atfm.md'
+      - atfile: 'reference/atfile.md'
+      - atconnect: 'reference/atconnect.md'
+      - atjsparse: 'reference/atjsparse.md'
+      - aterrors: 'reference/aterrors.md'
+      - atwss: 'reference/atwss.md'

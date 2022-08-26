@@ -3,8 +3,10 @@
 import enum
 import json
 
-from typing import Optional, List
-from requests import Response
+from typing import Optional
+from typing import List, Dict, Any
+
+import requests
 
 from .atconnect import AternosConnect
 from .aterrors import ServerStartError
@@ -17,7 +19,7 @@ from .atwss import AternosWss
 
 class Edition(enum.IntEnum):
 
-    """Server edition type enum"""
+    """Server edition type enum (java, bedrock)"""
 
     java = 0
     bedrock = 1
@@ -32,31 +34,35 @@ class Status(enum.IntEnum):
 
     off = 0
     on = 1
+
     starting = 2
     shutdown = 3
-    unknown = 6
+
+    loading = 6
     error = 7
+
+    preparing = 10
     confirm = 10
 
 
 class AternosServer:
 
-    """Class for controlling your Aternos Minecraft server
-
-    :param servid: Unique server IDentifier
-    :type servid: str
-    :param atconn: :class:`python_aternos.atconnect.AternosConnect`
-    instance with initialized Aternos session
-    :type atconn: python_aternos.atconnect.AternosConnect
-    :param reqinfo: Automatically call AternosServer.fetch()
-    to get all info, defaults to `True`
-    :type reqinfo: bool, optional
-    """
+    """Class for controlling your Aternos Minecraft server"""
 
     def __init__(
             self, servid: str,
             atconn: AternosConnect,
             reqinfo: bool = True) -> None:
+
+        """Class for controlling your Aternos Minecraft server
+
+        Args:
+            servid (str): Unique server IDentifier
+            atconn (AternosConnect):
+                AternosConnect instance with initialized Aternos session
+            reqinfo (bool, optional): Automatically call
+                `fetch()` to get all info
+        """
 
         self.servid = servid
         self.atconn = atconn
@@ -75,15 +81,17 @@ class AternosServer:
 
     def wss(self, autoconfirm: bool = False) -> AternosWss:
 
-        """Returns :class:`python_aternos.atwss.AternosWss`
-        instance for listening server streams in real-time
+        """Returns AternosWss instance for
+        listening server streams in real-time
 
-        :param autoconfirm: Automatically start server status listener
-        when AternosWss connects to API to confirm
-        server launching, defaults to `False`
-        :type autoconfirm: bool, optional
-        :return: :class:`python_aternos.atwss.AternosWss` object
-        :rtype: python_aternos.atwss.AternosWss
+        Args:
+            autoconfirm (bool, optional):
+                Automatically start server status listener
+                when AternosWss connects to API to confirm
+                server launching
+
+        Returns:
+            AternosWss object
         """
 
         return AternosWss(self, autoconfirm)
@@ -95,14 +103,16 @@ class AternosServer:
 
         """Starts a server
 
-        :param headstart: Start a server in the headstart mode
-        which allows you to skip all queue, defaults to `False`
-        :type headstart: bool, optional
-        :param accepteula: Automatically accept
-        the Mojang EULA, defaults to `True`
-        :type accepteula: bool, optional
-        :raises ServerStartError: When Aternos
-        is unable to start the server
+        Args:
+            headstart (bool, optional): Start a server in
+                the headstart mode which allows
+                you to skip all queue
+            accepteula (bool, optional):
+                Automatically accept the Mojang EULA
+
+        Raises:
+            ServerStartError: When Aternos
+                is unable to start the server
         """
 
         startreq = self.atserver_request(
@@ -171,66 +181,64 @@ class AternosServer:
 
     def files(self) -> FileManager:
 
-        """Returns :class:`python_aternos.atfm.FileManager`
-        instance for file operations
+        """Returns FileManager instance
+        for file operations
 
-        :return: :class:`python_aternos.atfm.FileManager` object
-        :rtype: python_aternos.atfm.FileManager
+        Returns:
+            FileManager object
         """
 
         return FileManager(self)
 
     def config(self) -> AternosConfig:
 
-        """Returns :class:`python_aternos.atconf.AternosConfig`
-        instance for editing server settings
+        """Returns AternosConfig instance
+        for editing server settings
 
-        :return: :class:`python_aternos.atconf.AternosConfig` object
-        :rtype: python_aternos.atconf.AternosConfig
+        Returns:
+            AternosConfig object
         """
 
         return AternosConfig(self)
 
     def players(self, lst: Lists) -> PlayersList:
 
-        """Returns :class:`python_aternos.atplayers.PlayersList`
-        instance for managing operators, whitelist and banned players lists
+        """Returns PlayersList instance
+        for managing operators, whitelist
+        and banned players lists
 
-        :param lst: Players list type, must be
-        the :class:`python_aternos.atplayers.Lists` enum value
-        :type lst: python_aternos.atplayers.Lists
-        :return: :class:`python_aternos.atplayers.PlayersList`
-        :rtype: python_aternos.atplayers.PlayersList
+        Args:
+            lst (Lists): Players list type,
+                must be the atplayers.Lists enum value
+
+        Returns:
+            PlayersList object
         """
 
         return PlayersList(lst, self)
 
     def atserver_request(
             self, url: str, method: str,
-            params: Optional[dict] = None,
-            data: Optional[dict] = None,
-            headers: Optional[dict] = None,
-            sendtoken: bool = False) -> Response:
+            params: Optional[Dict[Any, Any]] = None,
+            data: Optional[Dict[Any, Any]] = None,
+            headers: Optional[Dict[Any, Any]] = None,
+            sendtoken: bool = False) -> requests.Response:
 
         """Sends a request to Aternos API
         with server IDenitfier parameter
 
-        :param url: Request URL
-        :type url: str
-        :param method: Request method, must be GET or POST
-        :type method: str
-        :param params: URL parameters, defaults to None
-        :type params: Optional[dict], optional
-        :param data: POST request data, if the method is GET,
-        this dict will be combined with params, defaults to None
-        :type data: Optional[dict], optional
-        :param headers: Custom headers, defaults to None
-        :type headers: Optional[dict], optional
-        :param sendtoken: If the ajax and SEC token
-        should be sent, defaults to False
-        :type sendtoken: bool, optional
-        :return: API response
-        :rtype: requests.Response
+        Args:
+            url (str): Request URL
+            method (str): Request method, must be GET or POST
+            params (Optional[Dict[Any, Any]], optional): URL parameters
+            data (Optional[Dict[Any, Any]], optional): POST request data,
+                if the method is GET, this dict
+                will be combined with params
+            headers (Optional[Dict[Any, Any]], optional): Custom headers
+            sendtoken (bool, optional): If the ajax and SEC token should be sent
+
+        Returns:
+            API response
         """
 
         return self.atconn.request_cloudflare(
@@ -246,10 +254,11 @@ class AternosServer:
     @property
     def subdomain(self) -> str:
 
-        """Server subdomain (part of domain before `.aternos.me`)
+        """Server subdomain
+        (the part of domain before `.aternos.me`)
 
-        :return: Subdomain
-        :rtype: str
+        Returns:
+            Subdomain
         """
 
         atdomain = self.domain
@@ -258,10 +267,10 @@ class AternosServer:
     @subdomain.setter
     def subdomain(self, value: str) -> None:
 
-        """Set new subdomain for your server
+        """Set a new subdomain for your server
 
-        :param value: Subdomain
-        :type value: str
+        Args:
+            value (str): Subdomain
         """
 
         self.atserver_request(
@@ -273,11 +282,12 @@ class AternosServer:
     @property
     def motd(self) -> str:
 
-        """Server message of the day,
-        which is shown below its name in the servers list
+        """Server message of the day
+        which is shown below its name
+        in the Minecraft servers list
 
-        :return: MOTD
-        :rtype: str
+        Returns:
+            MOTD
         """
 
         return self._info['motd']
@@ -285,10 +295,10 @@ class AternosServer:
     @motd.setter
     def motd(self, value: str) -> None:
 
-        """Set new message of the day
+        """Set a new message of the day
 
-        :param value: MOTD
-        :type value: str
+        Args:
+            value (str): New MOTD
         """
 
         self.atserver_request(
@@ -300,10 +310,11 @@ class AternosServer:
     @property
     def address(self) -> str:
 
-        """Full server address including domain and port
+        """Full server address
+        including domain and port
 
-        :return: Server address
-        :rtype: str
+        Returns:
+            Server address
         """
 
         return self._info['displayAddress']
@@ -311,11 +322,11 @@ class AternosServer:
     @property
     def domain(self) -> str:
 
-        """Server domain (test.aternos.me),
-        address without port number
+        """Server domain (e.g. `test.aternos.me`).
+        In other words, address without port number
 
-        :return: Domain
-        :rtype: str
+        Returns:
+            Domain
         """
 
         return self._info['ip']
@@ -325,8 +336,8 @@ class AternosServer:
 
         """Server port number
 
-        :return: Port
-        :rtype: int
+        Returns:
+            Port
         """
 
         return self._info['port']
@@ -336,20 +347,42 @@ class AternosServer:
 
         """Server software edition: Java or Bedrock
 
-        :return: Software edition
-        :rtype: Edition
+        Returns:
+            Software edition
         """
 
         soft_type = self._info['bedrock']
         return Edition(soft_type)
 
     @property
+    def is_java(self) -> bool:
+
+        """Check if server software is Java Edition
+
+        Returns:
+            Is it Minecraft JE
+        """
+
+        return not self._info['bedrock']
+
+    @property
+    def is_bedrock(self) -> bool:
+
+        """Check if server software is Bedrock Edition
+
+        Returns:
+            Is it Minefcraft BE
+        """
+
+        return bool(self._info['bedrock'])
+
+    @property
     def software(self) -> str:
 
         """Server software name (e.g. `Vanilla`)
 
-        :return: Software name
-        :rtype: str
+        Returns:
+            Software name
         """
 
         return self._info['software']
@@ -357,33 +390,50 @@ class AternosServer:
     @property
     def version(self) -> str:
 
-        """Server software version (e.g. `1.16.5`)
+        """Server software version (1.16.5)
 
-        :return: Software version
-        :rtype: str
+        Returns:
+            Software version
         """
 
         return self._info['version']
 
     @property
-    def status(self) -> str:
+    def css_class(self) -> str:
 
-        """Server status string (offline, loading)
+        """CSS class for
+        server status block
+        on official web site
+        (offline, loading,
+        loading starting, queueing)
 
-        :return: Status string
-        :rtype: str
+        Returns:
+            CSS class
         """
 
         return self._info['class']
 
     @property
-    def status_num(self) -> int:
+    def status(self) -> str:
 
-        """Server numeric status. It is highly recommended
-        to use status string instead of a number.
+        """Server status string
+        (offline, loading, preparing)
 
-        :return: Status code
-        :rtype: Status
+        Returns:
+            Status string
+        """
+
+        return self._info['lang']
+
+    @property
+    def status_num(self) -> Status:
+
+        """Server numeric status.
+        It is highly recommended to use
+        status string instead of a number
+
+        Returns:
+            Status code
         """
 
         return Status(self._info['status'])
@@ -391,10 +441,10 @@ class AternosServer:
     @property
     def players_list(self) -> List[str]:
 
-        """List of connected players nicknames
+        """List of connected players' nicknames
 
-        :return: Connected players
-        :rtype: List[str]
+        Returns:
+            Connected players
         """
 
         return self._info['playerlist']
@@ -402,10 +452,10 @@ class AternosServer:
     @property
     def players_count(self) -> int:
 
-        """How many connected players
+        """How many players are connected
 
-        :return: Connected players count
-        :rtype: int
+        Returns:
+            Connected players count
         """
 
         return int(self._info['players'])
@@ -413,10 +463,11 @@ class AternosServer:
     @property
     def slots(self) -> int:
 
-        """Server slots, how many players can connect
+        """Server slots, how many
+        players **can** connect
 
-        :return: Slots count
-        :rtype: int
+        Returns:
+            Slots count
         """
 
         return int(self._info['slots'])
@@ -426,8 +477,8 @@ class AternosServer:
 
         """Server used RAM in MB
 
-        :return: Used RAM
-        :rtype: int
+        Returns:
+            Used RAM
         """
 
         return int(self._info['ram'])

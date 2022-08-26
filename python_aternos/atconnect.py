@@ -7,7 +7,9 @@ import logging
 from functools import partial
 
 from typing import Optional, Union
-from requests import Response
+from typing import Dict, Any
+
+import requests
 
 from cloudscraper import CloudScraper
 
@@ -23,14 +25,12 @@ REQUA = \
 
 class AternosConnect:
 
-    """
-    Class for sending API requests bypass Cloudflare
-    and parsing responses"""
+    """Class for sending API requests
+    bypass Cloudflare and parsing responses"""
 
     def __init__(self) -> None:
 
         self.session = CloudScraper()
-        self.atsession = ''
         self.sec = ''
         self.token = ''
 
@@ -39,12 +39,14 @@ class AternosConnect:
         """Parses Aternos ajax token that
         is needed for most requests
 
-        :raises RuntimeWarning: If the parser
-        can not find <head> tag in HTML response
-        :raises CredentialsError: If the parser
-        is unable to extract ajax token in HTML
-        :return: Aternos ajax token
-        :rtype: str
+        Raises:
+            RuntimeWarning: If the parser can not
+                find `<head>` tag in HTML response
+            TokenError: If the parser is unable
+                to extract ajax token from HTML
+
+        Returns:
+            Aternos ajax token
         """
 
         loginpage = self.request_cloudflare(
@@ -71,7 +73,10 @@ class AternosConnect:
         try:
             text = pagehead.decode('utf-8', 'replace')
             js_code = re.findall(r'\(\(\)(.*?)\)\(\);', text)
-            token_func = js_code[1] if len(js_code) > 1 else js_code[0]
+
+            token_func = js_code[0]
+            if len(js_code) > 1:
+                token_func = js_code[1]
 
             ctx = atjsparse.exec_js(token_func)
             self.token = ctx.window['AJAX_TOKEN']
@@ -88,8 +93,8 @@ class AternosConnect:
         """Generates Aternos SEC token which
         is also needed for most API requests
 
-        :return: Random SEC key:value string
-        :rtype: str
+        Returns:
+            Random SEC `key:value` string
         """
 
         randkey = self.generate_aternos_rand()
@@ -107,10 +112,11 @@ class AternosConnect:
         """Generates a random string using
         Aternos algorithm from main.js file
 
-        :param randlen: Random string length, defaults to 16
-        :type randlen: int, optional
-        :return: Random string for SEC token
-        :rtype: str
+        Args:
+            randlen (int, optional): Random string length
+
+        Returns:
+            Random string for SEC token
         """
 
         # a list with randlen+1 empty strings:
@@ -129,16 +135,15 @@ class AternosConnect:
 
         """Converts an integer to specified base
 
-        :param num: Integer in any base to convert.
-        If it is a float started with `0,`,
-        zero and comma will be removed to get int
-        :type num: Union[int,float,str]
-        :param base: New base
-        :type base: int
-        :param frombase: Given number base, defaults to 10
-        :type frombase: int, optional
-        :return: Number converted to a specified base
-        :rtype: str
+        Args:
+            num (Union[int,float,str]): Integer in any base to convert.
+                If it is a float starting with `0.`,
+                zero and point will be removed to get int
+            base (int): New base
+            frombase (int, optional): Given number base
+
+        Returns:
+            Number converted to a specified base
         """
 
         if isinstance(num, str):
@@ -159,40 +164,35 @@ class AternosConnect:
 
     def request_cloudflare(
             self, url: str, method: str,
-            params: Optional[dict] = None,
-            data: Optional[dict] = None,
-            headers: Optional[dict] = None,
-            reqcookies: Optional[dict] = None,
+            params: Optional[Dict[Any, Any]] = None,
+            data: Optional[Dict[Any, Any]] = None,
+            headers: Optional[Dict[Any, Any]] = None,
+            reqcookies: Optional[Dict[Any, Any]] = None,
             sendtoken: bool = False,
-            retry: int = 5) -> Response:
+            retry: int = 5) -> requests.Response:
 
         """Sends a request to Aternos API bypass Cloudflare
 
-        :param url: Request URL
-        :type url: str
-        :param method: Request method, must be GET or POST
-        :type method: str
-        :param params: URL parameters, defaults to None
-        :type params: Optional[dict], optional
-        :param data: POST request data, if the method is GET,
-        this dict will be combined with params, defaults to None
-        :type data: Optional[dict], optional
-        :param headers: Custom headers, defaults to None
-        :type headers: Optional[dict], optional
-        :param reqcookies: Cookies only for this request, defaults to None
-        :type reqcookies: Optional[dict], optional
-        :param sendtoken: If the ajax and SEC token
-        should be sent, defaults to False
-        :type sendtoken: bool, optional
-        :param retry: How many times parser must retry
-        connection to API bypass Cloudflare, defaults to 5
-        :type retry: int, optional
-        :raises CloudflareError:
-        When the parser has exceeded retries count
-        :raises NotImplementedError:
-        When the specified method is not GET or POST
-        :return: API response
-        :rtype: requests.Response
+        Args:
+            url (str): Request URL
+            method (str): Request method, must be GET or POST
+            params (Optional[Dict[Any, Any]], optional): URL parameters
+            data (Optional[Dict[Any, Any]], optional): POST request data,
+                if the method is GET, this dict will be combined with params
+            headers (Optional[Dict[Any, Any]], optional): Custom headers
+            reqcookies (Optional[Dict[Any, Any]], optional):
+                Cookies only for this request
+            sendtoken (bool, optional): If the ajax and SEC token
+                should be sent
+            retry (int, optional): How many times parser must retry
+                connection to API bypass Cloudflare
+
+        Raises:
+            CloudflareError: When the parser has exceeded retries count
+            NotImplementedError: When the specified method is not GET or POST
+
+        Returns:
+            API response
         """
 
         if retry <= 0:
@@ -201,12 +201,6 @@ class AternosConnect:
         old_cookies = self.session.cookies
         self.session = CloudScraper()
         self.session.cookies.update(old_cookies)
-
-        try:
-            self.atsession = self.session.cookies['ATERNOS_SESSION']
-        except KeyError:
-            # don't rewrite atsession value
-            pass
 
         params = params or {}
         data = data or {}
@@ -276,3 +270,17 @@ class AternosConnect:
 
         req.raise_for_status()
         return req
+
+    @property
+    def atsession(self) -> str:
+
+        """Aternos session cookie,
+        empty string if not logged in
+
+        Returns:
+            Session cookie
+        """
+
+        return self.session.cookies.get(
+            'ATERNOS_SESSION', ''
+        )

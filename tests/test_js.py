@@ -68,3 +68,7 @@ class TestJs2Py(unittest.TestCase):
             ctx = atjsparse.exec_js(f)
             res = ctx.window['AJAX_TOKEN']
             self.assertEqual(res, self.results[i])
+
+
+if __name__ == '__main__':
+    unittest.main()

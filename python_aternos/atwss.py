@@ -1,4 +1,4 @@
-"""Connects to Aternos API websocket
+"""Connects to Aternos WebSocket API
 for real-time information"""
 
 import enum
@@ -35,26 +35,30 @@ class Streams(enum.Enum):
     none = (-1, None)
 
     def __init__(self, num: int, stream: str) -> None:
+
         self.num = num
         self.stream = stream
 
 
 class AternosWss:
 
-    """Class for managing websocket connection
-
-    :param atserv: :class:`python_aternos.atserver.AternosServer` instance
-    :type atserv: python_aternos.atserver.AternosServer
-    :param autoconfirm: Automatically start server status listener
-    when AternosWss connects to API to confirm
-    server launching, defaults to `False`
-    :type autoconfirm: bool, optional
-    """
+    """Class for managing websocket connection"""
 
     def __init__(
             self,
             atserv: 'AternosServer',
             autoconfirm: bool = False) -> None:
+
+        """Class for managing websocket connection
+
+        Args:
+            atserv (AternosServer):
+                atserver.AternosServer instance
+            autoconfirm (bool, optional):
+                Automatically start server status listener
+                when AternosWss connects to API to confirm
+                server launching
+        """
 
         self.atserv = atserv
         self.servid = atserv.servid
@@ -73,7 +77,9 @@ class AternosWss:
 
     async def confirm(self) -> None:
 
-        """Simple way to call AternosServer.confirm from this class"""
+        """Simple way to call
+        `AternosServer.confirm`
+        from this class"""
 
         self.atserv.confirm()
 
@@ -86,12 +92,12 @@ class AternosWss:
         When websocket receives message from the specified stream,
         it calls all listeners created with this decorator.
 
-        :param stream: Stream that your function should listen
-        :type stream: python_aternos.atwss.Streams
-        :param args: Arguments which will be passed to your function
-        :type args: tuple, optional
-        :return: ...
-        :rtype: Callable[[Callable[[Any], Coroutine[Any, Any, None]]], Any]
+        Args:
+            stream (Streams): Stream that your function should listen
+            *args (tuple, optional): Arguments which will be passed to your function
+
+        Returns:
+            ...
         """
 
         def decorator(func: FunctionT) -> None:
@@ -100,7 +106,8 @@ class AternosWss:
 
     async def connect(self) -> None:
 
-        """Connect to the websocket server and start all stream listeners"""
+        """Connects to the websocket server
+        and starts all stream listeners"""
 
         headers = [
             ('Host', 'aternos.org'),
@@ -118,9 +125,14 @@ class AternosWss:
         )
 
         @self.wssreceiver(Streams.status)
-        async def confirmfunc(msg):
+        async def confirmfunc(msg: Dict[str, Any]) -> None:
 
-            """Automatically confirm Minecraft server launching"""
+            """Automatically confirm
+            Minecraft server launching
+
+            Args:
+                msg (Dict[str, Any]): Server info dictionary
+            """
 
             if not self.autoconfirm:
                 return
@@ -130,13 +142,14 @@ class AternosWss:
             confirmation = in_queue and pending
 
             if confirmation and not self.confirmed:
-                self.confirm()
+                await self.confirm()
 
         @self.wssreceiver(Streams.status)
-        async def streamsfunc(msg):
+        async def streamsfunc(msg: Dict[str, Any]) -> None:
 
             """Automatically starts streams. Detailed description:
 
+            https://github.com/DarkCat09/python-aternos/issues/22#issuecomment-1146788496
             According to the websocket messages from the web site,
             Aternos can't receive any data from a stream (e.g. console) until
             it requests this stream via the special message
@@ -148,7 +161,9 @@ class AternosWss:
             these data is sent from API by default, so there's None value in
             the second item of its stream type tuple
             (`<Streams.status: (0, None)>`).
-            https://github.com/DarkCat09/python-aternos/issues/22#issuecomment-1146788496
+
+            Args:
+                msg (Dict[str, Any]): Server info dictionary
             """
 
             if msg['status'] == 2:
@@ -159,7 +174,7 @@ class AternosWss:
                         continue
 
                     if strm.stream:
-                        logging.debug(f'Enabling {strm.stream} stream')
+                        logging.debug(f'Requesting {strm.stream} stream')
                         await self.send({
                             'stream': strm.stream,
                             'type': 'start'
@@ -180,8 +195,9 @@ class AternosWss:
 
         """Sends a message to websocket server
 
-        :param obj: Message, may be a string or a dict
-        :type obj: Union[Dict[str, Any],str]
+        Args:
+            obj (Union[Dict[str, Any],str]):
+                Message, may be a string or a dict
         """
 
         if isinstance(obj, dict):

@@ -12,26 +12,32 @@ if TYPE_CHECKING:
 
 class FileManager:
 
-    """Aternos file manager class for viewing files structure
-
-    :param atserv: :class:`python_aternos.atserver.AternosServer` instance
-    :type atserv: python_aternos.atserver.AternosServer
-    """
+    """Aternos file manager class
+    for viewing files structure"""
 
     def __init__(self, atserv: 'AternosServer') -> None:
 
+        """Aternos file manager class
+        for viewing files structure
+
+        Args:
+            atserv (python_aternos.atserver.AternosServer):
+                atserver.AternosServer instance
+        """
+
         self.atserv = atserv
 
-    def listdir(self, path: str = '') -> List[AternosFile]:
+    def list_dir(self, path: str = '') -> List[AternosFile]:
 
         """Requests a list of files
         in the specified directory
 
-        :param path: Directory
-        (an empty string means root), defaults to ''
-        :type path: str, optional
-        :return: List of :class:`python_aternos.atfile.AternosFile`
-        :rtype: List[AternosFile]
+        Args:
+            path (str, optional):
+                Directory (an empty string means root)
+
+        Returns:
+            List of atfile.AternosFile objects
         """
 
         path = path.lstrip('/')
@@ -42,29 +48,35 @@ class FileManager:
         filestree = lxml.html.fromstring(filesreq.content)
 
         fileslist = filestree.xpath(
-            '//div[contains(concat(" ",normalize-space(@class)," ")," file ")]'
+            '//div[@class="file" or @class="file clickable"]'
         )
 
         files = []
         for f in fileslist:
 
             ftype_raw = f.xpath('@data-type')[0]
-            ftype = FileType.file \
-                if ftype_raw == 'file' \
-                else FileType.directory
-
             fsize = self.extract_size(
                 f.xpath('./div[@class="filesize"]')
             )
 
-            fullpath = f.xpath('@data-path')[0]
-            filepath = fullpath[:fullpath.rfind('/')]
-            filename = fullpath[fullpath.rfind('/'):]
+            rm_btn = f.xpath('./div[contains(@class,"js-delete-file")]')
+            dl_btn = f.xpath('./div[contains(@class,"js-download-file")]')
+            clickable = 'clickable' in f.classes
+            is_config = ('server.properties' in path) or ('level.dat' in path)
+
             files.append(
                 AternosFile(
-                    self.atserv,
-                    filepath, filename,
-                    ftype, fsize
+                    atserv=self.atserv,
+                    path=f.xpath('@data-path')[0],
+
+                    rmable=(len(rm_btn) > 0),
+                    dlable=(len(dl_btn) > 0),
+                    editable=(clickable and not is_config),
+
+                    ftype={'file': FileType.file}.get(
+                        ftype_raw, FileType.dir
+                    ),
+                    size=fsize
                 )
             )
 
@@ -74,10 +86,11 @@ class FileManager:
 
         """Parses file size from the LXML tree
 
-        :param fsize_raw: XPath method result
-        :type fsize_raw: List[Any]
-        :return: File size in bytes
-        :rtype: float
+        Args:
+            fsize_raw (List[Any]): XPath parsing result
+
+        Returns:
+            File size in bytes
         """
 
         if len(fsize_raw) > 0:
@@ -87,7 +100,10 @@ class FileManager:
             fsize_msr = fsize_text[fsize_text.rfind(' ') + 1:]
 
             try:
-                return self.convert_size(float(fsize_num), fsize_msr)
+                return self.convert_size(
+                    float(fsize_num),
+                    fsize_msr
+                )
             except ValueError:
                 return -1.0
 
@@ -100,12 +116,12 @@ class FileManager:
 
         """Converts "human" file size to size in bytes
 
-        :param num: Size
-        :type num: Union[int,float]
-        :param measure: Units (B, kB, MB, GB)
-        :type measure: str
-        :return: Size in bytes
-        :rtype: float
+        Args:
+            num (Union[int,float]): Size
+            measure (str): Units (B, kB, MB, GB)
+
+        Returns:
+            Size in bytes
         """
 
         measure_match = {
@@ -121,30 +137,35 @@ class FileManager:
         """Returns :class:`python_aternos.atfile.AternosFile`
         instance by its path
 
-        :param path: Path to file including its filename
-        :type path: str
-        :return: _description_
-        :rtype: Optional[AternosFile]
+        Args:
+            path (str): Path to the file including its filename
+
+        Returns:
+            atfile.AternosFile object
+            if file has been found,
+            otherwise None
         """
 
-        filepath = path[:path.rfind('/')]
+        filedir = path[:path.rfind('/')]
         filename = path[path.rfind('/'):]
 
-        filedir = self.listdir(filepath)
-        for file in filedir:
-            if file.name == filename:
-                return file
+        files = self.list_dir(filedir)
 
-        return None
+        return {
+            'file': f
+            for f in files
+            if f.name == filename
+        }.get('file', None)
 
     def dl_file(self, path: str) -> bytes:
 
         """Returns the file content in bytes (downloads it)
 
-        :param path: Path to file including its filename
-        :type path: str
-        :return: File content
-        :rtype: bytes
+        Args:
+            path (str): Path to file including its filename
+
+        Returns:
+            File content
         """
 
         file = self.atserv.atserver_request(  # type: ignore
@@ -161,10 +182,11 @@ class FileManager:
         """Returns the world zip file content
         by its name (downloads it)
 
-        :param world: Name of world, defaults to 'world'
-        :type world: str, optional
-        :return: Zip file content
-        :rtype: bytes
+        Args:
+            world (str, optional): Name of world
+
+        Returns:
+            ZIP file content
         """
 
         resp = self.atserv.atserver_request(  # type: ignore

@@ -10,7 +10,8 @@ files = s.files()
 
 while True:
 
-    cmd = input('> ').strip().lower()
+    inp = input('> ').strip()
+    cmd = inp.lower()
 
     if cmd == 'help':
         print(
@@ -25,8 +26,8 @@ while True:
         break
 
     if cmd.startswith('list'):
-        path = cmd.removeprefix('list').strip()
-        directory = files.listdir(path)
+        path = inp[4:].strip()
+        directory = files.list_dir(path)
 
         print(path, 'contains:')
         for file in directory:

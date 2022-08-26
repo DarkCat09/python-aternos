@@ -4,6 +4,7 @@ and allows to manage your account"""
 import os
 import re
 import hashlib
+import logging
 
 from typing import List, Optional
 
@@ -16,17 +17,23 @@ from .aterrors import CredentialsError
 
 class Client:
 
-    """Aternos API Client class object of which contains user's auth data
-
-    :param atconn: :class:`python_aternos.atconnect.AternosConnect`
-    instance with initialized Aternos session
-    :type atconn: python_aternos.atconnect.AternosConnect
-    """
+    """Aternos API Client class object
+    of which contains user's auth data"""
 
     def __init__(
             self,
             atconn: AternosConnect,
             servers: Optional[List[str]] = None) -> None:
+
+        """Aternos API Client class object
+        of which contains user's auth data
+
+        Args:
+            atconn (AternosConnect):
+                AternosConnect instance with initialized Aternos session
+            servers (Optional[List[str]], optional):
+                List with servers IDs
+        """
 
         self.atconn = atconn
         self.parsed = False
@@ -36,23 +43,37 @@ class Client:
             self.refresh_servers(servers)
 
     @classmethod
-    def from_hashed(cls, username: str, md5: str):
+    def from_hashed(
+            cls,
+            username: str,
+            md5: str,
+            sessions_dir: str = '~'):
 
-        """Log in to Aternos with a username and a hashed password
+        """Log in to an Aternos account with
+        a username and a hashed password
 
-        :param username: Your username
-        :type username: str
-        :param md5: Your password hashed with MD5
-        :type md5: str
-        :raises CredentialsError: If the API
-        doesn't return a valid session cookie
-        :return: Client instance
-        :rtype: python_aternos.Client
+        Args:
+            username (str): Your username
+            md5 (str): Your password hashed with MD5
+            sessions_dir (str): Path to the directory
+                where session will be automatically saved
+
+        Raises:
+            CredentialsError: If the API didn't
+                return a valid session cookie
         """
 
         atconn = AternosConnect()
         atconn.parse_token()
         atconn.generate_sec()
+
+        secure = cls.secure_name(username)
+        filename = f'{sessions_dir}/.at_{secure}'
+
+        try:
+            return cls.restore_session(filename)
+        except (OSError, CredentialsError):
+            pass
 
         credentials = {
             'user': username,
@@ -69,23 +90,36 @@ class Client:
                 'Check your username and password'
             )
 
-        return cls(atconn)
+        obj = cls(atconn)
+
+        try:
+            obj.save_session(filename)
+        except OSError:
+            pass
+
+        return obj
 
     @classmethod
-    def from_credentials(cls, username: str, password: str):
+    def from_credentials(
+            cls,
+            username: str,
+            password: str,
+            sessions_dir: str = '~'):
 
         """Log in to Aternos with a username and a plain password
 
-        :param username: Your username
-        :type username: str
-        :param password: Your password without any encryption
-        :type password: str
-        :return: Client instance
-        :rtype: python_aternos.Client
+        Args:
+            username (str): Your username
+            password (str): Your password without any encryption
+            sessions_dir (str): Path to the directory
+                where session will be automatically saved
         """
 
         md5 = Client.md5encode(password)
-        return cls.from_hashed(username, md5)
+        return cls.from_hashed(
+            username, md5,
+            sessions_dir
+        )
 
     @classmethod
     def from_session(
@@ -95,10 +129,8 @@ class Client:
 
         """Log in to Aternos using a session cookie value
 
-        :param session: Value of ATERNOS_SESSION cookie
-        :type session: str
-        :return: Client instance
-        :rtype: python_aternos.Client
+        Args:
+            session (str): Value of ATERNOS_SESSION cookie
         """
 
         atconn = AternosConnect()
@@ -113,18 +145,28 @@ class Client:
 
         """Log in to Aternos using a saved ATERNOS_SESSION cookie
 
-        :param file: File where a session cookie
-        was saved, deafults to `~/.aternos`
-        :type file: str, optional
-        :return: Client instance
-        :rtype: python_aternos.Client
+        Args:
+            file (str, optional): File where a session cookie was saved
         """
 
         file = os.path.expanduser(file)
+        logging.debug(f'Restoring session from {file}')
+
+        if not os.path.exists(file):
+            raise FileNotFoundError()
+
         with open(file, 'rt', encoding='utf-8') as f:
-            saved = f.read().replace('\r\n', '\n').split('\n')
+            saved = f.read() \
+                .strip() \
+                .replace('\r\n', '\n') \
+                .split('\n')
 
         session = saved[0].strip()
+        if session == '':
+            raise CredentialsError(
+                'Unable to read session cookie, '
+                'the first line is empty'
+            )
 
         if len(saved) > 1:
             return cls.from_session(
@@ -139,14 +181,35 @@ class Client:
 
         """Encodes the given string with MD5
 
-        :param passwd: String to encode
-        :type passwd: str
-        :return: Hexdigest hash of the string in lowercase
-        :rtype: str
+        Args:
+            passwd (str): String to encode
+
+        Returns:
+            Hexdigest hash of the string in lowercase
         """
 
         encoded = hashlib.md5(passwd.encode('utf-8'))
         return encoded.hexdigest().lower()
+
+    @staticmethod
+    def secure_name(filename: str, repl: str = '_') -> str:
+
+        """Replaces unsecure characters
+        in filename to underscore or `repl`
+
+        Args:
+            filename (str): Filename
+            repl (str, optional): Replacement
+                for unsafe characters
+
+        Returns:
+            str: Secure filename
+        """
+
+        return re.sub(
+            r'[^A-Za-z0-9_-]',
+            repl, filename
+        )
 
     def save_session(
             self,
@@ -155,17 +218,16 @@ class Client:
 
         """Saves an ATERNOS_SESSION cookie to a file
 
-        :param file: File where a session cookie
-        must be saved, defaults to `~/.aternos`
-        :type file: str, optional
-        :param incl_servers: If the function
-        should include the servers IDs to
-        reduce API requests count (recommended),
-        defaults to True
-        :type incl_servers: bool, optional
+        Args:
+            file (str, optional): File where a session cookie must be saved
+            incl_servers (bool, optional): If the function
+                should include the servers IDs to
+                reduce API requests count (recommended)
         """
 
         file = os.path.expanduser(file)
+        logging.debug(f'Saving session to {file}')
+
         with open(file, 'wt', encoding='utf-8') as f:
 
             f.write(self.atconn.atsession + '\n')
@@ -179,11 +241,12 @@ class Client:
 
         """Parses a list of your servers from Aternos website
 
-        :param cache: If the function should use
-        cached servers list (recommended), defaults to True
-        :type cache: bool, optional
-        :return: List of :class:`python_aternos.atserver.AternosServer` objects
-        :rtype: list
+        Args:
+            cache (bool, optional): If the function should use
+                cached servers list (recommended)
+
+        Returns:
+            List of AternosServer objects
         """
 
         if cache and self.parsed:
@@ -204,10 +267,10 @@ class Client:
     def refresh_servers(self, ids: List[str]) -> None:
 
         """Replaces cached servers list creating
-        :class:`AternosServer` objects by given IDs
+        AternosServer objects by given IDs
 
-        :param ids: Servers unique identifiers
-        :type ids: List[str]
+        Args:
+            ids (List[str]): Servers unique identifiers
         """
 
         self.servers = []
@@ -217,6 +280,7 @@ class Client:
             if servid == '':
                 continue
 
+            logging.debug(f'Adding server {servid}')
             srv = AternosServer(servid, self.atconn)
             self.servers.append(srv)
 
@@ -225,17 +289,18 @@ class Client:
     def get_server(self, servid: str) -> AternosServer:
 
         """Creates a server object from the server ID.
-        Use this instead of list_servers if you know the ID to save some time.
+        Use this instead of list_servers
+        if you know the ID to save some time.
 
-        :return: :class:`python_aternos.atserver.AternosServer` object
-        :rtype: python_aternos.atserver.AternosServer
+        Returns:
+            AternosServer object
         """
 
         return AternosServer(servid, self.atconn)
 
     def logout(self) -> None:
 
-        """Logouts from Aternos account"""
+        """Log out from Aternos account"""
 
         self.atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/logout.php',
@@ -246,8 +311,8 @@ class Client:
 
         """Changes a username in your Aternos account
 
-        :param value: New username
-        :type value: str
+        Args:
+            value (str): New username
         """
 
         self.atconn.request_cloudflare(
@@ -259,10 +324,12 @@ class Client:
 
         """Changes an e-mail in your Aternos account
 
-        :param value: New e-mail
-        :type value: str
-        :raises ValueError: If an invalid
-        e-mail address was passed to the function
+        Args:
+            value (str): New e-mail
+
+        Raises:
+            ValueError: If an invalid e-mail address
+                was passed to the function
         """
 
         email = re.compile(
@@ -280,14 +347,27 @@ class Client:
 
         """Changes a password in your Aternos account
 
-        :param old: Old password
-        :type old: str
-        :param new: New password
-        :type new: str
+        Args:
+            old (str): Old password
+            new (str): New password
         """
 
-        old = Client.md5encode(old)
-        new = Client.md5encode(new)
+        self.change_password_hashed(
+            Client.md5encode(old),
+            Client.md5encode(new),
+        )
+
+    def change_password_hashed(self, old: str, new: str) -> None:
+
+        """Changes a password in your Aternos account.
+        Unlike `change_password`, this function
+        takes hashed passwords as arguments
+
+        Args:
+            old (str): Old password hashed with MD5
+            new (str): New password hashed with MD5
+        """
+
         self.atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/password.php',
             'POST', data={

@@ -26,5 +26,14 @@ class TestLogin(unittest.TestCase):
         at = Client.from_hashed(
             AUTH_USER, AUTH_MD5
         )
-        srvs = len(at.list_servers())
+
+        srvs = len(
+            at.list_servers(
+                cache=False
+            )
+        )
         self.assertTrue(srvs > 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

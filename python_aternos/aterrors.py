@@ -28,15 +28,16 @@ class TokenError(AternosError):
 
 class ServerError(AternosError):
 
-    """Common class for server errors
-
-    :param reason: Code which contains error reason
-    :type reason: str
-    :param message: Error message, defaults to ''
-    :type message: str, optional
-    """
+    """Common class for server errors"""
 
     def __init__(self, reason: str, message: str = '') -> None:
+
+        """Common class for server errors
+
+        Args:
+            reason (str): Code which contains error reason
+            message (str, optional): Error message
+        """
 
         self.reason = reason
         super().__init__(message)
@@ -44,11 +45,7 @@ class ServerError(AternosError):
 
 class ServerStartError(AternosError):
 
-    """Raised when Aternos can not start Minecraft server
-
-    :param reason: Code which contains error reason
-    :type reason: str
-    """
+    """Raised when Aternos can not start Minecraft server"""
 
     MESSAGE: Final = 'Unable to start server, code: {}'
     reason_msg = {
@@ -57,22 +54,31 @@ class ServerStartError(AternosError):
             'EULA was not accepted. '
             'Use start(accepteula=True)',
 
-        'already': 'Server is already running',
+        'already': 'Server has already started',
         'wrongversion': 'Incorrect software version installed',
 
         'file':
             'File server is unavailbale, '
             'view https://status.aternos.gmbh',
 
-        'size': 'Available storage size limit (4 GB) was reached'
+        'size': 'Available storage size limit (4 GB) has been reached'
     }
 
     def __init__(self, reason: str) -> None:
 
+        """Raised when Aternos
+        can not start Minecraft server
+
+        Args:
+            reason (str):
+                Code which contains error reason
+        """
+
         super().__init__(
             reason,
             self.reason_msg.get(
-                reason, self.MESSAGE.format(reason)
+                reason,
+                self.MESSAGE.format(reason)
             )
         )
 

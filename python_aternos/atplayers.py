@@ -25,26 +25,33 @@ class Lists(enum.Enum):
 
 class PlayersList:
 
-    """Class for managing operators, whitelist and banned players lists
-
-    :param lst: Players list type, must be
-    :class:`python_aternos.atplayers.Lists` enum value
-    :type lst: Union[str,Lists]
-    :param atserv: :class:`python_aternos.atserver.AternosServer` instance
-    :type atserv: python_aternos.atserver.AternosServer
-    """
+    """Class for managing operators,
+    whitelist and banned players lists"""
 
     def __init__(
             self,
             lst: Union[str, Lists],
             atserv: 'AternosServer') -> None:
 
+        """Class for managing operators,
+        whitelist and banned players lists
+
+        Args:
+            lst (Union[str,Lists]): Players list type, must be
+                atplayers.Lists enum value
+            atserv (python_aternos.atserver.AternosServer):
+                atserver.AternosServer instance
+        """
+
         self.atserv = atserv
         self.lst = Lists(lst)
 
+        # Fix for #30 issue
+        # whl_je = whitelist for java
+        # whl_be = whitelist for bedrock
+        # whl = common whitelist
         common_whl = (self.lst == Lists.whl)
-        # 1 is atserver.Edition.bedrock
-        bedrock = (atserv.edition == 1)
+        bedrock = (atserv.is_bedrock)
 
         if common_whl and bedrock:
             self.lst = Lists.whl_be
@@ -56,11 +63,12 @@ class PlayersList:
 
         """Parse a players list
 
-        :param cache: If the function can return
-        cached list (highly recommended), defaults to True
-        :type cache: bool, optional
-        :return: List of players nicknames
-        :rtype: List[str]
+        Args:
+            cache (bool, optional): If the function should
+                return cached list (highly recommended)
+
+        Returns:
+            List of players' nicknames
         """
 
         if cache and self.parsed:
@@ -88,8 +96,8 @@ class PlayersList:
 
         """Appends a player to the list by the nickname
 
-        :param name: Player's nickname
-        :type name: str
+        Args:
+            name (str): Player's nickname
         """
 
         self.atserv.atserver_request(
@@ -106,8 +114,8 @@ class PlayersList:
 
         """Removes a player from the list by the nickname
 
-        :param name: Player's nickname
-        :type name: str
+        Args:
+            name (str): Player's nickname
         """
 
         self.atserv.atserver_request(
