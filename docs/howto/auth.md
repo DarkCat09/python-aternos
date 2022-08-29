@@ -1,7 +1,7 @@
 # How-To 1: Logging in
 
 ## Intro
-Firstly, let's install the library using the command from ["Common install" section](../#common).
+Firstly, let's install the library using the command from ["Common install" section](../../#common).
 ```bash
 pip install python-aternos
 ```

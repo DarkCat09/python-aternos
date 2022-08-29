@@ -43,8 +43,8 @@ Python Aternos supports:
 > I always try to hide automated python-aternos requests
 > using browser-specific headers/cookies,  
 > but you should make backups to restore your world
-> if your account will be banned
-> (view [#16](https://github.com/DarkCat09/python-aternos/issues/16)
+> if Aternos detects violation of ToS and bans your account
+> (view issues [#16](https://github.com/DarkCat09/python-aternos/issues/16)
 > and [#46](https://github.com/DarkCat09/python-aternos/issues/46)).
 
 ## Install
@@ -56,7 +56,7 @@ $ pip install python-aternos
 > **Note** for Windows users
 >
 > Install `lxml` package from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
-> if you have problems with it, and then execute
+> if you have problems with it, and then execute:  
 > `pip install --no-deps python-aternos`
 
 ### Development
@@ -112,9 +112,9 @@ if testserv is not None:
 
 ## [More examples](https://github.com/DarkCat09/python-aternos/tree/main/examples)
 
-## [Documentation](https://darkcat09.codeberg.page/aternos-docs/)
+## [Documentation](https://python-aternos.codeberg.page/)
 
-## [How-To Guide](https://darkcat09.codeberg.page/aternos-docs/howto/auth)
+## [How-To Guide](https://python-aternos.codeberg.page/howto/auth)
 
 ## Changelog
 |Version|Description |
@@ -135,7 +135,7 @@ if testserv is not None:
 |v3.1.x|Shared access API and Google Drive backups.|
 
 ## License
-[License Notice](NOTICE):
+[License Notice:](https://github.com/DarkCat09/python-aternos/blob/main/NOTICE)
 ```
 Copyright 2021-2022 All contributors
 
