@@ -25,8 +25,7 @@ REQUA = \
 
 class AternosConnect:
 
-    """Class for sending API requests
-    bypass Cloudflare and parsing responses"""
+    """Class for sending API requests, bypassing Cloudflare and parsing responses"""
 
     def __init__(self) -> None:
 
