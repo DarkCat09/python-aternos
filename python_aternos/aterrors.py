@@ -1,4 +1,4 @@
-"""Exceptions classes"""
+"""Exception classes"""
 
 from typing import Final
 
