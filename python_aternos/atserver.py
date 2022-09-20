@@ -371,7 +371,7 @@ class AternosServer:
         """Check if server software is Bedrock Edition
 
         Returns:
-            Is it Minefcraft BE
+            Is it Minecraft BE
         """
 
         return bool(self._info['bedrock'])
