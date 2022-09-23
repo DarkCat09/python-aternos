@@ -17,7 +17,7 @@ from .aterrors import CredentialsError
 
 class Client:
 
-    """Aternos API Client class object
+    """Aternos API Client class, object
     of which contains user's auth data"""
 
     def __init__(
@@ -25,7 +25,7 @@ class Client:
             atconn: AternosConnect,
             servers: Optional[List[str]] = None) -> None:
 
-        """Aternos API Client class object
+        """Aternos API Client class, object
         of which contains user's auth data
 
         Args:
