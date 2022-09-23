@@ -20,6 +20,12 @@ class CredentialsError(AternosError):
     which means incorrect credentials"""
 
 
+class TwoFactorAuthError(CredentialsError):
+
+    """Raised if 2FA is enabled,
+    but code was not passed to a login function"""
+
+
 class TokenError(AternosError):
 
     """Raised when the parser is unable

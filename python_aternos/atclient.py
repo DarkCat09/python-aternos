@@ -6,13 +6,14 @@ import re
 import hashlib
 import logging
 
-from typing import List, Optional
+from typing import List, Dict, Optional
 
 import lxml.html
 
 from .atserver import AternosServer
 from .atconnect import AternosConnect
 from .aterrors import CredentialsError
+from .aterrors import TwoFactorAuthError
 
 
 class Client:
@@ -47,6 +48,7 @@ class Client:
             cls,
             username: str,
             md5: str,
+            code: Optional[int] = None,
             sessions_dir: str = '~'):
 
         """Log in to an Aternos account with
@@ -55,6 +57,7 @@ class Client:
         Args:
             username (str): Your username
             md5 (str): Your password hashed with MD5
+            code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
 
@@ -77,13 +80,19 @@ class Client:
 
         credentials = {
             'user': username,
-            'password': md5
+            'password': md5,
         }
+
+        if code is not None:
+            credentials['code'] = code
 
         loginreq = atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/login.php',
             'POST', data=credentials, sendtoken=True
         )
+
+        if b'"show2FA":true' in loginreq.content:
+            raise TwoFactorAuthError('2FA code is required')
 
         if 'ATERNOS_SESSION' not in loginreq.cookies:
             raise CredentialsError(
@@ -104,6 +113,7 @@ class Client:
             cls,
             username: str,
             password: str,
+            code: Optional[int] = None,
             sessions_dir: str = '~'):
 
         """Log in to Aternos with a username and a plain password
@@ -111,13 +121,14 @@ class Client:
         Args:
             username (str): Your username
             password (str): Your password without any encryption
+            code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
         """
 
         md5 = Client.md5encode(password)
         return cls.from_hashed(
-            username, md5,
+            username, md5, code,
             sessions_dir
         )
 
@@ -372,6 +383,52 @@ class Client:
             'https://aternos.org/panel/ajax/account/password.php',
             'POST', data={
                 'oldpassword': old,
-                'newpassword': new
+                'newpassword': new,
+            }, sendtoken=True
+        )
+
+    def qrcode_2fa(self) -> Dict[str, str]:
+
+        """Requests a secret code and
+        a QR code for enabling 2FA"""
+
+        resp: Dict[str, str]
+        resp = self.atconn.request_cloudflare(
+            'https://aternos.org/panel/ajax/account/secret.php',
+            'GET', sendtoken=True
+        ).json()
+
+        return {
+            'qrcode': resp.get('qrcode'),
+            'secret': resp.get('secret'),
+        }
+
+    def enbale_2fa(self, code: int) -> None:
+
+        """Enables Two-Factor Authentication
+
+        Args:
+            code (int): 2FA code
+        """
+
+        self.atconn.request_cloudflare(
+            'https://aternos.org/panel/ajax/account/twofactor.php',
+            'POST', data={
+                'code': code
+            }, sendtoken=True
+        )
+
+    def disable_2fa(self, code: int) -> None:
+
+        """Disables Two-Factor Authentication
+
+        Args:
+            code (int): 2FA code
+        """
+
+        self.atconn.request_cloudflare(
+            'https://aternos.org/panel/ajax/account/disbaleTwofactor.php',
+            'POST', data={
+                'code': code
             }, sendtoken=True
         )

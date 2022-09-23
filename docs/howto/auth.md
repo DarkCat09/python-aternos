@@ -163,3 +163,6 @@ at = Client.from_hashed('username', my_passwd)
 
 at.change_password_hashed(my_passwd, new_passwd)
 ```
+
+## Two-Factor Authentication
+...
