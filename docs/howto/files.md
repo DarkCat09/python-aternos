@@ -29,9 +29,9 @@ and contain almost the same properties and methods.
 (So it's more correct to call it "Object in the server's filesystem",
 but I chose an easier name for the class.)
 
- - `path` - Full path to the file **including trailing** slash and **without leading** slash.
- - `name` - Filename with extension **without trailing** slash.
- - `dirname` - Full path to the directory which contains the file **without leading** slash.
+ - `path` - Full path to the file **including leading** slash and **without trailing** slash.
+ - `name` - Filename with extension **without leading** slash.
+ - `dirname` - Full path to the directory which contains the file **without trailing** slash.
  - `is_file` and `is_dir` - File type in boolean.
  - `ftype` - File type in `FileType` enum value:
      - `FileType.file`
