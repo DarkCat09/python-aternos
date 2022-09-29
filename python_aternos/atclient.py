@@ -6,6 +6,8 @@ import re
 import hashlib
 import logging
 
+import base64
+
 from typing import List, Dict, Optional
 
 import lxml.html
@@ -397,8 +399,24 @@ class Client:
             'https://aternos.org/panel/ajax/account/secret.php',
             'GET', sendtoken=True
         ).json()
+    
+    def save_qr(self, qrcode: str, filename: str) -> None:
 
-    def enbale_2fa(self, code: int) -> None:
+        """Writes a 2FA QR code into a png-file
+
+        Args:
+            qrcode (str): Base64 encoded png image from `qrcode_2fa()`
+            filename (str): Where the QR code image must be saved.
+                Existing file will be rewritten.
+        """
+
+        data = qrcode.removeprefix('data:image/png;base64,')
+        png = base64.b64decode(data)
+
+        with open(filename, 'wb') as f:
+            f.write(png)
+
+    def enable_2fa(self, code: int) -> None:
 
         """Enables Two-Factor Authentication
 

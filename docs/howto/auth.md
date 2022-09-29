@@ -205,26 +205,19 @@ and a plain secret code.
 - Enter this code into your 2FA application
 **or** save the QR into a file:
 ```python
-import base64
-
-url = response.get('secret', '')
-encoded = url.removeprefix('data:image/png;base64,')
-
-png = base64.b64decode(encoded)
-
-with open('test.png', 'wb') as f:
-    f.write(png)
+>>> qr = response.get('qrcode', '')
+>>> at.save_qr(qr, 'test.png')
 ```
 
 - Confirm:
 ```python
-at.enable_2fa(123456)
+>>> at.enable_2fa(123456)
 ```
 Where 123456 is an OTP code from the app.
 
 ### Disable 2FA
 It's pretty easy:
 ```python
-at.disable_2fa(123456)
+>>> at.disable_2fa(123456)
 ```
 And, of course, pass a real OTP code as an argument.
