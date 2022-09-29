@@ -84,7 +84,7 @@ class Client:
         }
 
         if code is not None:
-            credentials['code'] = code
+            credentials['code'] = str(code)
 
         loginreq = atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/login.php',
@@ -399,8 +399,8 @@ class Client:
         ).json()
 
         return {
-            'qrcode': resp.get('qrcode'),
-            'secret': resp.get('secret'),
+            'qrcode': resp.get('qrcode', ''),
+            'secret': resp.get('secret', ''),
         }
 
     def enbale_2fa(self, code: int) -> None:
