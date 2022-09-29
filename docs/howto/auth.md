@@ -165,4 +165,66 @@ at.change_password_hashed(my_passwd, new_passwd)
 ```
 
 ## Two-Factor Authentication
-...
+2FA is a good idea if you think that the password
+is not enough to protect your account.  
+It has been recently added to python-aternos.
+
+### Log in with code
+Here's how to log in to an account:
+```python
+from python_aternos import Client
+
+at = Client.from_credentials(
+    'username',
+    'password',
+    code=123456
+)
+# --- OR ---
+at = Client.from_hashed(
+    'username',
+    '5f4dcc3b5aa765d61d8327deb882cf99',
+    code=123456
+)
+```
+Where 123456 must be replaced with
+an OTP code from your 2FA application.
+
+### Enable 2FA
+Also, the library allows to enable it.
+
+- Request a secret code:
+```python
+>>> response = at.qrcode_2fa()
+>>> response
+{'qrcode': 'data:image/png;base64,iV...', 'secret': '7HSM...'}
+```
+As you can see, Aternos responses with
+QR code picture encoded in base64
+and a plain secret code.
+
+- Enter this code into your 2FA application
+**or** save the QR into a file:
+```python
+import base64
+
+url = response.get('secret', '')
+encoded = url.removeprefix('data:image/png;base64,')
+
+png = base64.b64decode(encoded)
+
+with open('test.png', 'wb') as f:
+    f.write(png)
+```
+
+- Confirm:
+```python
+at.enable_2fa(123456)
+```
+Where 123456 is an OTP code from the app.
+
+### Disable 2FA
+It's pretty easy:
+```python
+at.disable_2fa(123456)
+```
+And, of course, pass a real OTP code as an argument.

@@ -392,16 +392,10 @@ class Client:
         """Requests a secret code and
         a QR code for enabling 2FA"""
 
-        resp: Dict[str, str]
-        resp = self.atconn.request_cloudflare(
+        return self.atconn.request_cloudflare(
             'https://aternos.org/panel/ajax/account/secret.php',
             'GET', sendtoken=True
         ).json()
-
-        return {
-            'qrcode': resp.get('qrcode', ''),
-            'secret': resp.get('secret', ''),
-        }
 
     def enbale_2fa(self, code: int) -> None:
 
