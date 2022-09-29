@@ -67,8 +67,6 @@ class Client:
         """
 
         atconn = AternosConnect()
-        atconn.parse_token()
-        atconn.generate_sec()
 
         secure = cls.secure_name(username)
         filename = f'{sessions_dir}/.at_{secure}'
@@ -77,6 +75,9 @@ class Client:
             return cls.restore_session(filename)
         except (OSError, CredentialsError):
             pass
+
+        atconn.parse_token()
+        atconn.generate_sec()
 
         credentials = {
             'user': username,
