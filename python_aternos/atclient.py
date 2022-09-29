@@ -39,6 +39,9 @@ class Client:
         """
 
         self.atconn = atconn
+
+        self.saved_session = ''
+
         self.parsed = False
         self.servers: List[AternosServer] = []
 
@@ -70,8 +73,9 @@ class Client:
 
         atconn = AternosConnect()
 
-        secure = cls.secure_name(username)
-        filename = f'{sessions_dir}/.at_{secure}'
+        filename = cls.session_file(
+            username, sessions_dir
+        )
 
         try:
             return cls.restore_session(filename)
@@ -103,6 +107,7 @@ class Client:
             )
 
         obj = cls(atconn)
+        obj.saved_session = filename
 
         try:
             obj.save_session(filename)
@@ -157,7 +162,8 @@ class Client:
     @classmethod
     def restore_session(cls, file: str = '~/.aternos'):
 
-        """Log in to Aternos using a saved ATERNOS_SESSION cookie
+        """Log in to Aternos using
+        a saved ATERNOS_SESSION cookie
 
         Args:
             file (str, optional): File where a session cookie was saved
@@ -188,7 +194,10 @@ class Client:
                 servers=saved[1:]
             )
 
-        return cls.from_session(session)
+        obj = cls.from_session(session)
+        obj.saved_session = file
+
+        return obj
 
     @staticmethod
     def md5encode(passwd: str) -> str:
@@ -206,24 +215,29 @@ class Client:
         return encoded.hexdigest().lower()
 
     @staticmethod
-    def secure_name(filename: str, repl: str = '_') -> str:
+    def session_file(username: str, sessions_dir: str = '~') -> str:
 
-        """Replaces unsecure characters
-        in filename to underscore or `repl`
+        """Generates session file name
+        for authenticated user
 
         Args:
-            filename (str): Filename
-            repl (str, optional): Replacement
-                for unsafe characters
+            username (str): Authenticated user
+            sessions_dir (str, optional): Path to directory
+                with automatically saved sessions
 
         Returns:
-            str: Secure filename
+            Filename
         """
 
-        return re.sub(
+        # unsafe symbols replacement
+        repl = '_'
+
+        secure = re.sub(
             r'[^A-Za-z0-9_-]',
-            repl, filename
+            repl, username
         )
+
+        return f'{sessions_dir}/.at_{secure}'
 
     def save_session(
             self,
@@ -251,6 +265,24 @@ class Client:
             for s in self.servers:
                 f.write(s.servid + '\n')
 
+    def remove_session(self, file: str = '~/.aternos') -> None:
+
+        """Removes a file which contains
+        ATERNOS_SESSION cookie saved
+        with `save_session()`
+
+        Args:
+            file (str, optional): Filename
+        """
+
+        file = os.path.expanduser(file)
+        logging.debug(f'Removing session file: {file}')
+
+        try:
+            os.remove(file)
+        except OSError as err:
+            logging.warning(f'Unable to remove session file: {err}')
+
     def list_servers(self, cache: bool = True) -> List[AternosServer]:
 
         """Parses a list of your servers from Aternos website
@@ -275,6 +307,12 @@ class Client:
             '//div[@class="server-body"]/@data-id'
         )
         self.refresh_servers(servers)
+
+        # Update session file (add servers)
+        try:
+            self.save_session(self.saved_session)
+        except OSError as err:
+            logging.warning(f'Unable to save servers list to file: {err}')
 
         return self.servers
 
@@ -320,6 +358,8 @@ class Client:
             'https://aternos.org/panel/ajax/account/logout.php',
             'GET', sendtoken=True
         )
+
+        self.remove_session(self.saved_session)
 
     def change_username(self, value: str) -> None:
 
@@ -399,7 +439,7 @@ class Client:
             'https://aternos.org/panel/ajax/account/secret.php',
             'GET', sendtoken=True
         ).json()
-    
+
     def save_qr(self, qrcode: str, filename: str) -> None:
 
         """Writes a 2FA QR code into a png-file
