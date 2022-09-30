@@ -221,12 +221,12 @@ class AternosConnect:
         reqcookies['ATERNOS_SESSION'] = self.atsession
         del self.session.cookies['ATERNOS_SESSION']
 
-        logging.debug(f'Requesting({method}){url}')
-        logging.debug(f'headers={headers}')
-        logging.debug(f'params={params}')
-        logging.debug(f'data={data}')
-        logging.debug(f'req-cookies={reqcookies}')
-        logging.debug(f'session-cookies={self.session.cookies}')
+        logging.debug('Requesting(%s)%s', method, url)
+        logging.debug('headers=%s', headers)
+        logging.debug('params=%s', params)
+        logging.debug('data=%s', data)
+        logging.debug('req-cookies=%s', reqcookies)
+        logging.debug('session-cookies=%s', self.session.cookies)
 
         if method == 'POST':
             sendreq = partial(
@@ -260,9 +260,10 @@ class AternosConnect:
                 sendtoken, retry - 1
             )
 
-        logging.debug('AternosConnect received: ' + req.text[:65])
+        logging.debug('AternosConnect received: %s', req.text[:65])
         logging.info(
-            f'{method} completed with {req.status_code} status'
+            '%s completed with %s status',
+            method, req.status_code
         )
 
         if req.status_code == 402:

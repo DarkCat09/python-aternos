@@ -174,7 +174,7 @@ class AternosWss:
                         continue
 
                     if strm.stream:
-                        logging.debug(f'Requesting {strm.stream} stream')
+                        logging.debug('Requesting %s stream', strm.stream)
                         await self.send({
                             'stream': strm.stream,
                             'type': 'start'

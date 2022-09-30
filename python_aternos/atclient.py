@@ -170,7 +170,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug(f'Restoring session from {file}')
+        logging.debug('Restoring session from %s', file)
 
         if not os.path.exists(file):
             raise FileNotFoundError()
@@ -255,7 +255,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug(f'Saving session to {file}')
+        logging.debug('Saving session to %s', file)
 
         with open(file, 'wt', encoding='utf-8') as f:
 
@@ -277,12 +277,12 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug(f'Removing session file: {file}')
+        logging.debug('Removing session file: %s', file)
 
         try:
             os.remove(file)
         except OSError as err:
-            logging.warning(f'Unable to delete session file: {err}')
+            logging.warning('Unable to delete session file: %s', err)
 
     def list_servers(self, cache: bool = True) -> List[AternosServer]:
 
@@ -313,7 +313,7 @@ class Client:
         try:
             self.save_session(self.saved_session)
         except OSError as err:
-            logging.warning(f'Unable to save servers list to file: {err}')
+            logging.warning('Unable to save servers list to file: %s', err)
 
         return self.servers
 
@@ -333,7 +333,7 @@ class Client:
             if servid == '':
                 continue
 
-            logging.debug(f'Adding server {servid}')
+            logging.debug('Adding server %s', servid)
             srv = AternosServer(servid, self.atconn)
             self.servers.append(srv)
 
