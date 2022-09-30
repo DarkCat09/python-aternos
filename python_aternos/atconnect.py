@@ -201,6 +201,7 @@ class AternosConnect:
         old_cookies = self.session.cookies
         self.session = CloudScraper()
         self.session.cookies.update(old_cookies)
+        del old_cookies
 
         params = params or {}
         data = data or {}
@@ -221,12 +222,22 @@ class AternosConnect:
         reqcookies['ATERNOS_SESSION'] = self.atsession
         del self.session.cookies['ATERNOS_SESSION']
 
+        reqcookies_dbg = {
+            k: str(v or '')[:3]
+            for k, v in reqcookies.items()
+        }
+
+        session_cookies_dbg = {
+            k: str(v or '')[:3]
+            for k, v in self.session.cookies.items()
+        }
+
         logging.debug('Requesting(%s)%s', method, url)
         logging.debug('headers=%s', headers)
         logging.debug('params=%s', params)
         logging.debug('data=%s', data)
-        logging.debug('req-cookies=%s', reqcookies)
-        logging.debug('session-cookies=%s', self.session.cookies)
+        logging.debug('req-cookies=%s', reqcookies_dbg)
+        logging.debug('session-cookies=%s', session_cookies_dbg)
 
         if method == 'POST':
             sendreq = partial(

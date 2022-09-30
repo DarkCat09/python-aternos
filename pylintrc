@@ -42,7 +42,8 @@ disable=raw-checker-failed,
         no-member,
         too-many-arguments,
         too-many-public-methods,
-        too-many-instance-attributes
+        too-many-instance-attributes,
+        too-many-locals
 enable=c-extension-no-member
 
 
