@@ -189,12 +189,13 @@ class Client:
             )
 
         if len(saved) > 1:
-            return cls.from_session(
+            obj = cls.from_session(
                 session=session,
                 servers=saved[1:]
             )
+        else:
+            obj = cls.from_session(session)
 
-        obj = cls.from_session(session)
         obj.saved_session = file
 
         return obj
@@ -281,7 +282,7 @@ class Client:
         try:
             os.remove(file)
         except OSError as err:
-            logging.warning(f'Unable to remove session file: {err}')
+            logging.warning(f'Unable to delete session file: {err}')
 
     def list_servers(self, cache: bool = True) -> List[AternosServer]:
 
