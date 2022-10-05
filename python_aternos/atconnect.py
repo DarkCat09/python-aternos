@@ -2,11 +2,11 @@
 
 import re
 import time
-import random
+import secrets
 import logging
 from functools import partial
 
-from typing import Optional, Union
+from typing import Optional
 from typing import Dict, Any
 
 import requests
@@ -97,8 +97,8 @@ class AternosConnect:
             Random SEC `key:value` string
         """
 
-        randkey = self.generate_aternos_rand()
-        randval = self.generate_aternos_rand()
+        randkey = secrets.token_hex(8)
+        randval = secrets.token_hex(8)
         self.sec = f'{randkey}:{randval}'
         self.session.cookies.set(
             f'ATERNOS_SEC_{randkey}', randval,
@@ -106,61 +106,6 @@ class AternosConnect:
         )
 
         return self.sec
-
-    def generate_aternos_rand(self, randlen: int = 16) -> str:
-
-        """Generates a random string using
-        Aternos algorithm from main.js file
-
-        Args:
-            randlen (int, optional): Random string length
-
-        Returns:
-            Random string for SEC token
-        """
-
-        # a list with randlen+1 empty strings:
-        # generate a string with spaces,
-        # then split it by space
-        rand_arr = (' ' * (randlen + 1)).split(' ')
-
-        rand = random.random()
-        rand_alphanum = self.convert_num(rand, 36) + ('0' * 17)
-
-        return rand_alphanum[:18].join(rand_arr)[:randlen]
-
-    def convert_num(
-            self, num: Union[int, float, str],
-            base: int, frombase: int = 10) -> str:
-
-        """Converts an integer to specified base
-
-        Args:
-            num (Union[int,float,str]): Integer in any base to convert.
-                If it is a float starting with `0.`,
-                zero and point will be removed to get int
-            base (int): New base
-            frombase (int, optional): Given number base
-
-        Returns:
-            Number converted to a specified base
-        """
-
-        if isinstance(num, str):
-            num = int(num, frombase)
-
-        if isinstance(num, float):
-            sliced = str(num)[2:]
-            num = int(sliced)
-
-        symbols = '0123456789abcdefghijklmnopqrstuvwxyz'
-        basesym = symbols[:base]
-        result = ''
-        while num > 0:
-            rem = num % base
-            result = str(basesym[rem]) + result
-            num //= base
-        return result
 
     def request_cloudflare(
             self, url: str, method: str,
