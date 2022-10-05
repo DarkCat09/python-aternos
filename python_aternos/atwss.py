@@ -228,11 +228,13 @@ class AternosWss:
             logging.warning('Did you forget to call socket.connect?')
             await self.connect()
 
+        assert self.socket is not None
+
         if isinstance(obj, dict):
             obj = json.dumps(obj)
 
         await self.socket.send(obj)
-    
+
     async def command(self, cmd: str) -> None:
 
         """Sends a Minecraft command
