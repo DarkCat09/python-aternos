@@ -22,13 +22,21 @@ server = aternos.list_servers()[0]
 socket = server.wss()
 
 
-# Handler for console messages
-@socket.wssreceiver(Streams.console, ('Server 1',))
-async def console(
+# Handler for server status
+@socket.wssreceiver(Streams.status, ('Server 1',))
+async def state(
         msg: Dict[Any, Any],
         args: Tuple[str]) -> None:
 
-    print(args[0], 'received', msg)
+    print(args[0], 'received', len(msg), 'symbols')
+
+    server._info = msg
+    print(
+        args[0],
+        server.subdomain,
+        'is',
+        server.status
+    )
 
 
 # Main function

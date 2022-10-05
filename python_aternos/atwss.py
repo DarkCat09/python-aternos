@@ -6,8 +6,9 @@ import json
 import asyncio
 import logging
 
+from typing import Iterable
 from typing import Union, Any
-from typing import Tuple, Dict
+from typing import Tuple, List, Dict
 from typing import Callable, Coroutine
 from typing import TYPE_CHECKING
 
@@ -66,12 +67,19 @@ class AternosWss:
         cookies = atserv.atconn.session.cookies
         self.session = cookies['ATERNOS_SESSION']
 
-        recvtype = Dict[Streams, ArgsTuple]
-        self.recv: recvtype = {}
+        self.recv: Dict[Streams, List[ArgsTuple]]
+        self.recv = {
+            Streams.status: [],
+            Streams.queue: [],
+            Streams.console: [],
+            Streams.ram: [],
+            Streams.tps: [],
+        }
+
         self.autoconfirm = autoconfirm
         self.confirmed = False
 
-        self.socket: Any
+        self.socket: Any = None
         self.keep: asyncio.Task
         self.msgs: asyncio.Task
 
@@ -86,7 +94,7 @@ class AternosWss:
     def wssreceiver(
             self,
             stream: Streams,
-            *args: Any) -> Callable[[FunctionT], Any]:
+            arg: Tuple[Any, ...] = ()) -> Callable[[FunctionT], Any]:
 
         """Decorator that marks your function as a stream receiver.
         When websocket receives message from the specified stream,
@@ -94,14 +102,26 @@ class AternosWss:
 
         Args:
             stream (Streams): Stream that your function should listen
-            *args (tuple, optional): Arguments which will be passed to your function
+            arg (Tuple[Any, ...], optional): Arguments which will be passed to your function
 
         Returns:
             ...
         """
 
-        def decorator(func: FunctionT) -> None:
-            self.recv[stream] = (func, args)
+        def decorator(func: FunctionT) -> Callable[[Any, Any], Coroutine[Any, Any, Any]]:
+
+            handlers = self.recv.get(stream, None)
+
+            if handlers is None:
+                self.recv[stream] = [(func, arg)]
+            else:
+                handlers.append((func, arg))
+
+            async def wrapper(*args, **kwargs) -> Any:
+                return await func(*args, **kwargs)
+
+            return wrapper
+
         return decorator
 
     async def connect(self) -> None:
@@ -173,6 +193,10 @@ class AternosWss:
                     if not isinstance(strm, Streams):
                         continue
 
+                    # If the handlers list is empty
+                    if not self.recv.get(strm):
+                        continue
+
                     if strm.stream:
                         logging.debug('Requesting %s stream', strm.stream)
                         await self.send({
@@ -200,10 +224,32 @@ class AternosWss:
                 Message, may be a string or a dict
         """
 
+        if self.socket is None:
+            logging.warning('Did you forget to call socket.connect?')
+            await self.connect()
+
         if isinstance(obj, dict):
             obj = json.dumps(obj)
 
         await self.socket.send(obj)
+    
+    async def command(self, cmd: str) -> None:
+
+        """Sends a Minecraft command
+        to the websocket server
+
+        Args:
+            cmd (str): Command, slash at
+                the beginning is not required
+        """
+
+        await self.send(
+            {
+                'stream': 'console',
+                'type': 'command',
+                'data': cmd,
+            }
+        )
 
     async def wssworker(self) -> None:
 
@@ -216,7 +262,8 @@ class AternosWss:
 
     async def keepalive(self) -> None:
 
-        """Each 49 seconds sends keepalive ping to websocket server"""
+        """Each 49 seconds sends keepalive ping
+        to the websocket server"""
 
         try:
             while True:
@@ -256,19 +303,24 @@ class AternosWss:
 
                 if msgtype in self.recv:
 
-                    # function info tuple
-                    func: ArgsTuple = self.recv[msgtype]
+                    # function info tuples
+                    handlers: Iterable[ArgsTuple]
+                    handlers = self.recv.get(msgtype, ())
 
-                    # if arguments is not empty
-                    if func[1]:
-                        # call the function with args
-                        coro = func[0](msg, func[1])  # type: ignore
-                    else:
-                        # mypy error: Too few arguments
-                        # looks like bug, so it is ignored
-                        coro = func[0](msg)  # type: ignore
-                    # run
-                    asyncio.create_task(coro)
+                    for func in handlers:
+
+                        # if arguments is not empty
+                        if func[1]:
+                            # call the function with args
+                            coro = func[0](msg, func[1])  # type: ignore
+
+                        else:
+                            # mypy error: too few arguments
+                            # looks like a bug, so it is ignored
+                            coro = func[0](msg)  # type: ignore
+
+                        # run
+                        asyncio.create_task(coro)
 
             except asyncio.CancelledError:
                 break
