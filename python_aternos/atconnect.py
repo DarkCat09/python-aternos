@@ -30,9 +30,33 @@ class AternosConnect:
 
     def __init__(self) -> None:
 
-        self.session = CloudScraper()
+        self.cf_init = partial(CloudScraper)
+        self.session = self.cf_init()
         self.sec = ''
         self.token = ''
+
+    def add_args(self, **kwargs) -> None:
+
+        """Pass arguments to
+        CloudScarper session object __init__
+
+        Args:
+            **kwargs: Keyword arguments
+        """
+
+        self.cf_init = partial(CloudScraper, **kwargs)
+        self.refresh_session()
+
+    def refresh_session(self) -> None:
+
+        """Creates a new CloudScraper
+        session object and copies all cookies.
+        Required for bypassing Cloudflare"""
+
+        old_cookies = self.session.cookies
+        self.session = self.cf_init()
+        self.session.cookies.update(old_cookies)
+        del old_cookies
 
     def parse_token(self) -> str:
 
@@ -143,10 +167,7 @@ class AternosConnect:
         if retry <= 0:
             raise CloudflareError('Unable to bypass Cloudflare protection')
 
-        old_cookies = self.session.cookies
-        self.session = CloudScraper()
-        self.session.cookies.update(old_cookies)
-        del old_cookies
+        self.refresh_session()
 
         params = params or {}
         data = data or {}
