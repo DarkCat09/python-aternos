@@ -54,7 +54,8 @@ class Client:
             username: str,
             md5: str,
             code: Optional[int] = None,
-            sessions_dir: str = '~'):
+            sessions_dir: str = '~',
+            **custom_args):
 
         """Log in to an Aternos account with
         a username and a hashed password
@@ -65,6 +66,8 @@ class Client:
             code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
+            **custom_args (tuple, optional): Keyword arguments
+                which will be passed to CloudScraper `__init__`
 
         Raises:
             CredentialsError: If the API didn't
@@ -72,6 +75,9 @@ class Client:
         """
 
         atconn = AternosConnect()
+
+        if len(custom_args) > 0:
+            atconn.add_args(**custom_args)
 
         filename = cls.session_file(
             username, sessions_dir
@@ -122,7 +128,8 @@ class Client:
             username: str,
             password: str,
             code: Optional[int] = None,
-            sessions_dir: str = '~'):
+            sessions_dir: str = '~',
+            **custom_args):
 
         """Log in to Aternos with a username and a plain password
 
@@ -132,41 +139,54 @@ class Client:
             code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
+            **custom_args (tuple, optional): Keyword arguments
+                which will be passed to CloudScraper `__init__`
         """
 
         md5 = Client.md5encode(password)
         return cls.from_hashed(
             username, md5, code,
-            sessions_dir
+            sessions_dir, **custom_args
         )
 
     @classmethod
     def from_session(
             cls,
             session: str,
-            servers: Optional[List[str]] = None):
+            servers: Optional[List[str]] = None,
+            **custom_args):
 
         """Log in to Aternos using a session cookie value
 
         Args:
             session (str): Value of ATERNOS_SESSION cookie
+            **custom_args (tuple, optional): Keyword arguments
+                which will be passed to CloudScraper `__init__`
         """
 
         atconn = AternosConnect()
+
+        atconn.add_args(**custom_args)
         atconn.session.cookies['ATERNOS_SESSION'] = session
+
         atconn.parse_token()
         atconn.generate_sec()
 
         return cls(atconn, servers)
 
     @classmethod
-    def restore_session(cls, file: str = '~/.aternos'):
+    def restore_session(
+            cls,
+            file: str = '~/.aternos',
+            **custom_args):
 
         """Log in to Aternos using
         a saved ATERNOS_SESSION cookie
 
         Args:
             file (str, optional): File where a session cookie was saved
+            **custom_args (tuple, optional): Keyword arguments
+                which will be passed to CloudScraper `__init__`
         """
 
         file = os.path.expanduser(file)
@@ -191,10 +211,14 @@ class Client:
         if len(saved) > 1:
             obj = cls.from_session(
                 session=session,
-                servers=saved[1:]
+                servers=saved[1:],
+                **custom_args
             )
         else:
-            obj = cls.from_session(session)
+            obj = cls.from_session(
+                session,
+                **custom_args
+            )
 
         obj.saved_session = file
 
