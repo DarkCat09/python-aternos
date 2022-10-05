@@ -129,7 +129,7 @@ if testserv is not None:
 |v1.1.x|Documentation, unit tests, pylint, bugfixes, changes in atwss.|
 |**v1.1.2/v2.0.0**|Solution for [#25](https://github.com/DarkCat09/python-aternos/issues/25) (Cloudflare bypassing), bugfixes in JS parser.|
 |v2.0.x|Documentation, automatically saving/restoring session, improvements in Files API.|
-|v2.1.x|Fixes in the implementation of websockets API.|
+|v2.1.x|Fixes in websockets API, atconnect. Supported captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
 |**v2.2.x**|Using Node.js as a JS interpreter if it's installed.|
 |v3.0.x|Full implementation of config and software API.|
 |v3.1.x|Shared access API and Google Drive backups.|
