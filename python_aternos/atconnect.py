@@ -37,14 +37,29 @@ class AternosConnect:
 
     def add_args(self, **kwargs) -> None:
 
-        """Pass arguments to
-        CloudScarper session object __init__
+        """Pass arguments to CloudScarper
+        session object __init__
+        if kwargs is not empty
 
         Args:
             **kwargs: Keyword arguments
         """
 
+        if len(kwargs) < 1:
+            logging.debug('**kwargs is empty')
+            return
+
+        logging.debug('New args for CloudScraper: %s', kwargs)
         self.cf_init = partial(CloudScraper, **kwargs)
+        self.refresh_session()
+
+    def clear_args(self) -> None:
+
+        """Clear CloudScarper object __init__ arguments
+        which was set using add_args method"""
+
+        logging.debug('Creating session object with no keywords')
+        self.cf_init = partial(CloudScraper)
         self.refresh_session()
 
     def refresh_session(self) -> None:

@@ -74,19 +74,21 @@ class Client:
                 return a valid session cookie
         """
 
-        atconn = AternosConnect()
-
-        if len(custom_args) > 0:
-            atconn.add_args(**custom_args)
-
         filename = cls.session_file(
             username, sessions_dir
         )
 
         try:
-            return cls.restore_session(filename)
+            return cls.restore_session(
+                filename, **custom_args
+            )
         except (OSError, CredentialsError):
             pass
+
+        atconn = AternosConnect()
+
+        if len(custom_args) > 0:
+            atconn.add_args(**custom_args)
 
         atconn.parse_token()
         atconn.generate_sec()
