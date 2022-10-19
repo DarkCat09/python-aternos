@@ -2,35 +2,36 @@ import unittest
 from typing import Optional
 
 from python_aternos import Client
-
-AUTH_USER = 'world35g'
-AUTH_PSWD = 'world35g'
-AUTH_MD5 = '0efdb2cd6b36d5e54d0e3c161e567a4e'
+from tests import files
 
 
 class TestLogin(unittest.TestCase):
 
     def setUp(self) -> None:
 
+        credentials = files.read_sample('login_pswd.txt')
+
+        if len(credentials) < 2:
+            self.skipTest(
+                'File "login_pswd.txt" '
+                'has incorrect format!'
+            )
+
+        self.user = credentials[0]
+        self.pswd = credentials[1]
+
         self.at: Optional[Client] = None
-
-    def test_md5(self) -> None:
-
-        self.assertEqual(
-            Client.md5encode(AUTH_PSWD),
-            AUTH_MD5
-        )
 
     def test_auth(self) -> None:
 
-        self.at = Client.from_hashed(AUTH_USER, AUTH_MD5)
+        self.at = Client.from_hashed(self.user, self.pswd)
         self.assertIsNotNone(self.at)
 
     def test_servers(self) -> None:
 
         if self.at is None:
             self.at = Client.from_hashed(
-                AUTH_USER, AUTH_MD5
+                self.user, self.pswd
             )
 
         srvs = len(
@@ -44,7 +45,7 @@ class TestLogin(unittest.TestCase):
 
         if self.at is None:
             self.at = Client.from_hashed(
-                AUTH_USER, AUTH_MD5
+                self.user, self.pswd
             )
 
         self.at.logout()

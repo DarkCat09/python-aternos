@@ -1,8 +1,7 @@
-import os
 import unittest
-from typing import List
 
 from python_aternos import atjsparse
+from tests import files
 
 CONV_TOKEN_ARROW = '''(() => {/*AJAX_TOKEN=123}*/window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})();'''
 CONV_TOKEN_FUNC = '''(function(){window["AJAX_TOKEN"]=("2r" + "KO" + "A1" + "IFdBcHhEM" + "61" + "6cb");})()'''
@@ -12,21 +11,8 @@ class TestJs2Py(unittest.TestCase):
 
     def setUp(self) -> None:
 
-        self.path = os.path.abspath(os.path.dirname(__file__))
-        self.samples = os.path.join(self.path, 'samples')
-        self.input = os.path.join(self.samples, 'token_input.txt')
-        self.output = os.path.join(self.samples, 'token_output.txt')
-
-        def read_sample(file: str) -> List[str]:
-            with open(file, 'rt', encoding='utf-8') as f:
-                return f \
-                    .read() \
-                    .strip() \
-                    .replace('\r\n', '\n') \
-                    .split('\n')
-
-        self.tests = read_sample(self.input)
-        self.results = read_sample(self.output)
+        self.tests = files.read_sample('token_input.txt')
+        self.results = files.read_sample('token_output.txt')
 
     def test_base64(self) -> None:
 
