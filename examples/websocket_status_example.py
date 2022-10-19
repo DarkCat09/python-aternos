@@ -28,14 +28,25 @@ async def state(
         msg: Dict[Any, Any],
         args: Tuple[str]) -> None:
 
+    # For debugging
     print(args[0], 'received', len(msg), 'symbols')
 
+    # Write new info dictionary
     server._info = msg
+
+    # Server 1 test is online
     print(
         args[0],
         server.subdomain,
         'is',
         server.status
+    )
+
+    # Server 1 players: ['DarkCat09', 'someone']
+    print(
+        args[0],
+        'players:',
+        server.players_list
     )
 
 
