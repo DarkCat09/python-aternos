@@ -7,7 +7,7 @@ import logging
 from functools import partial
 
 from typing import Optional
-from typing import Dict, Any
+from typing import List, Dict, Any
 
 import requests
 
@@ -21,6 +21,11 @@ from .aterrors import AternosPermissionError
 REQUA = \
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
     '(KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
+
+ARROW_FN_REGEX = r'\(\(\)(.*?)\)\(\);'
+SCRIPT_TAG_REGEX = (
+    rb'<script type=([\'"]?)text/javascript\1>.+?</script>'
+)
 
 
 class AternosConnect:
@@ -101,17 +106,19 @@ class AternosConnect:
         # Some checks
         if headtag < 0 or headend < 0:
             pagehead = loginpage
-            raise RuntimeWarning(
+            logging.warning(
                 'Unable to find <head> tag, parsing the whole page'
             )
 
-        # Extracting <head> content
-        headtag = headtag + len(head)
-        pagehead = loginpage[headtag:headend]
+        else:
+            # Extracting <head> content
+            headtag = headtag + len(head)
+            pagehead = loginpage[headtag:headend]
 
+        js_code: Optional[List[Any]] = None
         try:
             text = pagehead.decode('utf-8', 'replace')
-            js_code = re.findall(r'\(\(\)(.*?)\)\(\);', text)
+            js_code = re.findall(ARROW_FN_REGEX, text)
 
             token_func = js_code[0]
             if len(js_code) > 1:
@@ -121,6 +128,20 @@ class AternosConnect:
             self.token = ctx.window['AJAX_TOKEN']
 
         except (IndexError, TypeError) as err:
+
+            logging.warning('---')
+            logging.warning('Unable to parse AJAX_TOKEN!')
+            logging.warning('Please, insert the info below')
+            logging.warning('to the GitHub issue description:')
+            logging.warning('---')
+
+            logging.warning('JavaScript: %s', js_code)
+            logging.warning(
+                'All script tags: %s',
+                re.findall(SCRIPT_TAG_REGEX, pagehead)
+            )
+            logging.warning('---')
+
             raise TokenError(
                 'Unable to parse TOKEN from the page'
             ) from err
