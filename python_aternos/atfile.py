@@ -34,7 +34,6 @@ class AternosFile:
             dlable: bool, editable: bool,
             ftype: FileType = FileType.file,
             size: Union[int, float] = 0) -> None:
-
         """File class which contains info
         about its path, type and size
 
@@ -68,7 +67,6 @@ class AternosFile:
             self,
             name: str,
             ftype: FileType = FileType.file) -> None:
-
         """Creates a file or a directory inside this one
 
         Args:
@@ -102,7 +100,6 @@ class AternosFile:
             raise FileError('Unable to create a file')
 
     def delete(self) -> None:
-
         """Deletes the file
 
         Raises:
@@ -126,7 +123,6 @@ class AternosFile:
             raise FileError('Unable to delete the file')
 
     def get_content(self) -> bytes:
-
         """Requests file content in bytes (downloads it)
 
         Raises:
@@ -159,7 +155,6 @@ class AternosFile:
         return file.content
 
     def set_content(self, value: bytes) -> None:
-
         """Modifies file content
 
         Args:
@@ -181,7 +176,6 @@ class AternosFile:
             raise FileError('Unable to save the file')
 
     def get_text(self) -> str:
-
         """Requests editing the file as a text
 
         Raises:
@@ -220,7 +214,6 @@ class AternosFile:
         return editblock[0].text_content()
 
     def set_text(self, value: str) -> None:
-
         """Modifies the file content,
         but unlike `set_content` takes
         a string as an argument
@@ -233,7 +226,6 @@ class AternosFile:
 
     @property
     def path(self) -> str:
-
         """Abslute path to the file
         without leading slash
         including filename
@@ -246,7 +238,6 @@ class AternosFile:
 
     @property
     def name(self) -> str:
-
         """Filename with extension
 
         Returns:
@@ -257,7 +248,6 @@ class AternosFile:
 
     @property
     def dirname(self) -> str:
-
         """Full path to the directory
         which contains the file
         without leading slash.
@@ -271,7 +261,6 @@ class AternosFile:
 
     @property
     def deleteable(self) -> bool:
-
         """True if the file can be deleted,
         otherwise False
 
@@ -283,7 +272,6 @@ class AternosFile:
 
     @property
     def downloadable(self) -> bool:
-
         """True if the file can be downloaded,
         otherwise False
 
@@ -295,7 +283,6 @@ class AternosFile:
 
     @property
     def editable(self) -> bool:
-
         """True if the file can be
         opened in Aternos editor,
         otherwise False
@@ -308,7 +295,6 @@ class AternosFile:
 
     @property
     def ftype(self) -> FileType:
-
         """File object type: file or directory
 
         Returns:
@@ -319,7 +305,6 @@ class AternosFile:
 
     @property
     def is_dir(self) -> bool:
-
         """Check if the file object is a directory
 
         Returns:
@@ -330,7 +315,6 @@ class AternosFile:
 
     @property
     def is_file(self) -> bool:
-
         """Check if the file object is not a directory
 
         Returns:
@@ -341,7 +325,6 @@ class AternosFile:
 
     @property
     def size(self) -> float:
-
         """File size in bytes
 
         Returns:

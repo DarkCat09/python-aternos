@@ -14,3 +14,6 @@ clean:
 check:
 	chmod +x test.sh
 	bash test.sh
+
+format:
+	python -m autopep8 -r --in-place .

@@ -27,7 +27,6 @@ class Client:
             self,
             atconn: AternosConnect,
             servers: Optional[List[str]] = None) -> None:
-
         """Aternos API Client class, object
         of which contains user's auth data
 
@@ -56,7 +55,6 @@ class Client:
             code: Optional[int] = None,
             sessions_dir: str = '~',
             **custom_args):
-
         """Log in to an Aternos account with
         a username and a hashed password
 
@@ -132,7 +130,6 @@ class Client:
             code: Optional[int] = None,
             sessions_dir: str = '~',
             **custom_args):
-
         """Log in to Aternos with a username and a plain password
 
         Args:
@@ -157,7 +154,6 @@ class Client:
             session: str,
             servers: Optional[List[str]] = None,
             **custom_args):
-
         """Log in to Aternos using a session cookie value
 
         Args:
@@ -181,7 +177,6 @@ class Client:
             cls,
             file: str = '~/.aternos',
             **custom_args):
-
         """Log in to Aternos using
         a saved ATERNOS_SESSION cookie
 
@@ -228,7 +223,6 @@ class Client:
 
     @staticmethod
     def md5encode(passwd: str) -> str:
-
         """Encodes the given string with MD5
 
         Args:
@@ -243,7 +237,6 @@ class Client:
 
     @staticmethod
     def session_file(username: str, sessions_dir: str = '~') -> str:
-
         """Generates session file name
         for authenticated user
 
@@ -270,7 +263,6 @@ class Client:
             self,
             file: str = '~/.aternos',
             incl_servers: bool = True) -> None:
-
         """Saves an ATERNOS_SESSION cookie to a file
 
         Args:
@@ -293,7 +285,6 @@ class Client:
                 f.write(s.servid + '\n')
 
     def remove_session(self, file: str = '~/.aternos') -> None:
-
         """Removes a file which contains
         ATERNOS_SESSION cookie saved
         with `save_session()`
@@ -311,7 +302,6 @@ class Client:
             logging.warning('Unable to delete session file: %s', err)
 
     def list_servers(self, cache: bool = True) -> List[AternosServer]:
-
         """Parses a list of your servers from Aternos website
 
         Args:
@@ -344,7 +334,6 @@ class Client:
         return self.servers
 
     def refresh_servers(self, ids: List[str]) -> None:
-
         """Replaces cached servers list creating
         AternosServer objects by given IDs
 
@@ -366,7 +355,6 @@ class Client:
         self.parsed = True
 
     def get_server(self, servid: str) -> AternosServer:
-
         """Creates a server object from the server ID.
         Use this instead of list_servers
         if you know the ID to save some time.
@@ -378,7 +366,6 @@ class Client:
         return AternosServer(servid, self.atconn)
 
     def logout(self) -> None:
-
         """Log out from Aternos account"""
 
         self.atconn.request_cloudflare(
@@ -389,7 +376,6 @@ class Client:
         self.remove_session(self.saved_session)
 
     def change_username(self, value: str) -> None:
-
         """Changes a username in your Aternos account
 
         Args:
@@ -402,7 +388,6 @@ class Client:
         )
 
     def change_email(self, value: str) -> None:
-
         """Changes an e-mail in your Aternos account
 
         Args:
@@ -425,7 +410,6 @@ class Client:
         )
 
     def change_password(self, old: str, new: str) -> None:
-
         """Changes a password in your Aternos account
 
         Args:
@@ -439,7 +423,6 @@ class Client:
         )
 
     def change_password_hashed(self, old: str, new: str) -> None:
-
         """Changes a password in your Aternos account.
         Unlike `change_password`, this function
         takes hashed passwords as arguments
@@ -458,7 +441,6 @@ class Client:
         )
 
     def qrcode_2fa(self) -> Dict[str, str]:
-
         """Requests a secret code and
         a QR code for enabling 2FA"""
 
@@ -468,7 +450,6 @@ class Client:
         ).json()
 
     def save_qr(self, qrcode: str, filename: str) -> None:
-
         """Writes a 2FA QR code into a png-file
 
         Args:
@@ -484,7 +465,6 @@ class Client:
             f.write(png)
 
     def enable_2fa(self, code: int) -> None:
-
         """Enables Two-Factor Authentication
 
         Args:
@@ -499,7 +479,6 @@ class Client:
         )
 
     def disable_2fa(self, code: int) -> None:
-
         """Disables Two-Factor Authentication
 
         Args:

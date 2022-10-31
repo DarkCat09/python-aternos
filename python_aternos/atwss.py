@@ -49,7 +49,6 @@ class AternosWss:
             self,
             atserv: 'AternosServer',
             autoconfirm: bool = False) -> None:
-
         """Class for managing websocket connection
 
         Args:
@@ -95,7 +94,6 @@ class AternosWss:
             self,
             stream: Streams,
             arg: Tuple[Any, ...] = ()) -> Callable[[FunctionT], Any]:
-
         """Decorator that marks your function as a stream receiver.
         When websocket receives message from the specified stream,
         it calls all listeners created with this decorator.

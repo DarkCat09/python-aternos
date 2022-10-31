@@ -53,7 +53,6 @@ class AternosServer:
             self, servid: str,
             atconn: AternosConnect,
             reqinfo: bool = True) -> None:
-
         """Class for controlling your Aternos Minecraft server
 
         Args:
@@ -70,7 +69,6 @@ class AternosServer:
             self.fetch()
 
     def fetch(self) -> None:
-
         """Send a request to Aternos API to get all server info"""
 
         servreq = self.atserver_request(
@@ -80,7 +78,6 @@ class AternosServer:
         self._info = json.loads(servreq.content)
 
     def wss(self, autoconfirm: bool = False) -> AternosWss:
-
         """Returns AternosWss instance for
         listening server streams in real-time
 
@@ -100,7 +97,6 @@ class AternosServer:
             self,
             headstart: bool = False,
             accepteula: bool = True) -> None:
-
         """Starts a server
 
         Args:
@@ -135,7 +131,6 @@ class AternosServer:
         raise ServerStartError(error)
 
     def confirm(self) -> None:
-
         """Confirms server launching"""
 
         self.atserver_request(
@@ -144,7 +139,6 @@ class AternosServer:
         )
 
     def stop(self) -> None:
-
         """Stops the server"""
 
         self.atserver_request(
@@ -153,7 +147,6 @@ class AternosServer:
         )
 
     def cancel(self) -> None:
-
         """Cancels server launching"""
 
         self.atserver_request(
@@ -162,7 +155,6 @@ class AternosServer:
         )
 
     def restart(self) -> None:
-
         """Restarts the server"""
 
         self.atserver_request(
@@ -171,7 +163,6 @@ class AternosServer:
         )
 
     def eula(self) -> None:
-
         """Accepts the Mojang EULA"""
 
         self.atserver_request(
@@ -180,7 +171,6 @@ class AternosServer:
         )
 
     def files(self) -> FileManager:
-
         """Returns FileManager instance
         for file operations
 
@@ -191,7 +181,6 @@ class AternosServer:
         return FileManager(self)
 
     def config(self) -> AternosConfig:
-
         """Returns AternosConfig instance
         for editing server settings
 
@@ -202,7 +191,6 @@ class AternosServer:
         return AternosConfig(self)
 
     def players(self, lst: Lists) -> PlayersList:
-
         """Returns PlayersList instance
         for managing operators, whitelist
         and banned players lists
@@ -223,7 +211,6 @@ class AternosServer:
             data: Optional[Dict[Any, Any]] = None,
             headers: Optional[Dict[Any, Any]] = None,
             sendtoken: bool = False) -> requests.Response:
-
         """Sends a request to Aternos API
         with server IDenitfier parameter
 
@@ -253,7 +240,6 @@ class AternosServer:
 
     @property
     def subdomain(self) -> str:
-
         """Server subdomain
         (the part of domain before `.aternos.me`)
 
@@ -266,7 +252,6 @@ class AternosServer:
 
     @subdomain.setter
     def subdomain(self, value: str) -> None:
-
         """Set a new subdomain for your server
 
         Args:
@@ -281,7 +266,6 @@ class AternosServer:
 
     @property
     def motd(self) -> str:
-
         """Server message of the day
         which is shown below its name
         in the Minecraft servers list
@@ -294,7 +278,6 @@ class AternosServer:
 
     @motd.setter
     def motd(self, value: str) -> None:
-
         """Set a new message of the day
 
         Args:
@@ -309,7 +292,6 @@ class AternosServer:
 
     @property
     def address(self) -> str:
-
         """Full server address
         including domain and port
 
@@ -321,7 +303,6 @@ class AternosServer:
 
     @property
     def domain(self) -> str:
-
         """Server domain (e.g. `test.aternos.me`).
         In other words, address without port number
 
@@ -333,7 +314,6 @@ class AternosServer:
 
     @property
     def port(self) -> int:
-
         """Server port number
 
         Returns:
@@ -344,7 +324,6 @@ class AternosServer:
 
     @property
     def edition(self) -> Edition:
-
         """Server software edition: Java or Bedrock
 
         Returns:
@@ -356,7 +335,6 @@ class AternosServer:
 
     @property
     def is_java(self) -> bool:
-
         """Check if server software is Java Edition
 
         Returns:
@@ -367,7 +345,6 @@ class AternosServer:
 
     @property
     def is_bedrock(self) -> bool:
-
         """Check if server software is Bedrock Edition
 
         Returns:
@@ -378,7 +355,6 @@ class AternosServer:
 
     @property
     def software(self) -> str:
-
         """Server software name (e.g. `Vanilla`)
 
         Returns:
@@ -389,7 +365,6 @@ class AternosServer:
 
     @property
     def version(self) -> str:
-
         """Server software version (1.16.5)
 
         Returns:
@@ -400,7 +375,6 @@ class AternosServer:
 
     @property
     def css_class(self) -> str:
-
         """CSS class for
         server status block
         on official web site
@@ -415,7 +389,6 @@ class AternosServer:
 
     @property
     def status(self) -> str:
-
         """Server status string
         (offline, loading, preparing)
 
@@ -427,7 +400,6 @@ class AternosServer:
 
     @property
     def status_num(self) -> Status:
-
         """Server numeric status.
         It is highly recommended to use
         status string instead of a number
@@ -440,7 +412,6 @@ class AternosServer:
 
     @property
     def players_list(self) -> List[str]:
-
         """List of connected players' nicknames
 
         Returns:
@@ -451,7 +422,6 @@ class AternosServer:
 
     @property
     def players_count(self) -> int:
-
         """How many players are connected
 
         Returns:
@@ -462,7 +432,6 @@ class AternosServer:
 
     @property
     def slots(self) -> int:
-
         """Server slots, how many
         players **can** connect
 
@@ -474,7 +443,6 @@ class AternosServer:
 
     @property
     def ram(self) -> int:
-
         """Server used RAM in MB
 
         Returns:

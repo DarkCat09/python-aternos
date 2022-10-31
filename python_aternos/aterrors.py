@@ -37,7 +37,6 @@ class ServerError(AternosError):
     """Common class for server errors"""
 
     def __init__(self, reason: str, message: str = '') -> None:
-
         """Common class for server errors
 
         Args:
@@ -71,7 +70,6 @@ class ServerStartError(AternosError):
     }
 
     def __init__(self, reason: str) -> None:
-
         """Raised when Aternos
         can not start Minecraft server
 

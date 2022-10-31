@@ -124,7 +124,6 @@ class AternosConfig:
     """Class for editing server settings"""
 
     def __init__(self, atserv: 'AternosServer') -> None:
-
         """Class for editing server settings
 
         Args:
@@ -135,7 +134,6 @@ class AternosConfig:
         self.atserv = atserv
 
     def get_timezone(self) -> str:
-
         """Parses timezone from options page
 
         Returns:
@@ -154,7 +152,6 @@ class AternosConfig:
         return tztext.strip()
 
     def set_timezone(self, value: str) -> None:
-
         """Sets new timezone
 
         Args:
@@ -178,7 +175,6 @@ class AternosConfig:
         )
 
     def get_java(self) -> int:
-
         """Parses Java version from options page
 
         Returns:
@@ -200,7 +196,6 @@ class AternosConfig:
         return int(jdkver)
 
     def set_java(self, value: int) -> None:
-
         """Sets new Java version
 
         Args:
@@ -217,7 +212,6 @@ class AternosConfig:
     # server.properties
     #
     def set_server_prop(self, option: str, value: Any) -> None:
-
         """Sets server.properties option
 
         Args:
@@ -231,7 +225,6 @@ class AternosConfig:
         )
 
     def get_server_props(self, proptyping: bool = True) -> Dict[str, Any]:
-
         """Parses all server.properties from options page
 
         Args:
@@ -248,7 +241,6 @@ class AternosConfig:
         return self.__get_all_props('https://aternos.org/options', proptyping)
 
     def set_server_props(self, props: Dict[str, Any]) -> None:
-
         """Updates server.properties options with the given dict
 
         Args:
@@ -266,7 +258,6 @@ class AternosConfig:
             self, option: Union[WorldOpts, WorldRules],
             value: Any, gamerule: bool = False,
             world: str = 'world') -> None:
-
         """Sets level.dat option for specified world
 
         Args:
@@ -290,7 +281,6 @@ class AternosConfig:
     def get_world_props(
             self, world: str = 'world',
             proptyping: bool = True) -> Dict[str, Any]:
-
         """Parses level.dat from specified world's options page
 
         Args:
@@ -314,7 +304,6 @@ class AternosConfig:
             self,
             props: Dict[Union[WorldOpts, WorldRules], Any],
             world: str = 'world') -> None:
-
         """Sets level.dat options from
         the dictionary for the specified world
 

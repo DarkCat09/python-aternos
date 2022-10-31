@@ -16,7 +16,6 @@ class FileManager:
     for viewing files structure"""
 
     def __init__(self, atserv: 'AternosServer') -> None:
-
         """Aternos file manager class
         for viewing files structure
 
@@ -28,7 +27,6 @@ class FileManager:
         self.atserv = atserv
 
     def list_dir(self, path: str = '') -> List[AternosFile]:
-
         """Requests a list of files
         in the specified directory
 
@@ -83,7 +81,6 @@ class FileManager:
         return files
 
     def extract_size(self, fsize_raw: List[Any]) -> float:
-
         """Parses file size from the LXML tree
 
         Args:
@@ -113,7 +110,6 @@ class FileManager:
             self,
             num: Union[int, float],
             measure: str) -> float:
-
         """Converts "human" file size to size in bytes
 
         Args:
@@ -133,7 +129,6 @@ class FileManager:
         return measure_match.get(measure, -1) * num
 
     def get_file(self, path: str) -> Optional[AternosFile]:
-
         """Returns :class:`python_aternos.atfile.AternosFile`
         instance by its path
 
@@ -158,7 +153,6 @@ class FileManager:
         }.get('file', None)
 
     def dl_file(self, path: str) -> bytes:
-
         """Returns the file content in bytes (downloads it)
 
         Args:
@@ -178,7 +172,6 @@ class FileManager:
         return file.content
 
     def dl_world(self, world: str = 'world') -> bytes:
-
         """Returns the world zip file content
         by its name (downloads it)
 

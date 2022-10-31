@@ -32,7 +32,6 @@ class PlayersList:
             self,
             lst: Union[str, Lists],
             atserv: 'AternosServer') -> None:
-
         """Class for managing operators,
         whitelist and banned players lists
 
@@ -60,7 +59,6 @@ class PlayersList:
         self.parsed = False
 
     def list_players(self, cache: bool = True) -> List[str]:
-
         """Parse a players list
 
         Args:
@@ -93,7 +91,6 @@ class PlayersList:
         return result
 
     def add(self, name: str) -> None:
-
         """Appends a player to the list by the nickname
 
         Args:
@@ -111,7 +108,6 @@ class PlayersList:
         self.players.append(name)
 
     def remove(self, name: str) -> None:
-
         """Removes a player from the list by the nickname
 
         Args:

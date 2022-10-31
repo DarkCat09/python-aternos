@@ -41,7 +41,6 @@ class AternosConnect:
         self.token = ''
 
     def add_args(self, **kwargs) -> None:
-
         """Pass arguments to CloudScarper
         session object __init__
         if kwargs is not empty
@@ -59,7 +58,6 @@ class AternosConnect:
         self.refresh_session()
 
     def clear_args(self) -> None:
-
         """Clear CloudScarper object __init__ arguments
         which was set using add_args method"""
 
@@ -68,7 +66,6 @@ class AternosConnect:
         self.refresh_session()
 
     def refresh_session(self) -> None:
-
         """Creates a new CloudScraper
         session object and copies all cookies.
         Required for bypassing Cloudflare"""
@@ -79,7 +76,6 @@ class AternosConnect:
         del old_cookies
 
     def parse_token(self) -> str:
-
         """Parses Aternos ajax token that
         is needed for most requests
 
@@ -149,7 +145,6 @@ class AternosConnect:
         return self.token
 
     def generate_sec(self) -> str:
-
         """Generates Aternos SEC token which
         is also needed for most API requests
 
@@ -175,7 +170,6 @@ class AternosConnect:
             reqcookies: Optional[Dict[Any, Any]] = None,
             sendtoken: bool = False,
             retry: int = 5) -> requests.Response:
-
         """Sends a request to Aternos API bypass Cloudflare
 
         Args:
@@ -287,7 +281,6 @@ class AternosConnect:
 
     @property
     def atsession(self) -> str:
-
         """Aternos session cookie,
         empty string if not logged in
 

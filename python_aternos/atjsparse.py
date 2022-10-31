@@ -9,7 +9,6 @@ arrowexp = regex.compile(r'\w[^\}]*+')
 
 
 def to_ecma5_function(f: str) -> str:
-
     """Converts a ECMA6 function
     to ECMA5 format (without arrow expressions)
 
@@ -31,7 +30,6 @@ def to_ecma5_function(f: str) -> str:
 
 
 def atob(s: str) -> str:
-
     """Decodes base64 string
 
     Args:
@@ -45,7 +43,6 @@ def atob(s: str) -> str:
 
 
 def exec_js(f: str) -> js2py.EvalJs:
-
     """Executes a JavaScript function
 
     Args:
