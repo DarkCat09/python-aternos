@@ -39,6 +39,7 @@ class AternosConnect:
         self.session = self.cf_init()
         self.sec = ''
         self.token = ''
+        self.atcookie = ''
 
     def add_args(self, **kwargs) -> None:
         """Pass arguments to CloudScarper
@@ -197,6 +198,11 @@ class AternosConnect:
         if retry <= 0:
             raise CloudflareError('Unable to bypass Cloudflare protection')
 
+        try:
+            self.atcookie = self.session.cookies['ATERNOS_SESSION']
+        except KeyError:
+            pass
+
         self.refresh_session()
 
         params = params or {}
@@ -215,7 +221,7 @@ class AternosConnect:
             headers['X-Requested-With'] = 'XMLHttpRequest'
 
         # requests.cookies.CookieConflictError bugfix
-        reqcookies['ATERNOS_SESSION'] = self.atsession
+        reqcookies['ATERNOS_SESSION'] = self.atcookie
         del self.session.cookies['ATERNOS_SESSION']
 
         reqcookies_dbg = {
