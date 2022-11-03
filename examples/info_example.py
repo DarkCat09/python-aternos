@@ -7,7 +7,7 @@ aternos = Client.from_credentials(user, pswd)
 
 srvs = aternos.list_servers()
 for srv in srvs:
-    print('*** ' + srv.domain + ' ***')
+    print('***', srv.domain, '***')
     print(srv.motd)
     print('*** Status:', srv.status)
     print('*** Full address:', srv.address)
