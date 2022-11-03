@@ -265,7 +265,7 @@ class AternosConnect:
 
         if html_type and cloudflare:
             logging.info('Retrying to bypass Cloudflare')
-            time.sleep(0.2)
+            time.sleep(0.3)
             return self.request_cloudflare(
                 url, method,
                 params, data,
