@@ -450,3 +450,15 @@ class AternosServer:
         """
 
         return int(self._info['ram'])
+
+    @property
+    def countdown(self) -> int:
+        """Server stop countdown
+        in seconds
+
+        Returns:
+            Stop countdown
+        """
+
+        value = self._info['countdown']
+        return int(value or -1)

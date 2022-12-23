@@ -217,3 +217,41 @@ print('Server is', serv.status)  # Server is online
 But this method is **not** a good choice if you want to get real-time updates.  
 Read [How-To 6: Real-time updates](websocket) about WebSockets API
 and use it instead of refreshing data in a while-loop.
+
+## Countdown
+Aternos stops a server when there are no players connected.  
+You can get remained time in seconds using `serv.countdown`.
+
+For example:
+```python
+# Start
+serv.start()
+
+# Get the countdown value
+print(serv.countdown, 'seconds')
+# -1 seconds
+# means "null" in countdown field
+
+# Wait for start up
+time.sleep(10)
+
+# Refresh info
+serv.fetch()
+# Get countdown value
+print(serv.countdown, 'seconds')
+# 377 seconds
+
+# Check if countdown changes
+time.sleep(10)
+serv.fetch()
+print(serv.countdown, 'seconds')
+# 367 seconds
+
+# ---
+# Convert to minutes and seconds
+mins, secs = divmod(serv.countdown, 60)
+print(f'{mins}:{secs:02}')  # 6:07
+# OR
+cd = serv.countdown
+print(f'{cd // 60}:{cd % 60:02}')  # 6:07
+```
