@@ -1,6 +1,6 @@
 # How-To 2: Controlling Minecraft server
 
-In the previous part we logged into account and started a server.  
+In the previous part we've logged into an account and have started a server.  
 But python-aternos can do much more.
 
 ## Basic methods
@@ -32,7 +32,7 @@ serv.confirm()
 `start()` can be called with arguments:
 
  - headstart (bool): Start server in headstart mode
- which allows you to skip all queue.
+ which allows you to skip all the queue.
  - accepteula (bool): Automatically accept Mojang EULA.
 
 If you want to launch your server instantly, use this code:
@@ -45,18 +45,18 @@ serv.start(headstart=True)
 This object contains an error code, on which depends an error message.
 
  - EULA was not accepted (code: `eula`) -
- remove `accepteula=False` or run `serv.eula()` before startup.
+ remove `accepteula=False` or run `serv.eula()` before the server startup.
  - Server is already running (code: `already`) -
- you don't need to start server, it is online.
+ you don't need to start the server, it is online.
  - Incorrect software version installed (code: `wrongversion`) -
  if you have *somehow* installed non-existent software version (e.g. `Vanilla 2.16.5`).
  - File server is unavailable (code: `file`) -
- problems in Aternos servers, view [https://status.aternos.gmbh](https://status.aternos.gmbh)
+ problems on Aternos servers, view [https://status.aternos.gmbh](https://status.aternos.gmbh)
  - Available storage size limit has been reached (code: `size`) -
  files on your Minecraft server have reached 4GB limit
  (for exmaple, too much mods or loaded chunks).
 
-Always wrap `start` into try-catch.
+Always wrap `start` into try-except.
 ```python
 from python_aternos import ServerStartError
 
@@ -72,7 +72,7 @@ except ServerStartError as err:
 ## Cancellation
 Server launching can be cancelled only when you are waiting in a queue.  
 After queue, when the server starts and writes something to the log,  
-you can just `stop()` it, not `cancel()`.
+you can just `stop()` it, **not** `cancel()`.
 
 ## Server info
 ```python
@@ -130,7 +130,7 @@ False
 
 >>> serv.restart()
 
-# Title on web site: "Loading"
+# Title on the web site: "Loading"
 >>> serv.css_class
 'loading'
 >>> serv.status
@@ -144,7 +144,7 @@ False
 >>> serv.status_num == Status.starting
 False
 
-# Title on web site: "Preparing"
+# Title on the web site: "Preparing"
 >>> serv.css_class
 'loading'
 >>> serv.status
@@ -158,7 +158,7 @@ False
 >>> serv.status_num == Status.on
 False
 
-# Title on web site: "Starting"
+# Title on the web site: "Starting"
 >>> serv.css_class
 'loading starting'
 >>> serv.status
@@ -175,7 +175,7 @@ False
 ```
 
 ## Changing subdomain and MOTD
-To change server subdomain or Message-of-the-Day,
+To change the server's subdomain or Message-of-the-Day,
 just assign a new value to the corresponding fields:
 ```python
 serv.subdomain = 'new-test-server123'
@@ -183,13 +183,13 @@ serv.motd = 'Welcome to the New Test Server!'
 ```
 
 ## Updating status
-python-aternos don't refresh server information by default.  
-This can be done with [WebSockets API](websocket) automatically
+Python-Aternos don't refresh server information by default.  
+This can be done with [WebSockets API](/howto/websocket) automatically
 (but it will be explained later in the 6th part of how-to guide),  
 or with `fetch()` method manually (much easier).
 
-`fetch()` called also when an AternosServer object is created
-to get info about the server:
+`fetch()` is also called when an AternosServer object is created
+to get this info about the server:
 
  - full address,
  - MOTD,
@@ -198,7 +198,7 @@ to get info about the server:
  - status,
  - etc.
 
-Use it if you want to see new data one time:
+Use it if you want to see the new data *one time*:
 ```python
 import time
 from python_aternos import Client
@@ -214,13 +214,13 @@ time.sleep(10)
 serv.fetch()
 print('Server is', serv.status)  # Server is online
 ```
-But this method is **not** a good choice if you want to get real-time updates.  
-Read [How-To 6: Real-time updates](websocket) about WebSockets API
+But this method is **not** a good choice if you want to get *real-time* updates.  
+Read [How-To 6: Real-time updates](/howto/websocket) about WebSockets API
 and use it instead of refreshing data in a while-loop.
 
 ## Countdown
 Aternos stops a server when there are no players connected.  
-You can get remained time in seconds using `serv.countdown`.
+You can get the remained time in seconds using `serv.countdown`.
 
 For example:
 ```python

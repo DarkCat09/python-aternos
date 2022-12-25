@@ -1,6 +1,6 @@
 # How-To 3: Players lists
 You can add a player to operators,
-include in the whitelist or ban
+include into the whitelist or ban him
 using this feature.
 
 ## Common usage
@@ -33,7 +33,7 @@ For example, I want to ban someone:
 serv.players(Lists.ban).add('someone')
 ```
 
-And give myself operator rights:
+And give myself the operator rights:
 ```python
 serv.players(Lists.ops).add('DarkCat09')
 ```

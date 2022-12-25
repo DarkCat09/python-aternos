@@ -97,8 +97,10 @@ so you don't need to do it by yourself now.
 
 Before, you should save session manually:
 ```python
+# ****
 # This code is useless in new versions,
 # because they do it automatically.
+# ****
 
 from python_aternos import Client
 
@@ -119,13 +121,13 @@ myserv = at.list_servers()[0]
 
 ...
 ```
-Function `save_session()` writes session cookie and cached servers list to `.aternos` file in your home directory.  
-`restore_session()` creates Client object from session cookie and restores servers list.  
+Function `save_session()` writes the session cookie and the cached servers list to `.aternos` file in your home directory.  
+`restore_session()` creates a Client object from the session cookie and restores the servers list.  
 This feature reduces the count of network requests and allows you to log in and request servers much faster.
 
-If you created a new server, but it doesn't appear in `list_servers` result, call it with `cache=False` argument.
+If you have created a new server, but it doesn't appear in `list_servers` result, call it with `cache=False` argument.
 ```python
-# Refreshing list
+# Refresh the list
 servers = at.list_servers(cache=False)
 ```
 
@@ -167,7 +169,7 @@ at.change_password_hashed(my_passwd, new_passwd)
 ## Two-Factor Authentication
 2FA is a good idea if you think that the password
 is not enough to protect your account.  
-It has been recently added to python-aternos.
+It was recently added to python-aternos.
 
 ### Log in with code
 Here's how to log in to an account:
@@ -198,12 +200,12 @@ Also, the library allows to enable it.
 >>> response
 {'qrcode': 'data:image/png;base64,iV...', 'secret': '7HSM...'}
 ```
-As you can see, Aternos responses with
-QR code picture encoded in base64
+As you can see, Aternos responds with
+a QR code picture encoded in base64
 and a plain secret code.
 
-- Enter this code into your 2FA application
-**or** save the QR into a file:
+- Enter the secret code into your 2FA application  
+**OR** save the QR into a file:
 ```python
 >>> qr = response.get('qrcode', '')
 >>> at.save_qr(qr, 'test.png')

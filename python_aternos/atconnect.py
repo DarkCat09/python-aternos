@@ -42,12 +42,9 @@ class AternosConnect:
         self.atcookie = ''
 
     def add_args(self, **kwargs) -> None:
-        """Pass arguments to CloudScarper
+        """Pass arguments to CloudScraper
         session object __init__
         if kwargs is not empty
-
-        Args:
-            **kwargs: Keyword arguments
         """
 
         if len(kwargs) < 1:

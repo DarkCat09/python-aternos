@@ -25,7 +25,7 @@ let's assign it to `fm` variable:
 ## File info
 AternosFile object can point to
 both a file and a directory
-and contain almost the same properties and methods.  
+and contain almost the same properties and methods.
 (So it's more correct to call it "Object in the server's filesystem",
 but I chose an easier name for the class.)
 
@@ -38,7 +38,7 @@ but I chose an easier name for the class.)
      - `FileType.dir` and `FileType.directory`
  - `size` - File size in bytes, float.  
  `0.0` for directories and
- `-1.0` when error occures.
+ `-1.0` when an error occurs.
  - `deleteable`, `downloadable` and `editable` are explained in the next section.
 
 ### File
@@ -208,18 +208,23 @@ def read():
 def write(content):
 
     # set_text and set_content
-    # uses the same URLs.
-    # I prefer set_content
+    # uses the same URLs,
+    # so there's no point in checking
+    # if the file is editable/downloadable
 
-    # but we need to convert content to bytes
+    # Code for set_text:
+    #ops.set_text(content)
+
+    # Code for set_content:
+    # Convert the str to bytes
     content = content.encode('utf-8')
-
+    # Edit
     ops.set_content(content)
 
-# It contains empty list [] by default
+# ops.json contains an empty list [] by default
 oper_raw = read()
 
-# Convert to Python list
+# Convert it to a Python list
 oper_lst = json.loads(oper_raw)
 
 # Add an operator
