@@ -11,9 +11,15 @@ clean:
 	rm -rf tests/__pycache__
 	rm -rf site .mypy_cache
 
+test:
+	python -m unittest discover -v ./tests
+
 check:
-	chmod +x test.sh
-	bash test.sh
+	python -m mypy .
+	python -m pylint ./python_aternos
+
+fullcheck:
+	chmod +x check.sh; bash check.sh
 
 format:
 	python -m autopep8 -r --in-place .
