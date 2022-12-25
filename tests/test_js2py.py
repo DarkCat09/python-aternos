@@ -51,10 +51,10 @@ class TestJs2Py(unittest.TestCase):
 
     def test_exec(self) -> None:
 
-        for i, f in enumerate(self.tests):
-            self.js.exec_js(f)
+        for func, exp in zip(self.tests, self.results):
+            self.js.exec_js(func)
             res = self.js['AJAX_TOKEN']
-            self.assertEqual(res, self.results[i])
+            self.assertEqual(res, exp)
 
 
 if __name__ == '__main__':

@@ -1,15 +1,20 @@
 """Parsing and executing JavaScript code"""
 
 import abc
+
+import json
 import base64
+
+import time
 import subprocess
 
 from pathlib import Path
-from typing import Optional, Union, Any
-from typing import Type
+from typing import Optional, Union
+from typing import Type, Any
 
 import regex
 import js2py
+import requests
 
 js: Optional['Interpreter'] = None
 
@@ -18,9 +23,19 @@ class Interpreter(abc.ABC):
     """Base JS interpreter class"""
 
     def __init__(self) -> None:
+        """Base JS interpreter class"""
         pass
 
     def __getitem__(self, name: str) -> Any:
+        """Support for `js[name]` syntax
+        instead of `js.get_var(name)`
+
+        Args:
+            name (str): Variable name
+
+        Returns:
+            Variable value
+        """
         return self.get_var(name)
 
     @abc.abstractmethod
@@ -48,24 +63,47 @@ class Interpreter(abc.ABC):
 
 class NodeInterpreter(Interpreter):
 
-    def __init__(self, node: Union[str, Path]) -> None:
+    def __init__(
+            self,
+            node: Union[str, Path] = 'node',
+            host: str = 'localhost',
+            port: int = 8001) -> None:
+        """Node.JS interpreter wrapper,
+        starts a simple web server in background
+
+        Args:
+            node (Union[str, Path], optional): Path to `node` executable
+            host (str, optional): Hostname for the web server
+            port (int, optional): Port for the web server
+        """
+
         super().__init__()
+
+        file_dir = Path(__file__).absolute().parent
+        server_js = file_dir / 'data' / 'server.js'
+
+        self.url = f'http://{host}:{port}'
+
         self.proc = subprocess.Popen(
-            node,
-            stdout=subprocess.PIPE,
+            args=[
+                node, server_js,
+                f'{port}', host,
+            ],
         )
+        time.sleep(0.1)
     
     def exec_js(self, func: str) -> None:
-        self.proc.communicate(func.encode('utf-8'))
+        resp = requests.post(self.url, data=func)
+        resp.raise_for_status()
     
     def get_var(self, name: str) -> Any:
-        assert self.proc.stdout is not None
-        self.proc.stdout.read()
-        self.proc.communicate(name.encode('utf-8'))
-        return self.proc.stdout.read().decode('utf-8')
+        resp = requests.post(self.url, data=name)
+        resp.raise_for_status()
+        return json.loads(resp.content)
     
     def __del__(self) -> None:
         self.proc.terminate()
+        self.proc.communicate()
 
 
 class Js2PyInterpreter(Interpreter):
@@ -128,7 +166,7 @@ class Js2PyInterpreter(Interpreter):
 
 def atob(s: str) -> str:
     """Wrapper for the built-in library function.
-    Decodes base64 string
+    Decodes a base64 string
 
     Args:
         s (str): Encoded data
@@ -140,8 +178,26 @@ def atob(s: str) -> str:
     return base64.standard_b64decode(str(s)).decode('utf-8')
 
 
-def get_interpreter(create: Type[Interpreter] = Js2PyInterpreter) -> 'Interpreter':
+def get_interpreter(
+        create: Type[Interpreter] = Js2PyInterpreter,
+        *args, **kwargs) -> 'Interpreter':
+    """Get or create a JS interpreter.
+    `*args` and `**kwargs` will be passed
+    directly to JS interpreter `__init__`
+    (when creating it)
+
+    Args:
+        create (Type[Interpreter], optional): Preferred interpreter
+
+    Returns:
+        JS interpreter instance
+    """
+
     global js
+
+    # create if none
     if js is None:
-        js = create()
+        js = create(*args, **kwargs)
+
+    # and return
     return js
