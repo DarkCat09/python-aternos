@@ -121,8 +121,9 @@ class AternosConnect:
             if len(js_code) > 1:
                 token_func = js_code[1]
 
-            ctx = atjsparse.exec_js(token_func)
-            self.token = ctx.window['AJAX_TOKEN']
+            js = atjsparse.get_interpreter()
+            js.exec_js(token_func)
+            self.token = js['AJAX_TOKEN']
 
         except (IndexError, TypeError) as err:
 
