@@ -13,6 +13,7 @@ class TestJs2Py(unittest.TestCase):
 
         self.tests = files.read_sample('token_input.txt')
         self.results = files.read_sample('token_output.txt')
+        self.js = atjsparse.Js2PyInterpreter()
 
     def test_base64(self) -> None:
 
@@ -23,7 +24,7 @@ class TestJs2Py(unittest.TestCase):
     def test_conv(self) -> None:
 
         token = CONV_TOKEN_ARROW
-        f = atjsparse.to_ecma5_function(token)
+        f = self.js.to_ecma5(token)
         self.assertEqual(f, CONV_TOKEN_FUNC)
 
     def test_ecma6parse(self) -> None:
@@ -38,21 +39,21 @@ class TestJs2Py(unittest.TestCase):
         part2 = '''window.t2 = Boolean(!window[["p","Ma"].reverse().join('')]);'''
         part3 = '''window.t3 = Boolean(!window[["ut","meo","i","etT","s"].reverse().join('')]);'''
 
-        ctx0 = atjsparse.exec_js(code)
-        ctx1 = atjsparse.exec_js(part1)
-        ctx2 = atjsparse.exec_js(part2)
-        ctx3 = atjsparse.exec_js(part3)
+        self.js.exec_js(code)
+        self.js.exec_js(part1)
+        self.js.exec_js(part2)
+        self.js.exec_js(part3)
 
-        self.assertEqual(ctx0.window['t0'], False)
-        self.assertEqual(ctx1.window['t1'], True)
-        self.assertEqual(ctx2.window['t2'], False)
-        self.assertEqual(ctx3.window['t3'], False)
+        self.assertEqual(self.js['t0'], False)
+        self.assertEqual(self.js['t1'], True)
+        self.assertEqual(self.js['t2'], False)
+        self.assertEqual(self.js['t3'], False)
 
     def test_exec(self) -> None:
 
         for i, f in enumerate(self.tests):
-            ctx = atjsparse.exec_js(f)
-            res = ctx.window['AJAX_TOKEN']
+            self.js.exec_js(f)
+            res = self.js['AJAX_TOKEN']
             self.assertEqual(res, self.results[i])
 
 

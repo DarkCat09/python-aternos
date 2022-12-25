@@ -28,7 +28,8 @@ from .aterrors import ServerError
 from .aterrors import ServerStartError
 from .aterrors import FileError
 from .aterrors import AternosPermissionError
-from .atjsparse import exec_js
+from .atjsparse import Js2PyInterpreter
+from .atjsparse import NodeInterpreter
 
 __all__ = [
 
@@ -42,7 +43,8 @@ __all__ = [
     'FileManager', 'AternosFile', 'AternosError',
     'CloudflareError', 'CredentialsError', 'TokenError',
     'ServerError', 'ServerStartError', 'FileError',
-    'AternosPermissionError', 'exec_js',
+    'AternosPermissionError',
+    'Js2PyInterpreter', 'NodeInterpreter',
 
     'Edition', 'Status', 'Lists',
     'ServerOpts', 'WorldOpts', 'WorldRules',
