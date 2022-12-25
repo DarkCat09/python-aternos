@@ -1,8 +1,8 @@
 build:
-	python -m build
+	python3 -m build
 
 upload:
-	python -m twine upload dist/*
+	python3 -m twine upload dist/*
 
 clean:
 	rm -rf dist python_aternos.egg-info
@@ -12,14 +12,14 @@ clean:
 	rm -rf site .mypy_cache
 
 test:
-	python -m unittest discover -v ./tests
+	python3 -m unittest discover -v ./tests
 
 check:
-	python -m mypy .
-	python -m pylint ./python_aternos
+	python3 -m mypy .
+	python3 -m pylint ./python_aternos
 
 fullcheck:
 	chmod +x check.sh; bash check.sh
 
 format:
-	python -m autopep8 -r --in-place .
+	python3 -m autopep8 -r --in-place .

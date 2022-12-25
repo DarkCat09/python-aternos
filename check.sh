@@ -33,27 +33,27 @@ display_failed() {
 	joined=`echo -n "$failed" | sed 's/, $//'`
 	echo -e "$FAILED[!] View output of: $joined$RESET"
 	else
-	echo -e "$SUCCESS[V] All checks are passed successfully$RESET"
+	echo -e "$SUCCESS[V] All checks were passed successfully$RESET"
 	fi
 }
 
 title 'Checking needed modules...'
-pip install pycodestyle mypy pylint
+python3 -m pip install pycodestyle mypy pylint
 
 title 'Running unit tests...'
-python -m unittest discover -v ./tests
+python3 -m unittest discover -v ./tests
 error_msg $? 'unittest'
 
 title 'Running pep8 checker...'
-python -m pycodestyle .
+python3 -m pycodestyle .
 error_msg $? 'pep8'
 
 title 'Running mypy checker...'
-python -m mypy .
+python3 -m mypy .
 error_msg $? 'mypy'
 
 title 'Running pylint checker...'
-python -m pylint ./python_aternos
+python3 -m pylint ./python_aternos
 error_msg $? 'pylint'
 
 display_failed
