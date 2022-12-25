@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 failed=''
 
 title () {
