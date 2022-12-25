@@ -24,7 +24,6 @@ class Interpreter(abc.ABC):
 
     def __init__(self) -> None:
         """Base JS interpreter class"""
-        pass
 
     def __getitem__(self, name: str) -> Any:
         """Support for `js[name]` syntax
@@ -45,7 +44,6 @@ class Interpreter(abc.ABC):
         Args:
             func (str): JS function
         """
-        pass
 
     @abc.abstractmethod
     def get_var(self, name: str) -> Any:
@@ -58,10 +56,11 @@ class Interpreter(abc.ABC):
         Returns:
             Variable value
         """
-        pass
 
 
 class NodeInterpreter(Interpreter):
+    """Node.JS interpreter wrapper,
+    starts a simple web server in background"""
 
     def __init__(
             self,
@@ -84,34 +83,40 @@ class NodeInterpreter(Interpreter):
 
         self.url = f'http://{host}:{port}'
 
+        # pylint: disable=consider-using-with
         self.proc = subprocess.Popen(
             args=[
                 node, server_js,
                 f'{port}', host,
             ],
         )
+        # pylint: enable=consider-using-with
         time.sleep(0.1)
-    
+
     def exec_js(self, func: str) -> None:
         resp = requests.post(self.url, data=func)
         resp.raise_for_status()
-    
+
     def get_var(self, name: str) -> Any:
         resp = requests.post(self.url, data=name)
         resp.raise_for_status()
         return json.loads(resp.content)
-    
+
     def __del__(self) -> None:
         self.proc.terminate()
         self.proc.communicate()
 
 
 class Js2PyInterpreter(Interpreter):
+    """Js2Py interpreter,
+    uses js2py library to execute code"""
 
     # Thanks to http://regex.inginf.units.it
     arrowexp = regex.compile(r'\w[^\}]*+')
 
     def __init__(self) -> None:
+        """Js2Py interpreter,
+        uses js2py library to execute code"""
 
         super().__init__()
 
@@ -123,13 +128,13 @@ class Js2PyInterpreter(Interpreter):
         ctx.execute('window.encodeURIComponent = function(_s){ };')
 
         self.ctx = ctx
-    
+
     def exec_js(self, func: str) -> None:
         self.ctx.execute(self.to_ecma5(func))
-    
+
     def get_var(self, name: str) -> Any:
         return self.ctx[name]
-    
+
     def to_ecma5(self, func: str) -> str:
         """Converts from ECMA6 format to ECMA5
         (replacing arrow expressions)
@@ -149,7 +154,7 @@ class Js2PyInterpreter(Interpreter):
         match = self.arrowexp.search(func)
         if match is None:
             return func
-        
+
         # Convert the function
         conv = '(function(){' + match[0] + '})()'
 
@@ -179,8 +184,9 @@ def atob(s: str) -> str:
 
 
 def get_interpreter(
+        *args,
         create: Type[Interpreter] = Js2PyInterpreter,
-        *args, **kwargs) -> 'Interpreter':
+        **kwargs) -> 'Interpreter':
     """Get or create a JS interpreter.
     `*args` and `**kwargs` will be passed
     directly to JS interpreter `__init__`
@@ -193,7 +199,7 @@ def get_interpreter(
         JS interpreter instance
     """
 
-    global js
+    global js  # pylint: disable=global-statement
 
     # create if none
     if js is None:

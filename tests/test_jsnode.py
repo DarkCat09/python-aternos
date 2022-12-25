@@ -9,11 +9,11 @@ from tests import files
 class TestJsNode(unittest.TestCase):
 
     def setUp(self) -> None:
-        
+
         self.tests = files.read_sample('token_input.txt')
         self.results = files.read_sample('token_output.txt')
         self.js = atjsparse.NodeInterpreter()
-    
+
     def test_exec(self) -> None:
 
         for func, exp in zip(self.tests, self.results):
