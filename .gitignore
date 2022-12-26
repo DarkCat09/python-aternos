@@ -110,3 +110,7 @@ cython_debug/
 
 # Credentials for unittest
 tests/samples/login_pswd.txt
+
+# NPM
+node_modules/
+package-lock.json

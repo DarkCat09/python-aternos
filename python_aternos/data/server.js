@@ -1,6 +1,8 @@
 const http = require('http')
 const process = require('process')
 
+const { VM } = require('vm2')
+
 args = process.argv.slice(2)
 
 const port = args[0] || 8000
@@ -16,7 +18,7 @@ const listener = (req, res) => {
 
     req.on('end', () => {
         let resp
-        try { resp = JSON.stringify(eval(body)) }
+        try { resp = JSON.stringify(new VM().run(body)) }
         catch (ex) { resp = ex.message }
         res.writeHead(200)
         res.end(resp)
