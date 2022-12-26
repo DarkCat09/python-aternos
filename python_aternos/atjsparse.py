@@ -5,7 +5,7 @@ import abc
 import json
 import base64
 
-import time
+import logging
 import subprocess
 
 from pathlib import Path
@@ -89,9 +89,13 @@ class NodeInterpreter(Interpreter):
                 node, server_js,
                 f'{port}', host,
             ],
+            stdout=subprocess.PIPE,
         )
         # pylint: enable=consider-using-with
-        time.sleep(0.1)
+
+        assert self.proc.stdout is not None
+        ok_msg = self.proc.stdout.readline()
+        logging.debug('Received from server.js: %s', ok_msg)
 
     def exec_js(self, func: str) -> None:
         resp = requests.post(self.url, data=func)

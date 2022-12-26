@@ -27,4 +27,4 @@ window = global
 document = window.document || {}
 
 const server = http.createServer(listener)
-server.listen(port, host)
+server.listen(port, host, () => console.log('OK'))

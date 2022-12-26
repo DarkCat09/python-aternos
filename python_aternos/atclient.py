@@ -8,7 +8,8 @@ import logging
 
 import base64
 
-from typing import List, Dict, Optional
+from typing import List, Dict
+from typing import Optional, Type
 
 import lxml.html
 
@@ -16,6 +17,10 @@ from .atserver import AternosServer
 from .atconnect import AternosConnect
 from .aterrors import CredentialsError
 from .aterrors import TwoFactorAuthError
+
+from . import atjsparse
+from .atjsparse import Interpreter
+from .atjsparse import Js2PyInterpreter
 
 
 class Client:
@@ -54,6 +59,7 @@ class Client:
             md5: str,
             code: Optional[int] = None,
             sessions_dir: str = '~',
+            js: Type[Interpreter] = Js2PyInterpreter,
             **custom_args):
         """Log in to an Aternos account with
         a username and a hashed password
@@ -64,6 +70,9 @@ class Client:
             code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
+            js (Type[Interpreter]): Preferred JS interpreter,
+                any class from `atjsparse`
+                inheriting `Interpreter` class
             **custom_args (tuple, optional): Keyword arguments
                 which will be passed to CloudScraper `__init__`
 
@@ -83,6 +92,7 @@ class Client:
         except (OSError, CredentialsError):
             pass
 
+        atjsparse.get_interpreter(create=js)
         atconn = AternosConnect()
 
         if len(custom_args) > 0:
@@ -129,6 +139,7 @@ class Client:
             password: str,
             code: Optional[int] = None,
             sessions_dir: str = '~',
+            js: Type[Interpreter] = Js2PyInterpreter,
             **custom_args):
         """Log in to Aternos with a username and a plain password
 
@@ -138,6 +149,9 @@ class Client:
             code (Optional[int]): 2FA code
             sessions_dir (str): Path to the directory
                 where session will be automatically saved
+            js (Type[Interpreter]): Preferred JS interpreter,
+                any class from `atjsparse`
+                inheriting `Interpreter` class
             **custom_args (tuple, optional): Keyword arguments
                 which will be passed to CloudScraper `__init__`
         """
@@ -145,7 +159,8 @@ class Client:
         md5 = Client.md5encode(password)
         return cls.from_hashed(
             username, md5, code,
-            sessions_dir, **custom_args
+            sessions_dir, js,
+            **custom_args
         )
 
     @classmethod
@@ -153,15 +168,21 @@ class Client:
             cls,
             session: str,
             servers: Optional[List[str]] = None,
+            js: Type[Interpreter] = Js2PyInterpreter,
             **custom_args):
         """Log in to Aternos using a session cookie value
 
         Args:
             session (str): Value of ATERNOS_SESSION cookie
+            servers (Optional[List[str]]): List of cached servers IDs.
+            js (Type[Interpreter]): Preferred JS interpreter,
+                any class from `atjsparse`
+                inheriting `Interpreter` class
             **custom_args (tuple, optional): Keyword arguments
                 which will be passed to CloudScraper `__init__`
         """
 
+        atjsparse.get_interpreter(create=js)
         atconn = AternosConnect()
 
         atconn.add_args(**custom_args)
@@ -176,12 +197,16 @@ class Client:
     def restore_session(
             cls,
             file: str = '~/.aternos',
+            js: Type[Interpreter] = Js2PyInterpreter,
             **custom_args):
         """Log in to Aternos using
         a saved ATERNOS_SESSION cookie
 
         Args:
             file (str, optional): File where a session cookie was saved
+            js (Type[Interpreter]): Preferred JS interpreter,
+                any class from `atjsparse`
+                inheriting `Interpreter` class
             **custom_args (tuple, optional): Keyword arguments
                 which will be passed to CloudScraper `__init__`
         """
@@ -209,11 +234,13 @@ class Client:
             obj = cls.from_session(
                 session=session,
                 servers=saved[1:],
+                js=js,
                 **custom_args
             )
         else:
             obj = cls.from_session(
                 session,
+                js=js,
                 **custom_args
             )
 
