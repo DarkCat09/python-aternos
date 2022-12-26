@@ -83,7 +83,7 @@ aternos = Client.from_credentials('example', 'test123')
 # ----OR----
 aternos = Client.from_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
 # ----OR----
-aternos = Client.restore_session()
+aternos = Client.from_session('ATERNOS_SESSION cookie')
 
 # Returns AternosServer list
 servs = aternos.list_servers()
@@ -103,7 +103,7 @@ for serv in servs:
         testserv = serv
 
 if testserv is not None:
-    # Prints a server softaware and its version
+    # Prints the server software and its version
     # (for example, "Vanilla 1.12.2")
     print(testserv.software, testserv.version)
     # Starts server
@@ -129,8 +129,8 @@ if testserv is not None:
 |v1.1.x|Documentation, unit tests, pylint, bugfixes, changes in atwss.|
 |**v1.1.2/v2.0.0**|Solution for [#25](https://github.com/DarkCat09/python-aternos/issues/25) (Cloudflare bypassing), bugfixes in JS parser.|
 |v2.0.x|Documentation, automatically saving/restoring session, improvements in Files API.|
-|v2.1.x|Fixes in websockets API, atconnect. Supported captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
-|**v2.2.x**|Using Node.js as a JS interpreter if it's installed.|
+|v2.1.x|Fixes in websockets API, atconnect (including cookie refreshing fix). Supported captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
+|**v2.2.x**|Node.JS interpreter support.|
 |v3.0.x|Full implementation of config and software API.|
 |v3.1.x|Shared access API and Google Drive backups.|
 
