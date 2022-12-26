@@ -3,10 +3,20 @@ const process = require('process')
 
 const { VM } = require('vm2')
 
-args = process.argv.slice(2)
-
+const args = process.argv.slice(2)
 const port = args[0] || 8000
 const host = args[1] || 'localhost'
+
+const vm = new VM({
+    timeout: 2000,
+    allowAsync: false,
+    sandbox: {
+        atob: atob,
+        setTimeout:  (_a, _b) => {},
+        setInterval: (_a, _b) => {},
+    },
+})
+vm.run('var window = global; var document = {}')
 
 const listener = (req, res) => {
 
@@ -18,15 +28,12 @@ const listener = (req, res) => {
 
     req.on('end', () => {
         let resp
-        try { resp = JSON.stringify(new VM().run(body)) }
+        try { resp = JSON.stringify(vm.run(body)) }
         catch (ex) { resp = ex.message }
         res.writeHead(200)
         res.end(resp)
     })
 }
-
-window = global
-document = window.document || {}
 
 const server = http.createServer(listener)
 server.listen(port, host, () => console.log('OK'))

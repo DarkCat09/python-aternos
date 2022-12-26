@@ -104,6 +104,7 @@ class NodeInterpreter(Interpreter):
     def get_var(self, name: str) -> Any:
         resp = requests.post(self.url, data=name)
         resp.raise_for_status()
+        logging.debug('NodeJS response: %s', resp.content)
         return json.loads(resp.content)
 
     def __del__(self) -> None:
