@@ -4,6 +4,9 @@ build:
 upload:
 	python3 -m twine upload dist/*
 
+doc:
+	python3 -m mkdocs build
+
 clean:
 	rm -rf dist python_aternos.egg-info
 	rm -rf python_aternos/__pycache__
