@@ -22,7 +22,7 @@ REQUA = \
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
     '(KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36 OPR/85.0.4341.47'
 
-ARROW_FN_REGEX = r'\(\(\)(.*?)\)\(\);'
+ARROW_FN_REGEX = r'\(\(\).*?\)\(\);'
 SCRIPT_TAG_REGEX = (
     rb'<script type=([\'"]?)text/javascript\1>.+?</script>'
 )

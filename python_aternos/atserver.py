@@ -299,7 +299,7 @@ class AternosServer:
             Server address
         """
 
-        return self._info['displayAddress']
+        return f'{self.domain}:{self.port}'
 
     @property
     def domain(self) -> str:
