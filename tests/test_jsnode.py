@@ -12,7 +12,13 @@ class TestJsNode(unittest.TestCase):
 
         self.tests = files.read_sample('token_input.txt')
         self.results = files.read_sample('token_output.txt')
-        self.js = atjsparse.NodeInterpreter()
+
+        try:
+            self.js = atjsparse.NodeInterpreter()
+        except OSError as err:
+            self.skipTest(
+                f'Unable to start NodeJS interpreter: {err}'
+            )
 
     def test_exec(self) -> None:
 

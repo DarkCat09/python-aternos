@@ -108,8 +108,13 @@ class NodeInterpreter(Interpreter):
         return json.loads(resp.content)
 
     def __del__(self) -> None:
-        self.proc.terminate()
-        self.proc.communicate()
+        try:
+            self.proc.terminate()
+            self.proc.communicate()
+        except AttributeError:
+            logging.warning(
+                'NodeJS process was not initialized'
+            )
 
 
 class Js2PyInterpreter(Interpreter):
