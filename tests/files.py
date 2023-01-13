@@ -3,6 +3,7 @@ from typing import List
 
 abs_dir = Path(__file__).absolute().parent
 samples = abs_dir / 'samples'
+htmls = samples / 'html'
 
 
 def read_sample(name: str) -> List[str]:
@@ -18,3 +19,14 @@ def read_sample(name: str) -> List[str]:
             .strip() \
             .replace('\r\n', '\n') \
             .split('\n')
+
+
+def read_html(name: str) -> bytes:
+
+    path = samples / 'html' / (name + '.html')
+
+    if not path.exists():
+        return b''
+    
+    with path.open('rb') as file:
+        return file.read()
