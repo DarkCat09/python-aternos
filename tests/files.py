@@ -23,7 +23,7 @@ def read_sample(name: str) -> List[str]:
 
 def read_html(name: str) -> bytes:
 
-    path = samples / 'html' / (name + '.html')
+    path = samples / 'html' / name
 
     if not path.exists():
         return b''
