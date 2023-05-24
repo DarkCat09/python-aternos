@@ -157,8 +157,8 @@ class AternosWss:
             if not self.autoconfirm:
                 return
 
-            in_queue = (msg['class'] == 'queueing')
-            pending = (msg['queue']['pending'] == 'pending')
+            in_queue = msg['class'] == 'queueing'
+            pending = msg['queue']['pending'] == 'pending'
             confirmation = in_queue and pending
 
             if confirmation and not self.confirmed:

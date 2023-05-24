@@ -50,8 +50,8 @@ class PlayersList:
         # whl_je = whitelist for java
         # whl_be = whitelist for bedrock
         # whl = common whitelist
-        common_whl = (self.lst == Lists.whl)
-        bedrock = (atserv.is_bedrock)
+        common_whl = self.lst == Lists.whl
+        bedrock = atserv.is_bedrock
 
         if common_whl and bedrock:
             self.lst = Lists.whl_be

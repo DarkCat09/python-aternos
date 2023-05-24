@@ -87,8 +87,6 @@ class AternosServer:
         page = self.atserver_request(
             f'{BASE_URL}/server', 'GET'
         )
-        with open('server.html', 'wt') as f:
-            f.write(page.text)
         match = status_re.search(page.text)
 
         if match is None:

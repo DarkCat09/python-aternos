@@ -1,5 +1,6 @@
 """Stores API session and sends requests"""
 
+import logging
 import re
 import time
 
@@ -39,7 +40,6 @@ SEC_ALPHABET = string.ascii_lowercase + string.digits
 
 
 class AternosConnect:
-
     """Class for sending API requests,
     bypassing Cloudflare and parsing responses"""
 
@@ -50,28 +50,6 @@ class AternosConnect:
         self.sec = ''
         self.token = ''
         self.atcookie = ''
-
-    def add_args(self, **kwargs) -> None:
-        """Pass arguments to CloudScraper
-        session object __init__
-        if kwargs is not empty
-        """
-
-        if len(kwargs) < 1:
-            log.debug('**kwargs is empty')
-            return
-
-        log.debug('New args for CloudScraper: %s', kwargs)
-        self.cf_init = partial(CloudScraper, **kwargs)
-        self.refresh_session()
-
-    def clear_args(self) -> None:
-        """Clear CloudScarper object __init__ arguments
-        which was set using add_args method"""
-
-        log.debug('Creating session object with no keywords')
-        self.cf_init = partial(CloudScraper)
-        self.refresh_session()
 
     def refresh_session(self) -> None:
         """Creates a new CloudScraper
@@ -88,8 +66,6 @@ class AternosConnect:
         is needed for most requests
 
         Raises:
-            RuntimeWarning: If the parser can not
-                find `<head>` tag in HTML response
             TokenError: If the parser is unable
                 to extract ajax token from HTML
 
@@ -120,6 +96,7 @@ class AternosConnect:
             pagehead = loginpage[headtag:headend]
 
         js_code: Optional[List[Any]] = None
+
         try:
             text = pagehead.decode('utf-8', 'replace')
             js_code = re.findall(ARROW_FN_REGEX, text)
@@ -170,11 +147,14 @@ class AternosConnect:
         )
 
         return self.sec
-    
+
     def generate_sec_part(self) -> str:
         """Generates a part for SEC token"""
 
-        return ''.join(secrets.choice(SEC_ALPHABET) for _ in range(11)) + ('0' * 5)
+        return ''.join(
+            secrets.choice(SEC_ALPHABET)
+            for _ in range(11)
+        ) + ('0' * 5)
 
     def request_cloudflare(
             self, url: str, method: str,
@@ -237,22 +217,24 @@ class AternosConnect:
         reqcookies['ATERNOS_SESSION'] = self.atcookie
         del self.session.cookies['ATERNOS_SESSION']
 
-        reqcookies_dbg = {
-            k: str(v or '')[:3]
-            for k, v in reqcookies.items()
-        }
+        if log.level == logging.DEBUG:
 
-        session_cookies_dbg = {
-            k: str(v or '')[:3]
-            for k, v in self.session.cookies.items()
-        }
+            reqcookies_dbg = {
+                k: str(v or '')[:3]
+                for k, v in reqcookies.items()
+            }
 
-        log.debug('Requesting(%s)%s', method, url)
-        log.debug('headers=%s', headers)
-        log.debug('params=%s', params)
-        log.debug('data=%s', data)
-        log.debug('req-cookies=%s', reqcookies_dbg)
-        log.debug('session-cookies=%s', session_cookies_dbg)
+            session_cookies_dbg = {
+                k: str(v or '')[:3]
+                for k, v in self.session.cookies.items()
+            }
+
+            log.debug('Requesting(%s)%s', method, url)
+            log.debug('headers=%s', headers)
+            log.debug('params=%s', params)
+            log.debug('data=%s', data)
+            log.debug('req-cookies=%s', reqcookies_dbg)
+            log.debug('session-cookies=%s', session_cookies_dbg)
 
         if method == 'POST':
             sendreq = partial(

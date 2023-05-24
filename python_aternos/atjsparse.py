@@ -115,7 +115,8 @@ class NodeInterpreter(Interpreter):
             self.proc.communicate()
         except AttributeError:
             log.warning(
-                'NodeJS process was not initialized'
+                'NodeJS process was not initialized, '
+                'but __del__ was called'
             )
 
 
