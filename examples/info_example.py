@@ -3,9 +3,13 @@ from python_aternos import Client, atserver
 
 user = input('Username: ')
 pswd = getpass('Password: ')
-aternos = Client.from_credentials(user, pswd)
+
+atclient = Client()
+aternos = atclient.account
+atclient.login(user, pswd)
 
 srvs = aternos.list_servers()
+
 for srv in srvs:
     print('***', srv.domain, '***')
     print(srv.motd)

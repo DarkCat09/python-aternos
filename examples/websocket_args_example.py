@@ -16,14 +16,16 @@ if logs:
     logging.basicConfig(level=logging.DEBUG)
 
 # Authentication
-aternos = Client.from_credentials(user, pswd)
+atclient = Client()
+aternos = atclient.account
+atclient.login(user, pswd)
 
 server = aternos.list_servers()[0]
 socket = server.wss()
 
 
 # Handler for console messages
-@socket.wssreceiver(Streams.console, ('Server 1',))
+@socket.wssreceiver(Streams.console, ('Server 1',))  # type: ignore
 async def console(
         msg: Dict[Any, Any],
         args: Tuple[str]) -> None:

@@ -3,7 +3,10 @@ from python_aternos import Client
 
 user = input('Username: ')
 pswd = getpass('Password: ')
-aternos = Client.from_credentials(user, pswd)
+
+atclient = Client()
+aternos = atclient.account
+atclient.login(user, pswd)
 
 srvs = aternos.list_servers()
 print(srvs)

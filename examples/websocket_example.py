@@ -4,7 +4,10 @@ from python_aternos import Client, atwss
 
 user = input('Username: ')
 pswd = getpass('Password: ')
-aternos = Client.from_credentials(user, pswd)
+
+atclient = Client()
+aternos = atclient.account
+atclient.login(user, pswd)
 
 s = aternos.list_servers()[0]
 socket = s.wss()

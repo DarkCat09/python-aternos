@@ -1,9 +1,14 @@
 from getpass import getpass
+from typing import Optional
 from python_aternos import Client
+from python_aternos.atfile import AternosFile
 
 user = input('Username: ')
 pswd = getpass('Password: ')
-aternos = Client.from_credentials(user, pswd)
+
+atclient = Client()
+aternos = atclient.account
+atclient.login(user, pswd)
 
 s = aternos.list_servers()[0]
 files = s.files()
@@ -34,6 +39,11 @@ while True:
             print('\t' + file.name)
 
     if cmd == 'world':
-        file = files.get_file('/world')
+        file_w = files.get_file('/world')
+
+        if file_w is None:
+            print('Cannot create /world directory object')
+            continue
+
         with open('world.zip', 'wb') as f:
-            f.write(file.get_content())
+            f.write(file_w.get_content())
