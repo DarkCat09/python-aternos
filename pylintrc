@@ -1,9 +1,10 @@
 [MAIN]
 analyse-fallback-blocks=no
+clear-cache-post-run=no
 extension-pkg-allow-list=
 extension-pkg-whitelist=
 fail-on=
-fail-under=10.0
+fail-under=10
 ignore=CVS
 ignore-paths=
 ignore-patterns=^\.#
@@ -16,131 +17,6 @@ py-version=3.10
 recursive=no
 suggestion-mode=yes
 unsafe-load-any-extension=no
-
-
-[REPORTS]
-evaluation=max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10))
-msg-template=
-reports=no
-score=yes
-
-
-[MESSAGES CONTROL]
-confidence=HIGH,
-           CONTROL_FLOW,
-           INFERENCE,
-           INFERENCE_FAILURE,
-           UNDEFINED
-disable=raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
-        no-member,
-        too-many-arguments,
-        too-many-public-methods,
-        too-many-instance-attributes,
-        too-many-locals
-enable=c-extension-no-member
-
-
-[SIMILARITIES]
-ignore-comments=yes
-ignore-docstrings=yes
-ignore-imports=yes
-ignore-signatures=yes
-min-similarity-lines=4
-
-
-[MISCELLANEOUS]
-notes=FIXME,
-      XXX,
-      TODO
-notes-rgx=
-
-
-[DESIGN]
-exclude-too-few-public-methods=
-ignored-parents=
-max-args=5
-max-attributes=7
-max-bool-expr=5
-max-branches=12
-max-locals=15
-max-parents=7
-max-public-methods=20
-max-returns=6
-max-statements=50
-min-public-methods=2
-
-
-[STRING]
-check-quote-consistency=no
-check-str-concat-over-line-jumps=no
-
-
-[CLASSES]
-check-protected-access-in-special-methods=no
-defining-attr-methods=__init__,
-                      __new__,
-                      setUp,
-                      __post_init__
-exclude-protected=_asdict,
-                  _fields,
-                  _replace,
-                  _source,
-                  _make
-valid-classmethod-first-arg=cls
-valid-metaclass-classmethod-first-arg=cls
-
-
-[FORMAT]
-expected-line-ending-format=
-ignore-long-lines=^\s*(# )?<?https?://\S+>?$
-indent-after-paren=4
-indent-string='    '
-max-line-length=100
-max-module-lines=1000
-single-line-class-stmt=no
-single-line-if-stmt=no
-
-
-[IMPORTS]
-allow-any-import-level=
-allow-wildcard-with-all=no
-deprecated-modules=
-ext-import-graph=
-import-graph=
-int-import-graph=
-known-standard-library=
-known-third-party=enchant
-preferred-modules=
-
-
-[VARIABLES]
-additional-builtins=
-allow-global-unused-variables=yes
-allowed-redefined-builtins=
-callbacks=cb_,
-          _cb
-dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
-ignored-argument-names=_.*|^ignored_|^unused_
-init-import=no
-redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
-
-
-[LOGGING]
-logging-format-style=old
-logging-modules=logging
-
-
-[EXCEPTIONS]
-overgeneral-exceptions=BaseException,
-                       Exception
-
 
 [BASIC]
 argument-naming-style=snake_case
@@ -156,7 +32,7 @@ class-attribute-naming-style=any
 class-const-naming-style=any
 class-naming-style=PascalCase
 const-naming-style=UPPER_CASE
-docstring-min-length=-1
+docstring-min-length=10
 function-naming-style=snake_case
 good-names=i,
            j,
@@ -177,6 +53,105 @@ no-docstring-rgx=^_
 property-classes=abc.abstractproperty
 variable-naming-style=snake_case
 
+[CLASSES]
+check-protected-access-in-special-methods=no
+defining-attr-methods=__init__,
+                      __new__,
+                      setUp,
+                      __post_init__
+exclude-protected=_asdict,
+                  _fields,
+                  _replace,
+                  _source,
+                  _make
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=mcs
+
+[DESIGN]
+exclude-too-few-public-methods=
+ignored-parents=
+max-args=10
+max-attributes=10
+max-bool-expr=5
+max-branches=12
+max-locals=16
+max-parents=7
+max-public-methods=30
+max-returns=6
+max-statements=50
+min-public-methods=2
+
+[EXCEPTIONS]
+overgeneral-exceptions=builtins.BaseException,builtins.Exception
+
+[FORMAT]
+expected-line-ending-format=
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+indent-after-paren=4
+indent-string='    '
+max-line-length=100
+max-module-lines=1000
+single-line-class-stmt=no
+single-line-if-stmt=no
+
+[IMPORTS]
+allow-any-import-level=
+allow-reexport-from-package=no
+allow-wildcard-with-all=no
+deprecated-modules=
+ext-import-graph=
+import-graph=
+int-import-graph=
+known-standard-library=
+known-third-party=enchant
+preferred-modules=
+
+[LOGGING]
+logging-format-style=old
+logging-modules=logging
+
+[MESSAGES CONTROL]
+confidence=HIGH,
+           CONTROL_FLOW,
+           INFERENCE,
+           INFERENCE_FAILURE,
+           UNDEFINED
+disable=raw-checker-failed,
+        bad-inline-option,
+        locally-disabled,
+        file-ignored,
+        suppressed-message,
+        useless-suppression,
+        deprecated-pragma,
+        use-symbolic-message-instead,
+        no-member
+enable=c-extension-no-member
+
+[METHOD_ARGS]
+timeout-methods=requests.api.delete,requests.api.get,requests.api.head,requests.api.options,requests.api.patch,requests.api.post,requests.api.put,requests.api.request
+
+[MISCELLANEOUS]
+notes=FIXME,
+      XXX,
+      TODO
+notes-rgx=
+
+[REFACTORING]
+max-nested-blocks=5
+never-returning-functions=sys.exit,argparse.parse_error
+
+[REPORTS]
+evaluation=max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10))
+msg-template=
+reports=no
+score=yes
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+ignore-signatures=yes
+min-similarity-lines=4
 
 [SPELLING]
 max-spelling-suggestions=4
@@ -186,6 +161,9 @@ spelling-ignore-words=
 spelling-private-dict-file=
 spelling-store-unknown-words=no
 
+[STRING]
+check-quote-consistency=no
+check-str-concat-over-line-jumps=no
 
 [TYPECHECK]
 contextmanager-decorators=contextlib.contextmanager
@@ -203,7 +181,13 @@ missing-member-max-choices=1
 mixin-class-rgx=.*[Mm]ixin
 signature-mutators=
 
-
-[REFACTORING]
-max-nested-blocks=5
-never-returning-functions=sys.exit,argparse.parse_error
+[VARIABLES]
+additional-builtins=
+allow-global-unused-variables=yes
+allowed-redefined-builtins=
+callbacks=cb_,
+          _cb
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+ignored-argument-names=_.*|^ignored_|^unused_
+init-import=no
+redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
