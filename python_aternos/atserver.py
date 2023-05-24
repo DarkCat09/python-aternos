@@ -1,14 +1,16 @@
 """Aternos Minecraft server"""
 
-import enum
+import re
 import json
+
+import enum
 
 from typing import Optional
 from typing import List, Dict, Any
 
 import requests
 
-from .atconnect import AJAX_URL
+from .atconnect import BASE_URL, AJAX_URL
 from .atconnect import AternosConnect
 from .atwss import AternosWss
 
@@ -18,7 +20,13 @@ from .atplayers import Lists
 from .atfm import FileManager
 from .atconf import AternosConfig
 
+from .aterrors import AternosError
 from .aterrors import ServerStartError
+
+
+status_re = re.compile(
+    r'<script>\s*var lastStatus\s*?=\s*?(\{.+?\});?\s*<\/script>'
+)
 
 
 class Edition(enum.IntEnum):
@@ -56,7 +64,7 @@ class AternosServer:
     def __init__(
             self, servid: str,
             atconn: AternosConnect,
-            reqinfo: bool = True) -> None:
+            reqinfo: bool = False) -> None:
         """Class for controlling your Aternos Minecraft server
 
         Args:
@@ -69,17 +77,24 @@ class AternosServer:
 
         self.servid = servid
         self.atconn = atconn
+
         if reqinfo:
             self.fetch()
 
     def fetch(self) -> None:
-        """Send a request to Aternos API to get all server info"""
+        """Get all server info"""
 
-        servreq = self.atserver_request(
-            f'{AJAX_URL}/status.php',
-            'GET', sendtoken=True
+        page = self.atserver_request(
+            f'{BASE_URL}/server', 'GET'
         )
-        self._info = json.loads(servreq.content)
+        with open('server.html', 'wt') as f:
+            f.write(page.text)
+        match = status_re.search(page.text)
+
+        if match is None:
+            raise AternosError('Unable to parse lastStatus object')
+
+        self._info = json.loads(match[1])
 
     def wss(self, autoconfirm: bool = False) -> AternosWss:
         """Returns AternosWss instance for

@@ -26,13 +26,13 @@ class TestLogin(unittest.TestCase):
 
     def test_auth(self) -> None:
 
-        self.at = Client.from_hashed(self.user, self.pswd)
+        self.at = Client.from_credentials(self.user, self.pswd)
         self.assertIsNotNone(self.at)
 
     def test_servers(self) -> None:
 
         if self.at is None:
-            self.at = Client.from_hashed(
+            self.at = Client.from_credentials(
                 self.user, self.pswd
             )
 
@@ -46,7 +46,7 @@ class TestLogin(unittest.TestCase):
     def test_logout(self) -> None:
 
         if self.at is None:
-            self.at = Client.from_hashed(
+            self.at = Client.from_credentials(
                 self.user, self.pswd
             )
 
