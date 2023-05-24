@@ -5,7 +5,6 @@ import abc
 import json
 import base64
 
-import logging
 import subprocess
 
 from pathlib import Path
@@ -15,6 +14,9 @@ from typing import Type, Any
 import regex
 import js2py
 import requests
+
+from .atlog import log
+
 
 js: Optional['Interpreter'] = None
 
@@ -95,7 +97,7 @@ class NodeInterpreter(Interpreter):
 
         assert self.proc.stdout is not None
         ok_msg = self.proc.stdout.readline()
-        logging.debug('Received from server.js: %s', ok_msg)
+        log.debug('Received from server.js: %s', ok_msg)
 
     def exec_js(self, func: str) -> None:
         resp = requests.post(self.url, data=func)
@@ -104,7 +106,7 @@ class NodeInterpreter(Interpreter):
     def get_var(self, name: str) -> Any:
         resp = requests.post(self.url, data=name)
         resp.raise_for_status()
-        logging.debug('NodeJS response: %s', resp.content)
+        log.debug('NodeJS response: %s', resp.content)
         return json.loads(resp.content)
 
     def __del__(self) -> None:
@@ -112,7 +114,7 @@ class NodeInterpreter(Interpreter):
             self.proc.terminate()
             self.proc.communicate()
         except AttributeError:
-            logging.warning(
+            log.warning(
                 'NodeJS process was not initialized'
             )
 

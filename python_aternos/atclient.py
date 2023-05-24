@@ -4,7 +4,6 @@ and allows to manage your account"""
 import os
 import re
 import hashlib
-import logging
 
 import base64
 
@@ -12,6 +11,8 @@ from typing import List, Dict
 from typing import Optional, Type
 
 import lxml.html
+
+from .atlog import log
 
 from .atconnect import AternosConnect
 from .atconnect import BASE_URL, AJAX_URL
@@ -214,7 +215,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug('Restoring session from %s', file)
+        log.debug('Restoring session from %s', file)
 
         if not os.path.exists(file):
             raise FileNotFoundError()
@@ -302,7 +303,7 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug('Saving session to %s', file)
+        log.debug('Saving session to %s', file)
 
         with open(file, 'wt', encoding='utf-8') as f:
 
@@ -323,12 +324,12 @@ class Client:
         """
 
         file = os.path.expanduser(file)
-        logging.debug('Removing session file: %s', file)
+        log.debug('Removing session file: %s', file)
 
         try:
             os.remove(file)
         except OSError as err:
-            logging.warning('Unable to delete session file: %s', err)
+            log.warning('Unable to delete session file: %s', err)
 
     def list_servers(self, cache: bool = True) -> List[AternosServer]:
         """Parses a list of your servers from Aternos website
@@ -358,7 +359,7 @@ class Client:
         try:
             self.save_session(self.saved_session)
         except OSError as err:
-            logging.warning('Unable to save servers list to file: %s', err)
+            log.warning('Unable to save servers list to file: %s', err)
 
         return self.servers
 
@@ -377,7 +378,7 @@ class Client:
             if servid == '':
                 continue
 
-            logging.debug('Adding server %s', servid)
+            log.debug('Adding server %s', servid)
             srv = AternosServer(servid, self.atconn)
             self.servers.append(srv)
 

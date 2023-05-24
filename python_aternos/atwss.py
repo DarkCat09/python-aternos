@@ -4,7 +4,6 @@ for real-time information"""
 import enum
 import json
 import asyncio
-import logging
 
 from typing import Iterable
 from typing import Union, Any
@@ -14,9 +13,12 @@ from typing import TYPE_CHECKING
 
 import websockets
 
+from .atlog import log
 from .atconnect import REQUA
+
 if TYPE_CHECKING:
     from .atserver import AternosServer
+
 
 OneArgT = Callable[[Any], Coroutine[Any, Any, None]]
 TwoArgT = Callable[[Any, Tuple[Any, ...]], Coroutine[Any, Any, None]]
@@ -196,7 +198,7 @@ class AternosWss:
                         continue
 
                     if strm.stream:
-                        logging.debug('Requesting %s stream', strm.stream)
+                        log.debug('Requesting %s stream', strm.stream)
                         await self.send({
                             'stream': strm.stream,
                             'type': 'start'
@@ -223,7 +225,7 @@ class AternosWss:
         """
 
         if self.socket is None:
-            logging.warning('Did you forget to call socket.connect?')
+            log.warning('Did you forget to call socket.connect?')
             await self.connect()
 
         assert self.socket is not None

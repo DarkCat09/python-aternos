@@ -6,8 +6,6 @@ import time
 import string
 import secrets
 
-import logging
-
 from functools import partial
 
 from typing import Optional
@@ -16,6 +14,8 @@ from typing import List, Dict, Any
 import requests
 
 from cloudscraper import CloudScraper
+
+from .atlog import log
 
 from . import atjsparse
 from .aterrors import TokenError
@@ -58,10 +58,10 @@ class AternosConnect:
         """
 
         if len(kwargs) < 1:
-            logging.debug('**kwargs is empty')
+            log.debug('**kwargs is empty')
             return
 
-        logging.debug('New args for CloudScraper: %s', kwargs)
+        log.debug('New args for CloudScraper: %s', kwargs)
         self.cf_init = partial(CloudScraper, **kwargs)
         self.refresh_session()
 
@@ -69,7 +69,7 @@ class AternosConnect:
         """Clear CloudScarper object __init__ arguments
         which was set using add_args method"""
 
-        logging.debug('Creating session object with no keywords')
+        log.debug('Creating session object with no keywords')
         self.cf_init = partial(CloudScraper)
         self.refresh_session()
 
@@ -110,7 +110,7 @@ class AternosConnect:
         # Some checks
         if headtag < 0 or headend < 0:
             pagehead = loginpage
-            logging.warning(
+            log.warning(
                 'Unable to find <head> tag, parsing the whole page'
             )
 
@@ -134,18 +134,18 @@ class AternosConnect:
 
         except (IndexError, TypeError) as err:
 
-            logging.warning('---')
-            logging.warning('Unable to parse AJAX_TOKEN!')
-            logging.warning('Please, insert the info below')
-            logging.warning('to the GitHub issue description:')
-            logging.warning('---')
+            log.warning('---')
+            log.warning('Unable to parse AJAX_TOKEN!')
+            log.warning('Please, insert the info below')
+            log.warning('to the GitHub issue description:')
+            log.warning('---')
 
-            logging.warning('JavaScript: %s', js_code)
-            logging.warning(
+            log.warning('JavaScript: %s', js_code)
+            log.warning(
                 'All script tags: %s',
                 re.findall(SCRIPT_TAG_REGEX, pagehead)
             )
-            logging.warning('---')
+            log.warning('---')
 
             raise TokenError(
                 'Unable to parse TOKEN from the page'
@@ -247,12 +247,12 @@ class AternosConnect:
             for k, v in self.session.cookies.items()
         }
 
-        logging.debug('Requesting(%s)%s', method, url)
-        logging.debug('headers=%s', headers)
-        logging.debug('params=%s', params)
-        logging.debug('data=%s', data)
-        logging.debug('req-cookies=%s', reqcookies_dbg)
-        logging.debug('session-cookies=%s', session_cookies_dbg)
+        log.debug('Requesting(%s)%s', method, url)
+        log.debug('headers=%s', headers)
+        log.debug('params=%s', params)
+        log.debug('data=%s', data)
+        log.debug('req-cookies=%s', reqcookies_dbg)
+        log.debug('session-cookies=%s', session_cookies_dbg)
 
         if method == 'POST':
             sendreq = partial(
@@ -277,7 +277,7 @@ class AternosConnect:
         cloudflare = req.status_code == 403
 
         if html_type and cloudflare:
-            logging.info('Retrying to bypass Cloudflare')
+            log.info('Retrying to bypass Cloudflare')
             time.sleep(0.3)
             return self.request_cloudflare(
                 url, method,
@@ -286,8 +286,8 @@ class AternosConnect:
                 sendtoken, retry - 1
             )
 
-        logging.debug('AternosConnect received: %s', req.text[:65])
-        logging.info(
+        log.debug('AternosConnect received: %s', req.text[:65])
+        log.info(
             '%s completed with %s status',
             method, req.status_code
         )
