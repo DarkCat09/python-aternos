@@ -2,8 +2,12 @@
 
 import re
 import time
+
+import string
 import secrets
+
 import logging
+
 from functools import partial
 
 from typing import Optional
@@ -26,6 +30,8 @@ ARROW_FN_REGEX = r'\(\(\).*?\)\(\);'
 SCRIPT_TAG_REGEX = (
     rb'<script type=([\'"]?)text/javascript\1>.+?</script>'
 )
+
+SEC_ALPHABET = string.ascii_lowercase + string.digits
 
 
 class AternosConnect:
@@ -151,8 +157,8 @@ class AternosConnect:
             Random SEC `key:value` string
         """
 
-        randkey = secrets.token_hex(8)
-        randval = secrets.token_hex(8)
+        randkey = self.generate_sec_part()
+        randval = self.generate_sec_part()
         self.sec = f'{randkey}:{randval}'
         self.session.cookies.set(
             f'ATERNOS_SEC_{randkey}', randval,
@@ -160,6 +166,11 @@ class AternosConnect:
         )
 
         return self.sec
+    
+    def generate_sec_part(self) -> str:
+        """Generates a part for SEC token"""
+
+        return ''.join(secrets.choice(SEC_ALPHABET) for _ in range(11)) + ('0' * 5)
 
     def request_cloudflare(
             self, url: str, method: str,
