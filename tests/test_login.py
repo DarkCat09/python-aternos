@@ -26,18 +26,18 @@ class TestLogin(unittest.TestCase):
 
     def test_auth(self) -> None:
 
-        self.at = Client.from_credentials(self.user, self.pswd)
-        self.assertIsNotNone(self.at)
+        self.at = Client()
+        self.at.login(self.user, self.pswd)
+        self.assertTrue(self.at.atconn.atcookie)
 
     def test_servers(self) -> None:
 
         if self.at is None:
-            self.at = Client.from_credentials(
-                self.user, self.pswd
-            )
+            self.at = Client()
+            self.at.login(self.user, self.pswd)
 
         srvs = len(
-            self.at.list_servers(
+            self.at.account.list_servers(
                 cache=False
             )
         )
@@ -46,9 +46,8 @@ class TestLogin(unittest.TestCase):
     def test_logout(self) -> None:
 
         if self.at is None:
-            self.at = Client.from_credentials(
-                self.user, self.pswd
-            )
+            self.at = Client()
+            self.at.login(self.user, self.pswd)
 
         self.at.logout()
 

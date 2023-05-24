@@ -19,7 +19,8 @@
 import re
 import sys
 
-from python_aternos import AternosConnect
+from python_aternos.atconnect import AternosConnect
+from python_aternos.atconnect import BASE_URL
 from python_aternos import Js2PyInterpreter
 from python_aternos import NodeInterpreter
 

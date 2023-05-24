@@ -1,4 +1,6 @@
 from requests_mock import Mocker
+
+from python_aternos.atconnect import BASE_URL, AJAX_URL
 from tests import files
 
 mock = Mocker()

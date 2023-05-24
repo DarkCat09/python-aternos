@@ -27,6 +27,6 @@ def read_html(name: str) -> bytes:
 
     if not path.exists():
         return b''
-    
+
     with path.open('rb') as file:
         return file.read()
