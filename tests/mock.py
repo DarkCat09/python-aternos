@@ -6,27 +6,27 @@ mock = Mocker()
 with mock:
 
     mock.get(
-        'https://aternos.org/go/',
+        f'{BASE_URL}/go/',
         content=files.read_html('aternos_go'),
     )
 
     mock.get(
-        'https://aternos.org/servers/',
+        f'{BASE_URL}/servers/',
         content=files.read_html('aternos_servers'),
     )
 
     mock.get(
-        'https://aternos.org/server/',
+        f'{BASE_URL}/server/',
         content=files.read_html('aternos_server1'),
     )
 
     mock.get(
-        'https://aternos.org/panel/ajax/status.php',
+        f'{AJAX_URL}/status.php',
         content=files.read_html('aternos_status'),
     )
 
     mock.post(
-        'https://aternos.org/panel/ajax/account/login.php',
+        f'{AJAX_URL}/account/login.php',
         json={
             'success': True,
             'error': None,
@@ -39,11 +39,11 @@ with mock:
     )
 
     mock.get(
-        'https://aternos.org/players/',
+        f'{BASE_URL}/players/',
         content=files.read_html('aternos_players'),
     )
 
     mock.get(
-        'https://aternos.org/files/',
+        f'{BASE_URL}/files/',
         content=files.read_html('aternos_file_root'),
     )

@@ -8,13 +8,17 @@ from typing import List, Dict, Any
 
 import requests
 
+from .atconnect import AJAX_URL
 from .atconnect import AternosConnect
-from .aterrors import ServerStartError
-from .atfm import FileManager
-from .atconf import AternosConfig
+from .atwss import AternosWss
+
 from .atplayers import PlayersList
 from .atplayers import Lists
-from .atwss import AternosWss
+
+from .atfm import FileManager
+from .atconf import AternosConfig
+
+from .aterrors import ServerStartError
 
 
 class Edition(enum.IntEnum):
@@ -72,7 +76,7 @@ class AternosServer:
         """Send a request to Aternos API to get all server info"""
 
         servreq = self.atserver_request(
-            'https://aternos.org/panel/ajax/status.php',
+            f'{AJAX_URL}/status.php',
             'GET', sendtoken=True
         )
         self._info = json.loads(servreq.content)
@@ -112,7 +116,7 @@ class AternosServer:
         """
 
         startreq = self.atserver_request(
-            'https://aternos.org/panel/ajax/start.php',
+            f'{AJAX_URL}/start.php',
             'GET', params={'headstart': int(headstart)},
             sendtoken=True
         )
@@ -134,7 +138,7 @@ class AternosServer:
         """Confirms server launching"""
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/confirm.php',
+            f'{AJAX_URL}/confirm.php',
             'GET', sendtoken=True
         )
 
@@ -142,7 +146,7 @@ class AternosServer:
         """Stops the server"""
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/stop.php',
+            f'{AJAX_URL}/stop.php',
             'GET', sendtoken=True
         )
 
@@ -150,7 +154,7 @@ class AternosServer:
         """Cancels server launching"""
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/cancel.php',
+            f'{AJAX_URL}/cancel.php',
             'GET', sendtoken=True
         )
 
@@ -158,7 +162,7 @@ class AternosServer:
         """Restarts the server"""
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/restart.php',
+            f'{AJAX_URL}/restart.php',
             'GET', sendtoken=True
         )
 
@@ -166,7 +170,7 @@ class AternosServer:
         """Accepts the Mojang EULA"""
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/eula.php',
+            f'{AJAX_URL}/eula.php',
             'GET', sendtoken=True
         )
 
@@ -259,7 +263,7 @@ class AternosServer:
         """
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/options/subdomain.php',
+            f'{AJAX_URL}/options/subdomain.php',
             'GET', params={'subdomain': value},
             sendtoken=True
         )
@@ -285,7 +289,7 @@ class AternosServer:
         """
 
         self.atserver_request(
-            'https://aternos.org/panel/ajax/options/motd.php',
+            f'{AJAX_URL}/options/motd.php',
             'POST', data={'motd': value},
             sendtoken=True
         )

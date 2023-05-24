@@ -1,5 +1,7 @@
 """Modifying server and world options"""
 
+# TODO: Still needs refactoring
+
 import enum
 import re
 
@@ -8,8 +10,10 @@ from typing import TYPE_CHECKING
 
 import lxml.html
 
+from .atconnect import BASE_URL, AJAX_URL
 if TYPE_CHECKING:
     from .atserver import AternosServer
+
 
 DAT_PREFIX = 'Data:'
 DAT_GR_PREFIX = 'Data:GameRules:'
@@ -111,11 +115,12 @@ class Difficulty(enum.IntEnum):
 
 # checking timezone format
 tzcheck = re.compile(r'(^[A-Z]\w+\/[A-Z]\w+$)|^UTC$')
+
 # options types converting
 convert = {
     'config-option-number': int,
     'config-option-select': int,
-    'config-option-toggle': bool
+    'config-option-toggle': bool,
 }
 
 
@@ -141,7 +146,7 @@ class AternosConfig:
         """
 
         optreq = self.atserv.atserver_request(
-            'https://aternos.org/options', 'GET'
+            f'{BASE_URL}/options', 'GET'
         )
         opttree = lxml.html.fromstring(optreq)
 
@@ -169,7 +174,7 @@ class AternosConfig:
             )
 
         self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/timezone.php',
+            f'{AJAX_URL}/timezone.php',
             'POST', data={'timezone': value},
             sendtoken=True
         )
@@ -182,7 +187,7 @@ class AternosConfig:
         """
 
         optreq = self.atserv.atserver_request(
-            'https://aternos.org/options', 'GET'
+            f'{BASE_URL}/options', 'GET'
         )
         opttree = lxml.html.fromstring(optreq)
         imgopt = opttree.xpath(
@@ -203,7 +208,7 @@ class AternosConfig:
         """
 
         self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/image.php',
+            f'{AJAX_URL}/image.php',
             'POST', data={'image': f'openjdk:{value}'},
             sendtoken=True
         )
@@ -238,7 +243,7 @@ class AternosConfig:
             `server.properties` dictionary
         """
 
-        return self.__get_all_props('https://aternos.org/options', proptyping)
+        return self.__get_all_props(f'{BASE_URL}/options', proptyping)
 
     def set_server_props(self, props: Dict[str, Any]) -> None:
         """Updates server.properties options with the given dict
@@ -296,7 +301,7 @@ class AternosConfig:
         """
 
         return self.__get_all_props(
-            f'https://aternos.org/files/{world}/level.dat',
+            f'{BASE_URL}/files/{world}/level.dat',
             proptyping, [DAT_PREFIX, DAT_GR_PREFIX]
         )
 
@@ -327,7 +332,7 @@ class AternosConfig:
     def __set_prop(self, file: str, option: str, value: Any) -> None:
 
         self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/config.php',
+            f'{AJAX_URL}/config.php',
             'POST', data={
                 'file': file,
                 'option': option,

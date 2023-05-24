@@ -1,4 +1,4 @@
-"""Stores API connection session and sends requests"""
+"""Stores API session and sends requests"""
 
 import re
 import time
@@ -21,6 +21,10 @@ from . import atjsparse
 from .aterrors import TokenError
 from .aterrors import CloudflareError
 from .aterrors import AternosPermissionError
+
+
+BASE_URL = 'https://aternos.org'
+AJAX_URL = f'{BASE_URL}/ajax'
 
 REQUA = \
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
@@ -94,7 +98,7 @@ class AternosConnect:
         """
 
         loginpage = self.request_cloudflare(
-            'https://aternos.org/go/', 'GET'
+            f'{BASE_URL}/go/', 'GET'
         ).content
 
         # Using the standard string methods

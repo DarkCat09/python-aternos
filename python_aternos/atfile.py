@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import lxml.html
 
+from .atconnect import BASE_URL, AJAX_URL
 from .aterrors import FileError
 
 if TYPE_CHECKING:
@@ -87,7 +88,7 @@ class AternosFile:
 
         name = name.strip().replace('/', '_')
         req = self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/files/create.php',
+            f'{AJAX_URL}/files/create.php',
             'POST', data={
                 'file': f'{self._path}/{name}',
                 'type': 'file'
@@ -114,7 +115,7 @@ class AternosFile:
             )
 
         req = self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/delete.php',
+            f'{AJAX_URL}/delete.php',
             'POST', data={'file': self._path},
             sendtoken=True
         )
@@ -140,7 +141,7 @@ class AternosFile:
             )
 
         file = self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/files/download.php',
+            f'{AJAX_URL}/files/download.php',
             'GET', params={
                 'file': self._path
             }
@@ -165,7 +166,7 @@ class AternosFile:
         """
 
         req = self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/save.php',
+            f'{AJAX_URL}/save.php',
             'POST', data={
                 'file': self._path,
                 'content': value
@@ -200,7 +201,7 @@ class AternosFile:
 
         filepath = self._path.lstrip("/")
         editor = self.atserv.atserver_request(
-            f'https://aternos.org/files/{filepath}', 'GET'
+            f'{BASE_URL}/files/{filepath}', 'GET'
         )
         edittree = lxml.html.fromstring(editor.content)
         editblock = edittree.xpath('//div[@id="editor"]')

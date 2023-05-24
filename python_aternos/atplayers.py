@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import lxml.html
 
+from .atconnect import BASE_URL, AJAX_URL
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
@@ -73,7 +74,7 @@ class PlayersList:
             return self.players
 
         listreq = self.atserv.atserver_request(
-            f'https://aternos.org/players/{self.lst.value}',
+            f'{BASE_URL}/players/{self.lst.value}',
             'GET'
         )
         listtree = lxml.html.fromstring(listreq.content)
@@ -98,7 +99,7 @@ class PlayersList:
         """
 
         self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/players/add.php',
+            f'{AJAX_URL}/players/add.php',
             'POST', data={
                 'list': self.lst.value,
                 'name': name
@@ -115,7 +116,7 @@ class PlayersList:
         """
 
         self.atserv.atserver_request(
-            'https://aternos.org/panel/ajax/players/remove.php',
+            f'{AJAX_URL}/players/remove.php',
             'POST', data={
                 'list': self.lst.value,
                 'name': name

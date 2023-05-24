@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 
 import lxml.html
 
+from .atconnect import BASE_URL, AJAX_URL
 from .atfile import AternosFile, FileType
+
 if TYPE_CHECKING:
     from .atserver import AternosServer
 
@@ -41,7 +43,7 @@ class FileManager:
         path = path.lstrip('/')
 
         filesreq = self.atserv.atserver_request(
-            f'https://aternos.org/files/{path}', 'GET'
+            f'{BASE_URL}/files/{path}', 'GET'
         )
         filestree = lxml.html.fromstring(filesreq.content)
 
@@ -163,7 +165,7 @@ class FileManager:
         """
 
         file = self.atserv.atserver_request(  # type: ignore
-            'https://aternos.org/panel/ajax/files/download.php'
+            f'{AJAX_URL}/files/download.php'
             'GET', params={
                 'file': path.replace('/', '%2F')
             }
@@ -183,7 +185,7 @@ class FileManager:
         """
 
         resp = self.atserv.atserver_request(  # type: ignore
-            'https://aternos.org/panel/ajax/worlds/download.php'
+            f'{AJAX_URL}/worlds/download.php'
             'GET', params={
                 'world': world.replace('/', '%2F')
             }

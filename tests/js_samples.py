@@ -39,7 +39,7 @@ errored = []
 def get_code() -> bool:
 
     r = conn.request_cloudflare(
-        'https://aternos.org/go', 'GET'
+        f'{BASE_URL}/go', 'GET'
     )
     if r.status_code != 200:
         print(r.status_code)
