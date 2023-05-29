@@ -24,14 +24,14 @@ It uses [aternos](https://aternos.org/)' private API and html parsing.
 
 Python Aternos supports:
 
- - Logging in to account with password (plain or hashed) or `ATERNOS_SESSION` cookie value.
- - Saving session to the file and restoring.
- - Changing username, email and password.
- - Parsing Minecraft servers list.
- - Parsing server info by its ID.
- - Starting/stoping server, restarting, confirming/cancelling launch.
- - Updating server info in real-time (view WebSocket API).
- - Changing server subdomain and MOTD (message-of-the-day).
+ - Logging in to account with password (plain or hashed) or `ATERNOS_SESSION` cookie value
+ - Saving session to the file and restoring
+ - Changing username, email and password
+ - Parsing Minecraft servers list
+ - Parsing server info by its ID
+ - Starting/stoping server, restarting, confirming/cancelling launch
+ - Updating server info in real-time (see [WebSocket API](https://aternos.dc09.ru/howto/websocket))
+ - Changing server subdomain and MOTD (message-of-the-day)
  - Managing files, settings, players (whitelist, operators, etc.)
 
 > **Warning**
@@ -68,7 +68,7 @@ $ pip install -e .
 
 ## Usage
 To use Aternos API in your Python script, import it
-and login with your username and password or MD5.
+and login with your username and password or its MD5 hash.
 
 Then request the servers list using `list_servers()`.  
 You can start/stop your Aternos server, calling `start()` or `stop()`.
@@ -78,17 +78,23 @@ Here is an example how to use the API:
 # Import
 from python_aternos import Client
 
-# Log in
-aternos = Client.from_credentials('example', 'test123')
-# ----OR----
-aternos = Client.from_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
-# ----OR----
-aternos = Client.from_session('ATERNOS_SESSION cookie')
+# Create object
+aternos = Client()
 
-# Returns AternosServer list
+# Log in
+# with username and password
+aternos.login('example', 'test123')
+# ----OR----
+# with username and MD5 hashed password
+aternos.login_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
+# ----OR----
+# with session cookie
+aternos.login_with_session('ATERNOS_SESSION cookie value')
+
+# Get servers list
 servs = aternos.list_servers()
 
-# Get the first server by the 0 index
+# Get the first server
 myserv = servs[0]
 
 # Start
@@ -112,15 +118,13 @@ if testserv is not None:
 
 ## [More examples](https://github.com/DarkCat09/python-aternos/tree/main/examples)
 
-## [Documentation](https://python-aternos.codeberg.page/)
+## [Documentation](https://aternos.dc09.ru)
 
-## [How-To Guide](https://python-aternos.codeberg.page/howto/auth)
+## [How-To Guide](https://aternos.dc09.ru/howto/auth)
 
 ## Changelog
 |Version|Description |
 |:-----:|:-----------|
-|v0.1|The first release.|
-|v0.2|Fixed import problem.|
 |v0.3|Implemented files API, added typization.|
 |v0.4|Implemented configuration API, some bugfixes.|
 |v0.5|The API was updated corresponding to new Aternos security methods. Huge thanks to [lusm554](https://github.com/lusm554).|
@@ -129,10 +133,19 @@ if testserv is not None:
 |v1.1.x|Documentation, unit tests, pylint, bugfixes, changes in atwss.|
 |**v1.1.2/v2.0.0**|Solution for [#25](https://github.com/DarkCat09/python-aternos/issues/25) (Cloudflare bypassing), bugfixes in JS parser.|
 |v2.0.x|Documentation, automatically saving/restoring session, improvements in Files API.|
-|v2.1.x|Fixes in websockets API, atconnect (including cookie refreshing fix). Supported captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
-|**v2.2.x**|Node.JS interpreter support.|
-|v3.0.x|Full implementation of config and software API.|
-|v3.1.x|Shared access API and Google Drive backups.|
+|v2.1.x|Fixes in websockets API, atconnect (including cookie refreshing fix). Support for captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
+|v2.2.x|Node.JS interpreter support.|
+|v3.0.0|Partially rewritten, API updates.|
+|v3.1.x|Full implementation of config API.|
+|v3.2.x|Shared access API and maybe Google Drive backups.|
+
+## Reversed API Specification
+Private Aternos API requests were captured into
+[this HAR file](https://github.com/DarkCat09/python-aternos/blob/main/aternos.har)
+and were imported to
+[a Postman Workspace](https://www.postman.com/darkcat09/workspace/aternos-api).  
+You can use both resources to explore the API.  
+Any help with improving this library is welcome.
 
 ## License
 [License Notice:](https://github.com/DarkCat09/python-aternos/blob/main/NOTICE)
