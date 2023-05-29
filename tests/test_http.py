@@ -25,6 +25,7 @@ class TestHttp(unittest.TestCase):
             at = Client()
             at.login('test', '')
             srv = at.account.list_servers(cache=False)[0]
+            srv.fetch()
             self.assertEqual(
                 srv.subdomain,
                 'world35v',

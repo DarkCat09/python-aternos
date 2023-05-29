@@ -4,11 +4,8 @@ import re
 import json
 
 import enum
-
-from typing import Optional
-from typing import List, Dict, Any
-
-import requests
+from typing import List
+from functools import partial
 
 from .atconnect import BASE_URL, AJAX_URL
 from .atconnect import AternosConnect
@@ -24,6 +21,7 @@ from .aterrors import AternosError
 from .aterrors import ServerStartError
 
 
+SERVER_URL = f'{AJAX_URL}/server'
 status_re = re.compile(
     r'<script>\s*var lastStatus\s*?=\s*?(\{.+?\});?\s*<\/script>'
 )
@@ -58,27 +56,35 @@ class Status(enum.IntEnum):
 
 
 class AternosServer:
-
     """Class for controlling your Aternos Minecraft server"""
 
     def __init__(
             self, servid: str,
             atconn: AternosConnect,
-            reqinfo: bool = False) -> None:
+            autofetch: bool = False) -> None:
         """Class for controlling your Aternos Minecraft server
 
         Args:
             servid (str): Unique server IDentifier
             atconn (AternosConnect):
                 AternosConnect instance with initialized Aternos session
-            reqinfo (bool, optional): Automatically call
+            autofetch (bool, optional): Automatically call
                 `fetch()` to get all info
         """
 
         self.servid = servid
         self.atconn = atconn
 
-        if reqinfo:
+        self._info = {}
+
+        self.atserver_request = partial(
+            self.atconn.request_cloudflare,
+            reqcookies={
+                'ATERNOS_SERVER': self.servid,
+            }
+        )
+
+        if autofetch:
             self.fetch()
 
     def fetch(self) -> None:
@@ -113,6 +119,7 @@ class AternosServer:
     def start(
             self,
             headstart: bool = False,
+            access_credits: bool = False,
             accepteula: bool = True) -> None:
         """Starts a server
 
@@ -120,6 +127,9 @@ class AternosServer:
             headstart (bool, optional): Start a server in
                 the headstart mode which allows
                 you to skip all queue
+            access_credits (bool, optional):
+                Some new parameter in Aternos API,
+                I don't know what it is
             accepteula (bool, optional):
                 Automatically accept the Mojang EULA
 
@@ -129,9 +139,12 @@ class AternosServer:
         """
 
         startreq = self.atserver_request(
-            f'{AJAX_URL}/start.php',
-            'GET', params={'headstart': int(headstart)},
-            sendtoken=True
+            f'{SERVER_URL}/start',
+            'GET', params={
+                'headstart': int(headstart),
+                'access-credits': int(access_credits),
+            },
+            sendtoken=True,
         )
         startresult = startreq.json()
 
@@ -151,40 +164,40 @@ class AternosServer:
         """Confirms server launching"""
 
         self.atserver_request(
-            f'{AJAX_URL}/confirm.php',
-            'GET', sendtoken=True
+            f'{SERVER_URL}/confirm',
+            'GET', sendtoken=True,
         )
 
     def stop(self) -> None:
         """Stops the server"""
 
         self.atserver_request(
-            f'{AJAX_URL}/stop.php',
-            'GET', sendtoken=True
+            f'{SERVER_URL}/stop',
+            'GET', sendtoken=True,
         )
 
     def cancel(self) -> None:
         """Cancels server launching"""
 
         self.atserver_request(
-            f'{AJAX_URL}/cancel.php',
-            'GET', sendtoken=True
+            f'{SERVER_URL}/cancel',
+            'GET', sendtoken=True,
         )
 
     def restart(self) -> None:
         """Restarts the server"""
 
         self.atserver_request(
-            f'{AJAX_URL}/restart.php',
-            'GET', sendtoken=True
+            f'{SERVER_URL}/restart',
+            'GET', sendtoken=True,
         )
 
     def eula(self) -> None:
-        """Accepts the Mojang EULA"""
+        """Sends a request to accept the Mojang EULA"""
 
         self.atserver_request(
-            f'{AJAX_URL}/eula.php',
-            'GET', sendtoken=True
+            f'{SERVER_URL}/accept-eula',
+            'GET', sendtoken=True,
         )
 
     def files(self) -> FileManager:
@@ -222,43 +235,40 @@ class AternosServer:
 
         return PlayersList(lst, self)
 
-    def atserver_request(
-            self, url: str, method: str,
-            params: Optional[Dict[Any, Any]] = None,
-            data: Optional[Dict[Any, Any]] = None,
-            headers: Optional[Dict[Any, Any]] = None,
-            sendtoken: bool = False) -> requests.Response:
-        """Sends a request to Aternos API
-        with server IDenitfier parameter
+    def set_subdomain(self, value: str) -> None:
+        """Set a new subdomain for your server
+        (the part before `.aternos.me`)
 
         Args:
-            url (str): Request URL
-            method (str): Request method, must be GET or POST
-            params (Optional[Dict[Any, Any]], optional): URL parameters
-            data (Optional[Dict[Any, Any]], optional): POST request data,
-                if the method is GET, this dict
-                will be combined with params
-            headers (Optional[Dict[Any, Any]], optional): Custom headers
-            sendtoken (bool, optional): If the ajax and SEC token should be sent
-
-        Returns:
-            API response
+            value (str): Subdomain
         """
 
-        return self.atconn.request_cloudflare(
-            url=url, method=method,
-            params=params, data=data,
-            headers=headers,
-            reqcookies={
-                'ATERNOS_SERVER': self.servid
-            },
-            sendtoken=sendtoken
+        self.atserver_request(
+            f'{SERVER_URL}/options/set-subdomain',
+            'GET', params={'subdomain': value},
+            sendtoken=True,
+        )
+
+    def set_motd(self, value: str) -> None:
+        """Set new Message of the Day
+        (shown below the name in the Minecraft servers list).
+        Formatting with "paragraph sign + code" is supported,
+        see https://minecraft.tools/color-code.php
+
+        Args:
+            value (str): MOTD
+        """
+
+        self.atserver_request(
+            f'{SERVER_URL}/options/set-motd',
+            'POST', data={'motd': value},
+            sendtoken=True,
         )
 
     @property
     def subdomain(self) -> str:
-        """Server subdomain
-        (the part of domain before `.aternos.me`)
+        """Get the server subdomain
+        (the part before `.aternos.me`)
 
         Returns:
             Subdomain
@@ -267,45 +277,16 @@ class AternosServer:
         atdomain = self.domain
         return atdomain[:atdomain.find('.')]
 
-    @subdomain.setter
-    def subdomain(self, value: str) -> None:
-        """Set a new subdomain for your server
-
-        Args:
-            value (str): Subdomain
-        """
-
-        self.atserver_request(
-            f'{AJAX_URL}/options/subdomain.php',
-            'GET', params={'subdomain': value},
-            sendtoken=True
-        )
-
     @property
     def motd(self) -> str:
-        """Server message of the day
-        which is shown below its name
-        in the Minecraft servers list
+        """Get the server message of the day
+        (shown below its name in Minecraft servers list)
 
         Returns:
             MOTD
         """
 
         return self._info['motd']
-
-    @motd.setter
-    def motd(self, value: str) -> None:
-        """Set a new message of the day
-
-        Args:
-            value (str): New MOTD
-        """
-
-        self.atserver_request(
-            f'{AJAX_URL}/options/motd.php',
-            'POST', data={'motd': value},
-            sendtoken=True
-        )
 
     @property
     def address(self) -> str:
@@ -392,11 +373,11 @@ class AternosServer:
 
     @property
     def css_class(self) -> str:
-        """CSS class for
-        server status block
-        on official web site
-        (offline, loading,
-        loading starting, queueing)
+        """CSS class for the server status element
+        on official web site: offline, online, loading, etc.
+        See https://aternos.dc09.ru/howto/server/#server-info
+
+        In most cases you need `AternosServer.status` instead of this
 
         Returns:
             CSS class

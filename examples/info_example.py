@@ -11,7 +11,10 @@ atclient.login(user, pswd)
 srvs = aternos.list_servers()
 
 for srv in srvs:
-    print('***', srv.domain, '***')
+    print()
+    print('***', srv.servid, '***')
+    srv.fetch()
+    print(srv.domain)
     print(srv.motd)
     print('*** Status:', srv.status)
     print('*** Full address:', srv.address)
@@ -20,3 +23,5 @@ for srv in srvs:
     print('*** Minecraft:', srv.software, srv.version)
     print('*** IsBedrock:', srv.edition == atserver.Edition.bedrock)
     print('*** IsJava:', srv.edition == atserver.Edition.java)
+
+print()

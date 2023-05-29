@@ -1,7 +1,5 @@
 from getpass import getpass
-from typing import Optional
 from python_aternos import Client
-from python_aternos.atfile import AternosFile
 
 user = input('Username: ')
 pswd = getpass('Password: ')

@@ -84,6 +84,7 @@ class NodeInterpreter(Interpreter):
         server_js = file_dir / 'data' / 'server.js'
 
         self.url = f'http://{host}:{port}'
+        self.timeout = 2
 
         # pylint: disable=consider-using-with
         self.proc = subprocess.Popen(
@@ -100,11 +101,11 @@ class NodeInterpreter(Interpreter):
         log.debug('Received from server.js: %s', ok_msg)
 
     def exec_js(self, func: str) -> None:
-        resp = requests.post(self.url, data=func)
+        resp = requests.post(self.url, data=func, timeout=self.timeout)
         resp.raise_for_status()
 
     def get_var(self, name: str) -> Any:
-        resp = requests.post(self.url, data=name)
+        resp = requests.post(self.url, data=name, timeout=self.timeout)
         resp.raise_for_status()
         log.debug('NodeJS response: %s', resp.content)
         return json.loads(resp.content)

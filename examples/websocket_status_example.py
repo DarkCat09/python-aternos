@@ -1,23 +1,25 @@
 import asyncio
-import logging
 from getpass import getpass
 
 from typing import Tuple, Dict, Any
 
 from python_aternos import Client, Streams
 
+
 # Request credentials
 user = input('Username: ')
 pswd = getpass('Password: ')
 
-# Debug logging
-logs = input('Show detailed logs? (y/n) ').strip().lower() == 'y'
-if logs:
-    logging.basicConfig(level=logging.DEBUG)
-
-# Authentication
+# Instantiate Client
 atclient = Client()
 aternos = atclient.account
+
+# Enable debug logging
+logs = input('Show detailed logs? (y/n) ').strip().lower() == 'y'
+if logs:
+    atclient.debug = True
+
+# Authenticate
 atclient.login(user, pswd)
 
 server = aternos.list_servers()[0]

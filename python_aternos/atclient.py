@@ -5,7 +5,7 @@ import os
 import re
 from typing import Optional, Type
 
-from .atlog import log
+from .atlog import log, is_debug, set_debug
 from .atmd5 import md5encode
 
 from .ataccount import AternosAccount
@@ -28,12 +28,11 @@ class Client:
     def __init__(self) -> None:
 
         # Config
-        self.debug = False
         self.sessions_dir = '~'
         self.js: Type[Interpreter] = Js2PyInterpreter
         # ###
 
-        self.saved_session = ''
+        self.saved_session = '~/.aternos'  # will be rewritten by login()
         self.atconn = AternosConnect()
         self.account = AternosAccount(self)
 
@@ -101,7 +100,7 @@ class Client:
             credentials['code'] = str(code)
 
         loginreq = self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/login.php',
+            f'{AJAX_URL}/account/login',
             'POST', data=credentials, sendtoken=True,
         )
 
@@ -123,18 +122,18 @@ class Client:
         """Log out from the Aternos account"""
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/logout.php',
+            f'{AJAX_URL}/account/logout',
             'GET', sendtoken=True,
         )
 
         self.remove_session(self.saved_session)
 
-    def restore_session(self, filename: str = '~/.aternos') -> None:
+    def restore_session(self, file: str = '~/.aternos') -> None:
         """Restores ATERNOS_SESSION cookie and,
         if included, servers list, from a session file
 
         Args:
-            filename (str, optional): Filename
+            file (str, optional): Filename
 
         Raises:
             FileNotFoundError: If the file cannot be found
@@ -142,13 +141,13 @@ class Client:
                 (or the file at all) has incorrect format
         """
 
-        filename = os.path.expanduser(filename)
-        log.debug('Restoring session from %s', filename)
+        file = os.path.expanduser(file)
+        log.debug('Restoring session from %s', file)
 
-        if not os.path.exists(filename):
+        if not os.path.exists(file):
             raise FileNotFoundError()
 
-        with open(filename, 'rt', encoding='utf-8') as f:
+        with open(file, 'rt', encoding='utf-8') as f:
             saved = f.read() \
                 .strip() \
                 .replace('\r\n', '\n') \
@@ -164,7 +163,7 @@ class Client:
             self.account.refresh_servers(saved[1:])
 
         self.atconn.session.cookies['ATERNOS_SESSION'] = session
-        self.saved_session = filename
+        self.saved_session = file
 
     def save_session(
             self,
@@ -231,3 +230,11 @@ class Client:
         )
 
         return f'{sessions_dir}/.at_{secure}'
+
+    @property
+    def debug(self) -> bool:
+        return is_debug()
+
+    @debug.setter
+    def debug(self, state: bool) -> None:
+        return set_debug(state)

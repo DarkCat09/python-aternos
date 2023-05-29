@@ -18,17 +18,12 @@ with mock:
     )
 
     mock.get(
-        f'{BASE_URL}/server/',
+        f'{BASE_URL}/server',
         content=files.read_html('aternos_server1'),
     )
 
-    mock.get(
-        f'{AJAX_URL}/status.php',
-        content=files.read_html('aternos_status'),
-    )
-
     mock.post(
-        f'{AJAX_URL}/account/login.php',
+        f'{AJAX_URL}/account/login',
         json={
             'success': True,
             'error': None,

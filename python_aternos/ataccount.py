@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from .atclient import Client
 
 
+ACCOUNT_URL = f'{AJAX_URL}/account'
 email_re = re.compile(
     r'^[A-Za-z0-9\-_+.]+@[A-Za-z0-9\-_+.]+\.[A-Za-z0-9\-]+$|^$'
 )
@@ -116,7 +117,7 @@ class AternosAccount:
         """
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/username.php',
+            f'{ACCOUNT_URL}/username',
             'POST', data={'username': value},
             sendtoken=True,
         )
@@ -136,7 +137,7 @@ class AternosAccount:
             raise ValueError('Invalid e-mail')
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/email.php',
+            f'{ACCOUNT_URL}/email',
             'POST', data={'email': value},
             sendtoken=True,
         )
@@ -165,7 +166,7 @@ class AternosAccount:
         """
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/password.php',
+            f'{ACCOUNT_URL}/password',
             'POST', data={
                 'oldpassword': old,
                 'newpassword': new,
@@ -178,7 +179,7 @@ class AternosAccount:
         a QR code for enabling 2FA"""
 
         return self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/secret.php',
+            f'{ACCOUNT_URL}/secret',
             'GET', sendtoken=True,
         ).json()
 
@@ -205,7 +206,7 @@ class AternosAccount:
         """
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/twofactor.php',
+            f'{ACCOUNT_URL}/twofactor',
             'POST', data={'code': code},
             sendtoken=True,
         )
@@ -218,7 +219,7 @@ class AternosAccount:
         """
 
         self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/disbaleTwofactor.php',
+            f'{ACCOUNT_URL}/disbaleTwofactor',
             'POST', data={'code': code},
             sendtoken=True,
         )

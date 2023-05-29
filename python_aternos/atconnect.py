@@ -1,6 +1,5 @@
 """Stores API session and sends requests"""
 
-import logging
 import re
 import time
 
@@ -16,7 +15,7 @@ import requests
 
 from cloudscraper import CloudScraper
 
-from .atlog import log
+from .atlog import log, is_debug
 
 from . import atjsparse
 from .aterrors import TokenError
@@ -163,7 +162,8 @@ class AternosConnect:
             headers: Optional[Dict[Any, Any]] = None,
             reqcookies: Optional[Dict[Any, Any]] = None,
             sendtoken: bool = False,
-            retry: int = 5) -> requests.Response:
+            retries: int = 5,
+            timeout: int = 4) -> requests.Response:
         """Sends a request to Aternos API bypass Cloudflare
 
         Args:
@@ -177,8 +177,9 @@ class AternosConnect:
                 Cookies only for this request
             sendtoken (bool, optional): If the ajax and SEC token
                 should be sent
-            retry (int, optional): How many times parser must retry
+            retries (int, optional): How many times parser must retry
                 connection to API bypass Cloudflare
+            timeout (int, optional): Request timeout in seconds
 
         Raises:
             CloudflareError: When the parser has exceeded retries count
@@ -188,7 +189,7 @@ class AternosConnect:
             API response
         """
 
-        if retry <= 0:
+        if retries <= 0:
             raise CloudflareError('Unable to bypass Cloudflare protection')
 
         try:
@@ -217,7 +218,7 @@ class AternosConnect:
         reqcookies['ATERNOS_SESSION'] = self.atcookie
         del self.session.cookies['ATERNOS_SESSION']
 
-        if log.level == logging.DEBUG:
+        if is_debug():
 
             reqcookies_dbg = {
                 k: str(v or '')[:3]
@@ -240,18 +241,19 @@ class AternosConnect:
             sendreq = partial(
                 self.session.post,
                 params=params,
-                data=data
+                data=data,
             )
         else:
             sendreq = partial(
                 self.session.get,
-                params={**params, **data}
+                params={**params, **data},
             )
 
         req = sendreq(
             url,
             headers=headers,
-            cookies=reqcookies
+            cookies=reqcookies,
+            timeout=timeout,
         )
 
         resp_type = req.headers.get('content-type', '')
@@ -265,7 +267,7 @@ class AternosConnect:
                 url, method,
                 params, data,
                 headers, reqcookies,
-                sendtoken, retry - 1
+                sendtoken, retries - 1
             )
 
         log.debug('AternosConnect received: %s', req.text[:65])
