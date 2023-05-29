@@ -117,6 +117,15 @@ class Client:
             self.save_session(filename)
         except OSError:
             pass
+    
+    def login_with_session(self, session: str) -> None:
+        """Log in using ATERNOS_SESSION cookie
+
+        Args:
+            session (str): Session cookie value
+        """
+
+        self.atconn.session.cookies['ATERNOS_SESSION'] = session
 
     def logout(self) -> None:
         """Log out from the Aternos account"""
