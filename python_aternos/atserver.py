@@ -4,7 +4,7 @@ import re
 import json
 
 import enum
-from typing import List
+from typing import Any, Dict, List
 from functools import partial
 
 from .atconnect import BASE_URL, AJAX_URL
@@ -75,7 +75,7 @@ class AternosServer:
         self.servid = servid
         self.atconn = atconn
 
-        self._info = {}
+        self._info: Dict[str, Any] = {}
 
         self.atserver_request = partial(
             self.atconn.request_cloudflare,
