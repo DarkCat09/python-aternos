@@ -79,17 +79,20 @@ Here is an example how to use the API:
 from python_aternos import Client
 
 # Create object
-aternos = Client()
+atclient = Client()
 
 # Log in
 # with username and password
-aternos.login('example', 'test123')
+atclient.login('example', 'test123')
 # ----OR----
 # with username and MD5 hashed password
-aternos.login_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
+atclient.login_hashed('example', 'cc03e747a6afbbcbf8be7668acfebee5')
 # ----OR----
 # with session cookie
-aternos.login_with_session('ATERNOS_SESSION cookie value')
+atclient.login_with_session('ATERNOS_SESSION cookie value')
+
+# Get AternosAccount object
+aternos = atclient.account
 
 # Get servers list
 servs = aternos.list_servers()
