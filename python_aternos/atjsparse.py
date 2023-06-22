@@ -139,6 +139,7 @@ class Js2PyInterpreter(Interpreter):
         ctx.execute('window.Map = function(_i){ };')
         ctx.execute('window.setTimeout = function(_f,_t){ };')
         ctx.execute('window.setInterval = function(_f,_t){ };')
+        ctx.execute('document.getElementById = function(_a) { };')
         ctx.execute('window.encodeURIComponent = function(_s){ };')
 
         self.ctx = ctx
