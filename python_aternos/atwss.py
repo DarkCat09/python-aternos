@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 OneArgT = Callable[[Any], Coroutine[Any, Any, None]]
 TwoArgT = Callable[[Any, Tuple[Any, ...]], Coroutine[Any, Any, None]]
-FunctionT = Union[OneArgT, TwoArgT]
+FunctionT = Union[OneArgT, TwoArgT]  # pylint: disable=invalid-name
 ArgsTuple = Tuple[FunctionT, Tuple[Any, ...]]
 
 
