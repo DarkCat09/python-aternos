@@ -14,9 +14,13 @@ const vm = new VM({
         atob: atob,
         setTimeout:  (_a, _b) => {},
         setInterval: (_a, _b) => {},
+        document: {
+            getElementById: (_i) => {},
+            doctype: {},
+        },
     },
 })
-vm.run('var window = global; var document = {}')
+vm.run('var window = global')
 
 const listener = (req, res) => {
 

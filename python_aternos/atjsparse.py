@@ -135,12 +135,15 @@ class Js2PyInterpreter(Interpreter):
         super().__init__()
 
         ctx = js2py.EvalJs({'atob': atob})
-        ctx.execute('window.document = { };')
-        ctx.execute('window.Map = function(_i){ };')
-        ctx.execute('window.setTimeout = function(_f,_t){ };')
-        ctx.execute('window.setInterval = function(_f,_t){ };')
-        ctx.execute('document.getElementById = function(_a) { };')
-        ctx.execute('window.encodeURIComponent = function(_s){ };')
+        ctx.execute('''
+        window.Map = function(_i){ };
+        window.setTimeout = function(_f,_t){ };
+        window.setInterval = function(_f,_t){ };
+        window.encodeURIComponent = function(_s){ };
+        window.document = { };
+        document.doctype = { };
+        document.getElementById = function(_s){ };
+        ''')
 
         self.ctx = ctx
 
