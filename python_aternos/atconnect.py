@@ -44,8 +44,7 @@ class AternosConnect:
 
     def __init__(self) -> None:
 
-        self.cf_init = partial(CloudScraper)
-        self.session = self.cf_init()
+        self.session = CloudScraper()
         self.sec = ''
         self.token = ''
         self.atcookie = ''
@@ -56,7 +55,8 @@ class AternosConnect:
         Required for bypassing Cloudflare"""
 
         old_cookies = self.session.cookies
-        self.session = self.cf_init()
+        captcha_kwarg = self.session.captcha
+        self.session = CloudScraper(captcha=captcha_kwarg)
         self.session.cookies.update(old_cookies)
         del old_cookies
 
