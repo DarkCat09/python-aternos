@@ -22,6 +22,18 @@
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
+> **WARNING**
+>
+> Recently, Aternos started somehow detecting
+> API requests from this library.
+> Any automated access is prohibited according
+> to [Terms of Service §5.2e](https://aternos.gmbh/en/aternos/terms#:~:text=Automatically%20accessing%20our%20website%20or%20automating%20actions%20on%20our%20website.),
+> and results in **permanent ban**.
+>
+> **USE AT YOUR OWN RISK**
+>
+> I will try to fix that as soon as possible.
+
 Python Aternos supports:
 
  - Logging in to account with password (plain or hashed) or `ATERNOS_SESSION` cookie value
@@ -33,19 +45,6 @@ Python Aternos supports:
  - Updating server info in real-time (see [WebSocket API](https://aternos.dc09.ru/howto/websocket))
  - Changing server subdomain and MOTD (message-of-the-day)
  - Managing files, settings, players (whitelist, operators, etc.)
-
-> **Warning**
->
-> According to the Aternos' [Terms of Service §5.2e](https://aternos.gmbh/en/aternos/terms#:~:text=Automatically%20accessing%20our%20website%20or%20automating%20actions%20on%20our%20website.),
-> you must not use any software or APIs for automated access,
-> beacuse they don't receive money from advertisting in this case.
->
-> I always try to hide automated python-aternos requests
-> using browser-specific headers/cookies,  
-> but you should make backups to restore your world
-> if Aternos detects violation of ToS and bans your account
-> (view issues [#16](https://github.com/DarkCat09/python-aternos/issues/16)
-> and [#46](https://github.com/DarkCat09/python-aternos/issues/46)).
 
 ## Install
 

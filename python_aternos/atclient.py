@@ -125,6 +125,8 @@ class Client:
             session (str): Session cookie value
         """
 
+        self.atconn.parse_token()
+        self.atconn.generate_sec()
         self.atconn.session.cookies['ATERNOS_SESSION'] = session
 
     def logout(self) -> None:
