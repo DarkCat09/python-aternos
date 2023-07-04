@@ -17,6 +17,7 @@ const vm = new VM({
         document: {
             getElementById: (_i) => {},
             doctype: {},
+            currentScript: {},
         },
     },
 })

@@ -142,6 +142,7 @@ class Js2PyInterpreter(Interpreter):
         window.encodeURIComponent = function(_s){ };
         window.document = { };
         document.doctype = { };
+        document.currentScript = { };
         document.getElementById = function(_s){ };
         ''')
 
