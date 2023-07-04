@@ -99,7 +99,7 @@ class PlayersList:
         """
 
         self.atserv.atserver_request(
-            f'{AJAX_URL}/players/add.php',
+            f'{AJAX_URL}/server/players/lists/add',
             'POST', data={
                 'list': self.lst.value,
                 'name': name
@@ -116,7 +116,7 @@ class PlayersList:
         """
 
         self.atserv.atserver_request(
-            f'{AJAX_URL}/players/remove.php',
+            f'{AJAX_URL}/server/players/lists/remove',
             'POST', data={
                 'list': self.lst.value,
                 'name': name
