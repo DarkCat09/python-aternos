@@ -5,7 +5,7 @@ import logging
 
 log = logging.getLogger('aternos')
 handler = logging.StreamHandler()
-fmt = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+fmt = logging.Formatter('%(asctime)s %(levelname)-5s %(message)s')
 
 handler.setFormatter(fmt)
 log.addHandler(handler)
