@@ -62,7 +62,7 @@ $ pip install python-aternos
 ```bash
 $ git clone https://github.com/DarkCat09/python-aternos.git
 $ cd python-aternos
-$ pip install -e .
+$ pip install -e .[dev]
 ```
 
 ## Usage
