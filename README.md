@@ -24,15 +24,14 @@ It uses [aternos](https://aternos.org/)' private API and html parsing.
 
 > **WARNING**
 >
-> Recently, Aternos started somehow detecting
-> API requests from this library.
-> Any automated access is prohibited according
-> to [Terms of Service §5.2e](https://aternos.gmbh/en/aternos/terms#:~:text=Automatically%20accessing%20our%20website%20or%20automating%20actions%20on%20our%20website.),
-> and results in **permanent ban**.
+> Aternos now trying to detect python-aternos requests
+> by finding bugs in custom JavaScript parser.
 >
-> **USE AT YOUR OWN RISK**
+> Please, always keep the library up-to-date.
 >
-> I will try to fix that as soon as possible.
+> I'm going to use Selenium in this library later
+> (but you'll still be able to choose between
+> lightweight HTML parsing and running a browser).
 
 Python Aternos supports:
 
