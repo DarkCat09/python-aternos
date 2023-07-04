@@ -5,7 +5,7 @@ with open('README.md', 'rt') as readme:
 
 setuptools.setup(
     name='python-aternos',
-    version='3.0.2',
+    version='3.0.3',
     author='Chechkenev Andrey (@DarkCat09)',
     author_email='aacd0709@mail.ru',
     description='An unofficial Aternos API',
