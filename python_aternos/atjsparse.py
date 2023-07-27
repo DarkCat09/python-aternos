@@ -139,11 +139,14 @@ class Js2PyInterpreter(Interpreter):
         window.Map = function(_i){ };
         window.setTimeout = function(_f,_t){ };
         window.setInterval = function(_f,_t){ };
-        window.encodeURIComponent = function(_s){ };
+        window.encodeURIComponent = window.Map;
         window.document = { };
         document.doctype = { };
         document.currentScript = { };
-        document.getElementById = function(_s){ };
+        document.getElementById = window.Map;
+        document.prepend = window.Map;
+        document.append = window.Map;
+        document.appendChild = window.Map;
         ''')
 
         self.ctx = ctx

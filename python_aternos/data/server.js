@@ -7,15 +7,20 @@ const args = process.argv.slice(2)
 const port = args[0] || 8000
 const host = args[1] || 'localhost'
 
+const stubFunc = (_i) => {}
+
 const vm = new VM({
     timeout: 2000,
     allowAsync: false,
     sandbox: {
         atob: atob,
-        setTimeout:  (_a, _b) => {},
-        setInterval: (_a, _b) => {},
+        setTimeout: stubFunc,
+        setInterval: stubFunc,
         document: {
-            getElementById: (_i) => {},
+            getElementById: stubFunc,
+            prepend: stubFunc,
+            append: stubFunc,
+            appendChild: stubFunc,
             doctype: {},
             currentScript: {},
         },
