@@ -1,5 +1,1 @@
-cloudscraper==1.2.71
-Js2Py==0.74
-lxml==4.9.2
-regex==2023.6.3
-websockets==11.0.3
+selenium==4.11.0

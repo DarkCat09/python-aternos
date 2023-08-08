@@ -3,38 +3,30 @@ and allows to manage your account"""
 
 import os
 import re
-from typing import Optional, Type
+from typing import Optional
 
-from .atlog import log, is_debug, set_debug
-from .atmd5 import md5encode
-
-from .ataccount import AternosAccount
-
-from .atconnect import AternosConnect
+from .atselenium import SeleniumHelper, Remote
 from .atconnect import AJAX_URL
 
+from .atlog import log, is_debug, set_debug
 from .aterrors import CredentialsError
-from .aterrors import TwoFactorAuthError
-
-from . import atjsparse
-from .atjsparse import Interpreter
-from .atjsparse import Js2PyInterpreter
 
 
 class Client:
     """Aternos API Client class, object
     of which contains user's auth data"""
 
-    def __init__(self) -> None:
+    def __init__(self, driver: Remote) -> None:
+
+        self.se = SeleniumHelper(driver)
 
         # Config
         self.sessions_dir = '~'
-        self.js: Type[Interpreter] = Js2PyInterpreter
         # ###
 
         self.saved_session = '~/.aternos'  # will be rewritten by login()
-        self.atconn = AternosConnect()
-        self.account = AternosAccount(self)
+        # self.atconn = AternosConnect()
+        # self.account = AternosAccount(self)
 
     def login(
             self,
@@ -50,73 +42,29 @@ class Client:
             code (Optional[int], optional): 2FA code
         """
 
-        self.login_hashed(
-            username,
-            md5encode(password),
-            code,
-        )
+        self.se.load_page('/go')
 
-    def login_hashed(
-            self,
-            username: str,
-            md5: str,
-            code: Optional[int] = None) -> None:
-        """Log in to your Aternos account
-        with a username and a hashed password
+        user_input = self.se.find_by_id('user')
+        user_input.clear()
+        user_input.send_keys(username)
 
-        Args:
-            username (str): Username
-            md5 (str): Password hashed with MD5
-            code (int): 2FA code
+        pswd_input = self.se.find_by_id('password')
+        pswd_input.clear()
+        pswd_input.send_keys(password)
 
-        Raises:
-            TwoFactorAuthError: If the 2FA is enabled,
-                but `code` argument was not passed or is incorrect
-            CredentialsError: If the Aternos backend
-                returned empty session cookie
-                (usually because of incorrect credentials)
-            ValueError: _description_
-        """
+        err_msg = self.se.find_by_class('login-error')
+        totp_input = self.se.find_by_id('twofactor-code')
 
-        filename = self.session_filename(
-            username, self.sessions_dir
-        )
+        def logged_in_or_error(driver: Remote):
+            return \
+                driver.current_url.find('/servers') != -1 or \
+                err_msg.is_displayed() or \
+                totp_input.is_displayed()
 
-        try:
-            self.restore_session(filename)
-        except (OSError, CredentialsError):
-            pass
+        self.se.exec_js('login()')
+        self.se.wait.until(logged_in_or_error)
 
-        atjsparse.get_interpreter(create=self.js)
-        self.atconn.parse_token()
-        self.atconn.generate_sec()
-
-        credentials = {
-            'user': username,
-            'password': md5,
-        }
-
-        if code is not None:
-            credentials['code'] = str(code)
-
-        loginreq = self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/login',
-            'POST', data=credentials, sendtoken=True,
-        )
-
-        if b'"show2FA":true' in loginreq.content:
-            raise TwoFactorAuthError('2FA code is required')
-
-        if 'ATERNOS_SESSION' not in loginreq.cookies:
-            raise CredentialsError(
-                'Check your username and password'
-            )
-
-        self.saved_session = filename
-        try:
-            self.save_session(filename)
-        except OSError:
-            pass
+        print(self.se.driver.get_cookie('ATERNOS_SESSION'))
 
     def login_with_session(self, session: str) -> None:
         """Log in using ATERNOS_SESSION cookie
@@ -125,9 +73,10 @@ class Client:
             session (str): Session cookie value
         """
 
-        self.atconn.parse_token()
-        self.atconn.generate_sec()
-        self.atconn.session.cookies['ATERNOS_SESSION'] = session
+        self.se.driver.add_cookie({
+            'name': 'ATERNOS_SESSION',
+            'value': session,
+        })
 
     def logout(self) -> None:
         """Log out from the Aternos account"""
