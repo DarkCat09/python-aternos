@@ -6,9 +6,18 @@ from python_aternos import Client
 user = input('Username: ')
 pswd = getpass('Password: ')
 
-driver = Firefox()
+with Firefox() as driver:
 
-atclient = Client(driver)
-atclient.login(user, pswd)
+    atclient = Client(driver)
+    atclient.login(user, pswd)
 
-driver.quit()
+    servers = atclient.list_servers()
+
+    # for serv in servers:
+    #     print(
+    #         serv.id, serv.name,
+    #         serv.software,
+    #         serv.status,
+    #         serv.players,
+    #     )
+    list(map(print, servers))

@@ -3,10 +3,15 @@ and allows to manage your account"""
 
 import os
 import re
-from typing import Optional
+from typing import Optional, List
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
+
+from python_aternos.atserver import PartialServerInfo
 
 from .atselenium import SeleniumHelper, Remote
-from .atconnect import AJAX_URL
 
 from .atlog import log, is_debug, set_debug
 from .aterrors import CredentialsError
@@ -25,8 +30,6 @@ class Client:
         # ###
 
         self.saved_session = '~/.aternos'  # will be rewritten by login()
-        # self.atconn = AternosConnect()
-        # self.account = AternosAccount(self)
 
     def login(
             self,
@@ -44,27 +47,39 @@ class Client:
 
         self.se.load_page('/go')
 
-        user_input = self.se.find_by_id('user')
-        user_input.clear()
-        user_input.send_keys(username)
+        err_block = self.se.find_element(By.CLASS_NAME, 'login-error')
+        err_alert = self.se.find_element(By.CLASS_NAME, 'alert-wrapper')
 
-        pswd_input = self.se.find_by_id('password')
-        pswd_input.clear()
-        pswd_input.send_keys(password)
-
-        err_msg = self.se.find_by_class('login-error')
-        totp_input = self.se.find_by_id('twofactor-code')
+        self.se.exec_js(f'''
+            document.getElementById('user').value = '{username}'
+            document.getElementById('password').value = '{password}'
+            document.getElementById('twofactor-code').value = '{code}'
+            login()
+        ''')
 
         def logged_in_or_error(driver: Remote):
-            return \
-                driver.current_url.find('/servers') != -1 or \
-                err_msg.is_displayed() or \
-                totp_input.is_displayed()
+            return (
+                driver.current_url.find('/servers') != -1 or
+                err_block.is_displayed() or
+                err_alert.is_displayed()
+            )
 
-        self.se.exec_js('login()')
         self.se.wait.until(logged_in_or_error)
 
-        print(self.se.driver.get_cookie('ATERNOS_SESSION'))
+        if self.se.driver.current_url.find('/go') != -1:
+
+            if err_block.is_displayed():
+                raise CredentialsError(err_block.text)
+            
+            if err_alert.is_displayed():
+                raise CredentialsError(err_alert.text)
+        
+        self.se.wait.until(lambda d: d.title.find('Cloudflare') == -1)
+
+        if not self.se.get_cookie('ATERNOS_SESSION'):
+            raise CredentialsError('Session cookie is empty')
+        
+        print(self.se.get_cookie('ATERNOS_SESSION'))  # TODO: remove, this is for debug
 
     def login_with_session(self, session: str) -> None:
         """Log in using ATERNOS_SESSION cookie
@@ -73,32 +88,50 @@ class Client:
             session (str): Session cookie value
         """
 
-        self.se.driver.add_cookie({
-            'name': 'ATERNOS_SESSION',
-            'value': session,
-        })
+        self.se.set_cookie('ATERNOS_SESSION', session)
 
     def logout(self) -> None:
         """Log out from the Aternos account"""
 
-        self.atconn.request_cloudflare(
-            f'{AJAX_URL}/account/logout',
-            'GET', sendtoken=True,
-        )
+        self.se.load_page('/servers')
+        self.se.find_element(By.CLASS_NAME, 'logout').click()
 
         self.remove_session(self.saved_session)
+    
+    def list_servers(self) -> List[PartialServerInfo]:
+
+        CARD_CLASS = 'servercard'
+        
+        self.se.load_page('/servers')
+
+        def create_obj(s: WebElement) -> PartialServerInfo:
+            return PartialServerInfo(
+                id=s.get_dom_attribute('data-id'),
+                name=s.get_dom_attribute('title'),
+                software='',
+                status=(
+                    s
+                    .get_dom_attribute('class')
+                    .replace(CARD_CLASS, '')
+                    .split()[0]
+                ),
+                players=0,
+                se=self.se,
+            )
+
+        return list(map(
+            create_obj,
+            self.se.find_elements(By.CLASS_NAME, CARD_CLASS),
+        ))
 
     def restore_session(self, file: str = '~/.aternos') -> None:
-        """Restores ATERNOS_SESSION cookie and,
-        if included, servers list, from a session file
+        """Restores ATERNOS_SESSION cookie from a session file
 
         Args:
             file (str, optional): Filename
 
         Raises:
             FileNotFoundError: If the file cannot be found
-            CredentialsError: If the session cookie
-                (or the file at all) has incorrect format
         """
 
         file = os.path.expanduser(file)
@@ -108,48 +141,24 @@ class Client:
             raise FileNotFoundError()
 
         with open(file, 'rt', encoding='utf-8') as f:
-            saved = f.read() \
-                .strip() \
-                .replace('\r\n', '\n') \
-                .split('\n')
+            session = f.readline().strip()
 
-        session = saved[0].strip()
-        if session == '' or not session.isalnum():
-            raise CredentialsError(
-                'Session cookie is invalid or the file is empty'
-            )
-
-        if len(saved) > 1:
-            self.account.refresh_servers(saved[1:])
-
-        self.atconn.session.cookies['ATERNOS_SESSION'] = session
+        self.login_with_session(session)
         self.saved_session = file
 
-    def save_session(
-            self,
-            file: str = '~/.aternos',
-            incl_servers: bool = True) -> None:
+    def save_session(self, file: str = '~/.aternos') -> None:
         """Saves an ATERNOS_SESSION cookie to a file
 
         Args:
-            file (str, optional): File where a session cookie must be saved
-            incl_servers (bool, optional): If the function
-                should include the servers IDs in this file
-                to reduce API requests count on the next restoration
-                (recommended)
+            file (str, optional):
+                File where the session cookie must be saved
         """
 
         file = os.path.expanduser(file)
         log.debug('Saving session to %s', file)
 
         with open(file, 'wt', encoding='utf-8') as f:
-
-            f.write(self.atconn.atsession + '\n')
-            if not incl_servers:
-                return
-
-            for s in self.account.servers:
-                f.write(s.servid + '\n')
+            f.write(self.se.get_cookie('ATERNOS_SESSION') + '\n')
 
     def remove_session(self, file: str = '~/.aternos') -> None:
         """Removes a file which contains

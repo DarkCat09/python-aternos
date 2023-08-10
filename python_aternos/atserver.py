@@ -1,24 +1,24 @@
 """Aternos Minecraft server"""
 
 import re
-import json
 
 import enum
-from typing import Any, Dict, List
-from functools import partial
+from typing import List
 
-from .atconnect import BASE_URL, AJAX_URL
-from .atconnect import AternosConnect
-from .atwss import AternosWss
+from .atselenium import SeleniumHelper
 
-from .atplayers import PlayersList
-from .atplayers import Lists
+from .atconnect import AJAX_URL
 
-from .atfm import FileManager
-from .atconf import AternosConfig
+from .atstubs import PlayersList
+from .atstubs import Lists
 
-from .aterrors import AternosError
+from .atstubs import FileManager
+from .atstubs import AternosConfig
+
 from .aterrors import ServerStartError
+
+
+from dataclasses import dataclass
 
 
 SERVER_URL = f'{AJAX_URL}/server'
@@ -55,66 +55,24 @@ class Status(enum.IntEnum):
     confirm = 10
 
 
+
+@dataclass
+class PartialServerInfo:
+    id: str
+    name: str
+    software: str
+    status: str
+    players: int
+    se: SeleniumHelper
+
+    def use(self) -> None:
+        self.se.set_cookie('ATERNOS_SERVER', self.id)
+        self.se.load_page('/server')
+
+
+@dataclass
 class AternosServer:
     """Class for controlling your Aternos Minecraft server"""
-
-    def __init__(
-            self, servid: str,
-            atconn: AternosConnect,
-            autofetch: bool = False) -> None:
-        """Class for controlling your Aternos Minecraft server
-
-        Args:
-            servid (str): Unique server IDentifier
-            atconn (AternosConnect):
-                AternosConnect instance with initialized Aternos session
-            autofetch (bool, optional): Automatically call
-                `fetch()` to get all info
-        """
-
-        self.servid = servid
-        self.atconn = atconn
-
-        self._info: Dict[str, Any] = {}
-
-        self.atserver_request = partial(
-            self.atconn.request_cloudflare,
-            reqcookies={
-                'ATERNOS_SERVER': self.servid,
-            }
-        )
-
-        if autofetch:
-            self.fetch()
-
-    def fetch(self) -> None:
-        """Get all server info"""
-
-        page = self.atserver_request(
-            f'{BASE_URL}/server', 'GET'
-        )
-        match = status_re.search(page.text)
-
-        if match is None:
-            raise AternosError('Unable to parse lastStatus object')
-
-        self._info = json.loads(match[1])
-
-    def wss(self, autoconfirm: bool = False) -> AternosWss:
-        """Returns AternosWss instance for
-        listening server streams in real-time
-
-        Args:
-            autoconfirm (bool, optional):
-                Automatically start server status listener
-                when AternosWss connects to API to confirm
-                server launching
-
-        Returns:
-            AternosWss object
-        """
-
-        return AternosWss(self, autoconfirm)
 
     def start(
             self,
