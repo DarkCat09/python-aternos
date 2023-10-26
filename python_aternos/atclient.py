@@ -92,7 +92,7 @@ class Client:
         self.atconn.generate_sec()
 
         credentials = {
-            'user': username,
+            'username': username,
             'password': md5,
         }
 
