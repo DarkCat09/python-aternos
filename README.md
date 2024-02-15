@@ -1,7 +1,7 @@
 <div align="center">
     <img src="https://i.ibb.co/3RXcXJ1/aternos-400.png" alt="Python Aternos Logo">
     <h1>
-        Python Aternos
+        [UNMAINTAINED] Python Aternos
         <div>
             <a href="https://pypi.org/project/python-aternos/">
                 <img src="https://img.shields.io/pypi/v/python-aternos">
@@ -22,16 +22,21 @@
 An unofficial Aternos API written in Python.  
 It uses [aternos](https://aternos.org/)' private API and html parsing.
 
-> **WARNING**
+> [!WARNING]
 >
-> Aternos now trying to detect python-aternos requests
-> by finding bugs in custom JavaScript parser.
+> This library is no longer maintained, because:
+> 1. Aternos started detecting all automated requests (and, therefore, ToS violations)
+> via JS code in `AJAX_TOKEN` which is executed incorrectly in Js2Py and
+> requires a NodeJS DOM library (at least) or a browser engine.
+> For details, see [#85](https://github.com/DarkCat09/python-aternos/issues/85).
+> 2. Aternos frontend is protected with Cloudflare, so this library fails to parse pages
+> in case of, for example, blocked or suspicious IP address (e.g. web hosting).
+> CF shows IUAM page, often with captcha. We need a browser engine like undetected-chromedriver and an AI or a man solving captchas.
+> 3. Last Aternos API update broke nearly everything.
+> 4. I have no more motivation and not enough time to work on this, nor need in using Aternos.
 >
-> Please, always keep the library up-to-date.
->
-> I'm going to use Selenium in this library later
-> (but you'll still be able to choose between
-> lightweight HTML parsing and running a browser).
+> I'm so sorry. If you want to continue development of python-aternos,
+> [contact me](https://url.dc09.ru/contact), but I think it's better to write from scratch.
 
 Python Aternos supports:
 
@@ -41,7 +46,7 @@ Python Aternos supports:
  - Parsing Minecraft servers list
  - Parsing server info by its ID
  - Starting/stoping server, restarting, confirming/cancelling launch
- - Updating server info in real-time (see [WebSocket API](https://aternos.dc09.ru/howto/websocket))
+ - Updating server info in real-time (see [WebSocket API](https://python-aternos.codeberg.page/howto/websocket))
  - Changing server subdomain and MOTD (message-of-the-day)
  - Managing files, settings, players (whitelist, operators, etc.)
 
@@ -119,9 +124,9 @@ if testserv is not None:
 
 ## [More examples](https://github.com/DarkCat09/python-aternos/tree/main/examples)
 
-## [Documentation](https://aternos.dc09.ru)
+## [Documentation](https://python-aternos.codeberg.page)
 
-## [How-To Guide](https://aternos.dc09.ru/howto/auth)
+## [How-To Guide](https://python-aternos.codeberg.page/howto/auth)
 
 ## Changelog
 |Version|Description |
@@ -137,8 +142,9 @@ if testserv is not None:
 |v2.1.x|Fixes in websockets API, atconnect (including cookie refreshing fix). Support for captcha solving services (view [#52](https://github.com/DarkCat09/python-aternos/issues/52)).|
 |v2.2.x|Node.JS interpreter support.|
 |v3.0.0|Partially rewritten, API updates.|
-|v3.1.x|Full implementation of config API.|
-|v3.2.x|Shared access API and maybe Google Drive backups.|
+|v3.0.5|Unmaintained.|
+|v3.1.x|TODO: Full implementation of config API.|
+|v3.2.x|TODO: Shared access API and maybe Google Drive backups.|
 
 ## Reversed API Specification
 Private Aternos API requests were captured into
