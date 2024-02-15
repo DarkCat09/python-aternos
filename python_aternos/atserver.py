@@ -58,12 +58,12 @@ class Status(enum.IntEnum):
 
 @dataclass
 class PartialServerInfo:
-    id: str
-    name: str
-    software: str
-    status: str
-    players: int
     se: SeleniumHelper
+    id: str
+    name: str = ''
+    software: str = ''
+    status: str = ''
+    players: int = 0
 
     def use(self) -> None:
         self.se.set_cookie('ATERNOS_SERVER', self.id)
